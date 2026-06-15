@@ -1,0 +1,2564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Gestão — Fazenda Dois Córregos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root {
+  --green: #2d6a4f;
+  --green-light: #40916c;
+  --green-pale: #d8f3dc;
+  --gold: #b5832a;
+  --gold-light: #f0a500;
+  --red: #c0392b;
+  --red-light: #fadbd8;
+  --blue: #1a6fa3;
+  --blue-light: #ebf5fb;
+  --gray: #6c757d;
+  --gray-light: #f4f5f7;
+  --white: #ffffff;
+  --border: #dee2e6;
+  --text: #212529;
+  --text-muted: #6c757d;
+  --shadow: 0 2px 8px rgba(0,0,0,0.09);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: var(--text); font-size: 14px; }
+
+/* HEADER */
+.header { background: linear-gradient(135deg, var(--green) 0%, var(--green-light) 100%); color: white; padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header-brand { display: flex; align-items: center; gap: 12px; }
+.header-icon { font-size: 28px; }
+.header-title { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; }
+.header-sub { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+.header-date { font-size: 12px; opacity: 0.85; text-align: right; }
+
+/* NAV TABS */
+.nav-tabs { background: white; border-bottom: 2px solid var(--green); display: flex; overflow-x: auto; padding: 0 16px; box-shadow: var(--shadow); }
+.nav-tab { padding: 14px 20px; cursor: pointer; font-weight: 600; font-size: 13px; color: var(--gray); white-space: nowrap; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all .2s; display: flex; align-items: center; gap: 6px; }
+.nav-tab:hover { color: var(--green); background: var(--green-pale); }
+.nav-tab.active { color: var(--green); border-bottom-color: var(--green); }
+
+/* CONTENT */
+.content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* CARDS */
+.cards-row { display: grid; gap: 16px; margin-bottom: 24px; }
+.cards-4 { grid-template-columns: repeat(4, 1fr); }
+.cards-3 { grid-template-columns: repeat(3, 1fr); }
+.cards-2 { grid-template-columns: repeat(2, 1fr); }
+.card { background: white; border-radius: 10px; padding: 20px; box-shadow: var(--shadow); }
+.card-kpi { border-left: 4px solid var(--green); }
+.card-kpi.red { border-left-color: var(--red); }
+.card-kpi.gold { border-left-color: var(--gold); }
+.card-kpi.blue { border-left-color: var(--blue); }
+.kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
+.kpi-value { font-size: 22px; font-weight: 700; margin: 6px 0 2px; }
+.kpi-sub { font-size: 12px; color: var(--text-muted); }
+.kpi-change { font-size: 12px; font-weight: 600; }
+.kpi-change.up { color: #27ae60; }
+.kpi-change.down { color: var(--red); }
+
+/* CHART CARD */
+.chart-card { background: white; border-radius: 10px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; }
+.chart-card h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.charts-row { display: grid; gap: 20px; margin-bottom: 20px; }
+.charts-2 { grid-template-columns: 1fr 1fr; }
+.charts-3 { grid-template-columns: 1fr 1fr 1fr; }
+canvas { max-width: 100%; }
+
+/* SECTION TITLE */
+.section-title { font-size: 16px; font-weight: 700; color: var(--green); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--green-pale); }
+
+/* TABLE */
+.table-wrapper { background: white; border-radius: 10px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px; }
+.table-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.table-header h3 { font-size: 14px; font-weight: 700; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { background: var(--green); color: white; padding: 10px 12px; text-align: left; font-weight: 600; font-size: 12px; white-space: nowrap; }
+thead th.num { text-align: right; }
+tbody tr:nth-child(even) { background: #fafafa; }
+tbody tr:hover { background: var(--green-pale); }
+tbody td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
+tbody td.total-row { font-weight: 700; background: #f0f9f4 !important; }
+tfoot td { background: var(--green); color: white; padding: 10px 12px; font-weight: 700; }
+tfoot td.num { text-align: right; }
+
+/* BADGES */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-green { background: #d4edda; color: #155724; }
+.badge-red { background: #f8d7da; color: #721c24; }
+.badge-yellow { background: #fff3cd; color: #856404; }
+.badge-blue { background: #cce5ff; color: #004085; }
+.badge-gray { background: #e2e3e5; color: #383d41; }
+
+/* FILTERS */
+.filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.filter-group { display: flex; align-items: center; gap: 6px; }
+.filter-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+select, input[type="text"], input[type="number"], input[type="date"] {
+  border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; font-size: 13px; color: var(--text); background: white; outline: none;
+}
+select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rgba(45,106,79,.15); }
+
+/* BUTTONS */
+.btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; }
+.btn-green { background: var(--green); color: white; }
+.btn-green:hover { background: var(--green-light); }
+.btn-outline { background: white; color: var(--green); border: 1.5px solid var(--green); }
+.btn-outline:hover { background: var(--green-pale); }
+.btn-red { background: var(--red); color: white; }
+.btn-gold { background: var(--gold); color: white; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+/* FORM MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: white; border-radius: 12px; padding: 28px; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+.modal h2 { font-size: 18px; font-weight: 700; color: var(--green); margin-bottom: 20px; }
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .3px; }
+.form-row input, .form-row select, .form-row textarea { width: 100%; }
+.form-row textarea { height: 70px; resize: vertical; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+/* GADO */
+.gado-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.gado-card { background: white; border-radius: 10px; padding: 20px; box-shadow: var(--shadow); text-align: center; border-top: 4px solid var(--green); }
+.gado-card.garrote { border-top-color: var(--gold); }
+.gado-card.bezerro { border-top-color: var(--blue); }
+.gado-card.touro { border-top-color: #8e44ad; }
+.gado-icon { font-size: 36px; margin-bottom: 8px; }
+.gado-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: .5px; }
+.gado-num { font-size: 32px; font-weight: 800; color: var(--text); }
+.gado-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* EUCALIPTO */
+.euca-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+.euca-card { background: white; border-radius: 10px; padding: 20px; box-shadow: var(--shadow); border-top: 4px solid var(--green-light); }
+.euca-card.gold { border-top-color: var(--gold); }
+
+/* INVENTARIO */
+.inv-category { background: white; border-radius: 10px; box-shadow: var(--shadow); margin-bottom: 16px; overflow: hidden; }
+.inv-category-header { background: var(--green); color: white; padding: 12px 20px; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.inv-category-body { padding: 0; }
+
+/* TOTALS row in category tables */
+.cat-total { background: #e8f5e9 !important; font-weight: 700; }
+
+/* Editable inline */
+.editable { cursor: pointer; border-bottom: 1px dashed #ccc; }
+.editable:hover { background: #fffde7; }
+
+/* PROGRESS BAR */
+.progress-bar { height: 6px; border-radius: 3px; background: #e0e0e0; overflow: hidden; margin-top: 8px; }
+.progress-fill { height: 100%; border-radius: 3px; background: var(--green); transition: width .4s; }
+.progress-fill.gold { background: var(--gold); }
+.progress-fill.red { background: var(--red); }
+
+/* Alert banner */
+.alert { border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 10px; font-size: 13px; }
+.alert-info { background: #e8f4fd; border-left: 4px solid var(--blue); color: #0c5460; }
+.alert-warn { background: #fff3cd; border-left: 4px solid var(--gold); color: #664d03; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .cards-4, .cards-3 { grid-template-columns: repeat(2, 1fr); }
+  .gado-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-2, .charts-3 { grid-template-columns: 1fr; }
+  .euca-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .cards-4, .cards-3, .cards-2 { grid-template-columns: 1fr; }
+  .gado-grid { grid-template-columns: 1fr 1fr; }
+  .nav-tab { padding: 10px 12px; font-size: 12px; }
+  .content { padding: 12px; }
+}
+
+/* Print */
+@media print { .nav-tabs, .btn, .filters, .modal-overlay { display: none !important; } .tab-panel { display: block !important; } }
+
+.tag-cat { font-size: 11px; background: var(--green-pale); color: var(--green); padding: 2px 8px; border-radius: 12px; font-weight: 600; }
+
+/* AUTH SCREEN */
+#auth-screen { display: none; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1a3a28 0%, #2d6a4f 60%, #40916c 100%); position: fixed; inset: 0; z-index: 9999; }
+.auth-box { background: white; border-radius: 16px; padding: 40px; width: 420px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.35); }
+.auth-logo { text-align: center; margin-bottom: 28px; }
+.auth-logo .auth-icon { font-size: 48px; }
+.auth-logo h1 { font-size: 22px; font-weight: 800; color: var(--green); margin: 8px 0 4px; }
+.auth-logo p { color: var(--text-muted); font-size: 13px; }
+.auth-tabs { display: flex; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 24px; }
+.auth-tab-btn { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--gray); background: white; border: none; transition: all .2s; }
+.auth-tab-btn.active { background: var(--green); color: white; }
+.auth-msg { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; display: none; }
+.auth-msg.error { background: #fdecea; color: #c0392b; border-left: 4px solid #c0392b; display: block; }
+.auth-msg.success { background: #d4edda; color: #155724; border-left: 4px solid #27ae60; display: block; }
+.btn-logout { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 600; transition: background .2s; white-space: nowrap; }
+.btn-logout:hover { background: rgba(255,255,255,0.35); }
+.user-email-display { font-size: 12px; opacity: 0.85; white-space: nowrap; }
+.sync-status { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-icon">🌿</div>
+      <h1>Fazenda Dois Córregos</h1>
+      <p>Sistema de Gestão — Acesso restrito</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" onclick="switchAuthTab('login')">Entrar</button>
+      <button class="auth-tab-btn" onclick="switchAuthTab('register')">Cadastrar</button>
+    </div>
+    <div id="auth-msg" class="auth-msg"></div>
+    <div id="form-login">
+      <div class="form-row">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="seu@email.com" style="width:100%">
+      </div>
+      <div class="form-row">
+        <label>Senha</label>
+        <input type="password" id="login-senha" placeholder="••••••••" style="width:100%" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn btn-green" style="width:100%;justify-content:center;padding:12px;font-size:14px;margin-top:6px" onclick="doLogin()" id="btn-login">Entrar</button>
+    </div>
+    <div id="form-register" style="display:none">
+      <div class="form-row">
+        <label>E-mail</label>
+        <input type="email" id="reg-email" placeholder="seu@email.com" style="width:100%">
+      </div>
+      <div class="form-row">
+        <label>Senha (mínimo 6 caracteres)</label>
+        <input type="password" id="reg-senha" placeholder="••••••••" style="width:100%">
+      </div>
+      <div class="form-row">
+        <label>Confirmar Senha</label>
+        <input type="password" id="reg-senha2" placeholder="••••••••" style="width:100%" onkeydown="if(event.key==='Enter')doRegister()">
+      </div>
+      <button class="btn btn-green" style="width:100%;justify-content:center;padding:12px;font-size:14px;margin-top:6px" onclick="doRegister()" id="btn-register">Criar Conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP (exibido após autenticação) -->
+<div id="app" style="display:none">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-brand">
+    <span class="header-icon">🌿</span>
+    <div>
+      <div class="header-title">Fazenda Dois Córregos</div>
+      <div class="header-sub">Sistema de Gestão — Controle financeiro, pecuário e patrimonial</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:20px;">
+    <div class="header-date">
+      <div id="current-datetime"></div>
+      <div style="margin-top:4px;opacity:.7">Última atualização: <span id="last-update">—</span></div>
+      <div class="sync-status" id="sync-status"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+      <span class="user-email-display" id="user-email-display"></span>
+      <button class="btn-logout" onclick="doLogout()">Sair →</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</div>
+  <div class="nav-tab" onclick="showTab('contas')">🔔 Contas a Pagar <span id="badge-contas-venc" style="display:none;background:#c0392b;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px"></span></div>
+  <div class="nav-tab" onclick="showTab('despesas')">📋 Despesas</div>
+  <div class="nav-tab" onclick="showTab('receitas')">💰 Receitas</div>
+  <div class="nav-tab" onclick="showTab('gado')">🐄 Gado</div>
+  <div class="nav-tab" onclick="showTab('eucalipto')">🌳 Eucalipto</div>
+  <div class="nav-tab" onclick="showTab('inventario')">🗂️ Inventário</div>
+</div>
+
+<div class="content">
+
+<!-- ==================== DASHBOARD ==================== -->
+<div id="tab-dashboard" class="tab-panel active">
+
+  <div class="alert alert-info">
+    ℹ️ <span>Dados financeiros reais importados das planilhas 2025 e 2026. Receitas, gado, eucalipto e inventário podem ser preenchidos pela assistente financeira diretamente neste sistema.</span>
+  </div>
+
+  <!-- KPIs 2025 -->
+  <div style="margin-bottom:8px"><span class="section-title">📅 Ano 2025 — Resultado Completo</span></div>
+  <div class="cards-row cards-4">
+    <div class="card card-kpi green">
+      <div class="kpi-label">Receita Total 2025</div>
+      <div class="kpi-value">R$ 1.528.119</div>
+      <div class="kpi-sub">Madeira + Aluguel + Gado</div>
+      <div class="kpi-change up">Média mensal: R$ 127.343</div>
+    </div>
+    <div class="card card-kpi red">
+      <div class="kpi-label">Despesa Total 2025</div>
+      <div class="kpi-value">R$ 1.374.011</div>
+      <div class="kpi-sub">Ano completo (Jan–Dez)</div>
+      <div class="kpi-change">Média mensal: R$ 114.501</div>
+    </div>
+    <div class="card card-kpi blue">
+      <div class="kpi-label">Resultado 2025</div>
+      <div class="kpi-value" style="color:#27ae60">R$ +154.108</div>
+      <div class="kpi-sub">Superávit anual</div>
+      <div class="kpi-change up">↑ Margem: 10,1%</div>
+    </div>
+    <div class="card card-kpi gold">
+      <div class="kpi-label">Maior Receita — 2025</div>
+      <div class="kpi-value">Madeira</div>
+      <div class="kpi-sub">R$ 1.075.634 (70,4% do total)</div>
+      <div class="kpi-change up">PVR Florestal</div>
+    </div>
+  </div>
+
+  <!-- KPIs 2026 -->
+  <div style="margin-bottom:8px; margin-top:4px"><span class="section-title">📅 Ano 2026 — Parcial (Jan–Mai)</span></div>
+  <div class="cards-row cards-4">
+    <div class="card card-kpi red">
+      <div class="kpi-label">Despesas 2026 (Jan–Mai)</div>
+      <div class="kpi-value">R$ 520.569</div>
+      <div class="kpi-sub">5 meses — Jan a Mai/2026</div>
+      <div class="kpi-change">Média: R$ 104.114/mês</div>
+    </div>
+    <div class="card card-kpi green">
+      <div class="kpi-label">Receitas 2026 (Jan–Mai)</div>
+      <div class="kpi-value" id="kpi-receita-total">R$ 0</div>
+      <div class="kpi-sub">Atualizado pela assistente</div>
+      <div class="kpi-change up" id="kpi-receita-sub">—</div>
+    </div>
+    <div class="card card-kpi gold">
+      <div class="kpi-label">Resultado 2026</div>
+      <div class="kpi-value" id="kpi-resultado">—</div>
+      <div class="kpi-sub">Receitas − Despesas (Jan–Mai)</div>
+      <div class="kpi-change" id="kpi-resultado-sub">—</div>
+    </div>
+    <div class="card card-kpi blue">
+      <div class="kpi-label">Projeção Anual 2026</div>
+      <div class="kpi-value" id="kpi-projecao">R$ 1.249.366</div>
+      <div class="kpi-sub">Base na média mensal de despesas</div>
+      <div class="kpi-change">Estimativa</div>
+    </div>
+  </div>
+
+  <!-- Charts row 1 -->
+  <div class="charts-row charts-2">
+    <div class="chart-card">
+      <h3>📈 Receitas vs Despesas — 2025 (Mensal)</h3>
+      <canvas id="chart-mensal" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>🥧 Composição das Receitas 2025</h3>
+      <canvas id="chart-categorias" height="220"></canvas>
+    </div>
+  </div>
+
+  <!-- Charts row 2 -->
+  <div class="charts-row charts-2">
+    <div class="chart-card">
+      <h3>📊 Resultado Mensal 2025 (Superávit / Déficit)</h3>
+      <canvas id="chart-grupo-2026" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>💹 Despesas por Grupo — 2026 (Jan–Mai)</h3>
+      <canvas id="chart-resultado" height="220"></canvas>
+    </div>
+  </div>
+
+  <!-- Maiores despesas 2026 -->
+  <div class="table-wrapper">
+    <div class="table-header">
+      <h3>🔍 Maiores Despesas — 2026 (Jan–Mai)</h3>
+      <button class="btn btn-outline btn-sm" onclick="exportTableCSV('tbl-top-despesas','top_despesas_2026')">⬇️ CSV</button>
+    </div>
+    <table id="tbl-top-despesas">
+      <thead><tr>
+        <th>#</th><th>Categoria</th>
+        <th class="num">JAN</th><th class="num">FEV</th><th class="num">MAR</th><th class="num">ABR</th><th class="num">MAI</th>
+        <th class="num">TOTAL</th><th class="num">% do Total</th>
+      </tr></thead>
+      <tbody id="tbody-top-despesas"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== CONTAS A PAGAR ==================== -->
+<div id="tab-contas" class="tab-panel">
+
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+    <div class="section-title" style="flex:1; margin:0">🔔 Contas a Pagar</div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-green" onclick="openModal('modal-nova-conta')">+ Nova Conta</button>
+      <button class="btn btn-outline" onclick="exportTableCSV('tbl-contas','contas_a_pagar')">⬇️ CSV</button>
+    </div>
+  </div>
+
+  <!-- KPIs status -->
+  <div class="cards-row cards-4">
+    <div class="card card-kpi red">
+      <div class="kpi-label">⚠️ Vencidas</div>
+      <div class="kpi-value" id="cp-kpi-vencidas">R$ 0</div>
+      <div class="kpi-sub" id="cp-kpi-vencidas-n">0 contas em atraso</div>
+      <div class="progress-bar"><div class="progress-fill red" id="cp-bar-vencidas" style="width:0%"></div></div>
+    </div>
+    <div class="card card-kpi gold">
+      <div class="kpi-label">📅 Vence em 7 dias</div>
+      <div class="kpi-value" id="cp-kpi-7dias">R$ 0</div>
+      <div class="kpi-sub" id="cp-kpi-7dias-n">0 contas próximas</div>
+      <div class="progress-bar"><div class="progress-fill gold" id="cp-bar-7dias" style="width:0%"></div></div>
+    </div>
+    <div class="card card-kpi blue">
+      <div class="kpi-label">📋 Em Aberto (total)</div>
+      <div class="kpi-value" id="cp-kpi-aberto">R$ 0</div>
+      <div class="kpi-sub" id="cp-kpi-aberto-n">0 contas pendentes</div>
+      <div class="progress-bar"><div class="progress-fill" id="cp-bar-aberto" style="width:0%"></div></div>
+    </div>
+    <div class="card card-kpi green">
+      <div class="kpi-label">✅ Pagas (este mês)</div>
+      <div class="kpi-value" id="cp-kpi-pagas">R$ 0</div>
+      <div class="kpi-sub" id="cp-kpi-pagas-n">0 contas quitadas</div>
+      <div class="progress-bar"><div class="progress-fill" id="cp-bar-pagas" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- Alert vencidas -->
+  <div id="cp-alert-vencidas" style="display:none" class="alert" style="background:#fdecea;border-left:4px solid #c0392b;color:#922b21">
+    🚨 <strong>Atenção:</strong> Existem contas vencidas que precisam de ação imediata.
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters" style="margin-bottom:16px">
+    <div class="filter-group">
+      <label>Status:</label>
+      <select id="cp-filtro-status" onchange="renderContas()">
+        <option value="">Todos</option>
+        <option value="Vencida">Vencidas</option>
+        <option value="Vence Hoje">Vence Hoje</option>
+        <option value="A Vencer">A Vencer</option>
+        <option value="Paga">Pagas</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Categoria:</label>
+      <select id="cp-filtro-cat" onchange="renderContas()">
+        <option value="">Todas</option>
+        <option>Salários / RH</option>
+        <option>Impostos / Fiscal</option>
+        <option>Fornecedores</option>
+        <option>Manutenção</option>
+        <option>Pecuária</option>
+        <option>Utilidades</option>
+        <option>Financiamentos</option>
+        <option>Outros</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Período venc.:</label>
+      <input type="date" id="cp-filtro-de" onchange="renderContas()" style="width:140px">
+      <span style="color:#999">até</span>
+      <input type="date" id="cp-filtro-ate" onchange="renderContas()" style="width:140px">
+    </div>
+    <div class="filter-group">
+      <label>Buscar:</label>
+      <input type="text" id="cp-filtro-busca" placeholder="Descrição..." oninput="renderContas()" style="width:180px">
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="limparFiltrosContas()">✕ Limpar</button>
+  </div>
+
+  <!-- Tabela principal -->
+  <div class="table-wrapper">
+    <div class="table-header">
+      <h3 id="cp-table-title">Todas as Contas</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="cp-table-badge" class="badge badge-gray">0 contas</span>
+        <span id="cp-table-total" class="badge badge-red"></span>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="tbl-contas">
+        <thead>
+          <tr>
+            <th>Descrição</th>
+            <th>Categoria</th>
+            <th class="num">Valor (R$)</th>
+            <th>Vencimento</th>
+            <th>Situação</th>
+            <th>Recorrência</th>
+            <th>Obs.</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-contas">
+          <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">
+            Nenhuma conta lançada ainda.<br>
+            <button class="btn btn-green" style="margin-top:12px" onclick="openModal('modal-nova-conta')">+ Lançar primeira conta</button>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="charts-row charts-2" style="margin-top:20px">
+    <div class="chart-card">
+      <h3>📊 Contas por Categoria (Em Aberto)</h3>
+      <canvas id="chart-contas-cat" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>📅 Vencimentos por Semana (Próximos 30 dias)</h3>
+      <canvas id="chart-contas-timeline" height="220"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== DESPESAS ==================== -->
+<div id="tab-despesas" class="tab-panel">
+
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+    <div class="section-title" style="flex:1; margin:0">📋 Controle de Despesas</div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-green" onclick="openModal('modal-despesa')">+ Lançar Despesa</button>
+      <button class="btn btn-outline" onclick="exportTableCSV('tbl-despesas-detail','despesas_'+anoAtivoDespesas)">⬇️ Exportar CSV</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label>Ano:</label>
+      <select id="filtro-ano-despesa" onchange="renderDespesasTable()">
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Grupo:</label>
+      <select id="filtro-grupo-despesa" onchange="renderDespesasTable()">
+        <option value="">Todos</option>
+        <option value="Pessoal">Pessoal</option>
+        <option value="Fiscal">Fiscal</option>
+        <option value="Operacional">Operacional</option>
+        <option value="Pecuária">Pecuária</option>
+        <option value="Veículos">Veículos</option>
+        <option value="Outros">Outros</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Buscar:</label>
+      <input type="text" id="filtro-busca-despesa" placeholder="Categoria..." oninput="renderDespesasTable()" style="width:180px">
+    </div>
+  </div>
+
+  <!-- KPIs Despesas -->
+  <div class="cards-row cards-4" id="kpis-despesa-row">
+    <!-- filled by JS -->
+  </div>
+
+  <div class="table-wrapper">
+    <div class="table-header">
+      <h3 id="titulo-tabela-despesas">Despesas 2026 — Detalhamento Mensal</h3>
+      <span id="despesas-total-badge" class="badge badge-red"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="tbl-despesas-detail">
+        <thead id="thead-despesas"></thead>
+        <tbody id="tbody-despesas"></tbody>
+        <tfoot id="tfoot-despesas"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Grafico por grupo -->
+  <div class="chart-card">
+    <h3>📊 Evolução Mensal por Grupo — <span id="chart-grupo-title">2026</span></h3>
+    <canvas id="chart-despesas-grupo" height="200"></canvas>
+  </div>
+</div>
+
+<!-- ==================== RECEITAS ==================== -->
+<div id="tab-receitas" class="tab-panel">
+
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+    <div class="section-title" style="flex:1; margin:0">💰 Controle de Receitas</div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-green" onclick="openModal('modal-receita')">+ Nova Receita</button>
+      <button class="btn btn-outline" onclick="exportTableCSV('tbl-receitas','receitas')">⬇️ CSV</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label>Ano:</label>
+      <select id="filtro-ano-receita" onchange="renderReceitas()">
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Categoria:</label>
+      <select id="filtro-cat-receita" onchange="renderReceitas()">
+        <option value="">Todas</option>
+        <option value="Eucalipto / Madeira">Eucalipto / Madeira</option>
+        <option value="Arrendamento / Aluguel">Arrendamento / Aluguel</option>
+        <option value="Venda de Gado">Venda de Gado</option>
+        <option value="Outras Receitas">Outras Receitas</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="cards-row cards-4">
+    <div class="card card-kpi green">
+      <div class="kpi-label">Eucalipto / Madeira</div>
+      <div class="kpi-value" id="kpi-r-madeira">R$ 0</div>
+      <div class="kpi-sub" id="kpi-r-madeira-pct">— do total</div>
+    </div>
+    <div class="card card-kpi gold">
+      <div class="kpi-label">Arrendamento / Aluguel</div>
+      <div class="kpi-value" id="kpi-r-aluguel">R$ 0</div>
+      <div class="kpi-sub" id="kpi-r-aluguel-pct">— do total</div>
+    </div>
+    <div class="card card-kpi blue">
+      <div class="kpi-label">Venda de Gado</div>
+      <div class="kpi-value" id="kpi-r-gado">R$ 0</div>
+      <div class="kpi-sub" id="kpi-r-gado-pct">— do total</div>
+    </div>
+    <div class="card card-kpi green" style="border-left-color:#2980b9">
+      <div class="kpi-label">Total Geral</div>
+      <div class="kpi-value" id="kpi-r-total">R$ 0</div>
+      <div class="kpi-sub" id="kpi-r-total-sub">—</div>
+    </div>
+  </div>
+
+  <div class="charts-row charts-2">
+    <div class="chart-card">
+      <h3>📈 Receitas Mensais por Categoria — <span id="receita-chart-ano">2025</span></h3>
+      <canvas id="chart-receitas-mensal" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>🥧 Composição das Receitas — <span id="receita-pizza-ano">2025</span></h3>
+      <canvas id="chart-receitas-pizza" height="220"></canvas>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <div class="table-header">
+      <h3 id="receitas-table-title">Lançamentos de Receitas — 2025</h3>
+      <span class="badge badge-green" id="receitas-total-badge"></span>
+    </div>
+    <table id="tbl-receitas">
+      <thead><tr>
+        <th>Data</th><th>Categoria</th><th>Descrição</th><th class="num">Valor (R$)</th><th>Status</th><th>Ações</th>
+      </tr></thead>
+      <tbody id="tbody-receitas">
+        <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted)">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== GADO ==================== -->
+<div id="tab-gado" class="tab-panel">
+
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+    <div class="section-title" style="flex:1; margin:0">🐄 Controle de Gado</div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-green" onclick="openModal('modal-gado-mov')">+ Movimentação</button>
+      <button class="btn btn-outline" onclick="exportTableCSV('tbl-gado-mov','gado_movimentacoes')">⬇️ CSV</button>
+    </div>
+  </div>
+
+  <div class="alert alert-warn">
+    ⚠️ <span>Quantidade de cabeças configurável. Clique nos números para editar o estoque atual de cada categoria.</span>
+  </div>
+
+  <!-- Resumo por categoria -->
+  <div class="gado-grid">
+    <div class="gado-card" id="gado-card-vacas">
+      <div class="gado-icon">🐄</div>
+      <div class="gado-label">Vacas</div>
+      <div class="gado-num" id="gado-vacas-num">0</div>
+      <div class="gado-sub">cabeças</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="editGado('vacas')">✏️ Editar</button>
+      </div>
+    </div>
+    <div class="gado-card garrote" id="gado-card-garrotes">
+      <div class="gado-icon">🐂</div>
+      <div class="gado-label">Garrotes</div>
+      <div class="gado-num" id="gado-garrotes-num">0</div>
+      <div class="gado-sub">cabeças</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="editGado('garrotes')">✏️ Editar</button>
+      </div>
+    </div>
+    <div class="gado-card bezerro" id="gado-card-bezerros">
+      <div class="gado-icon">🐮</div>
+      <div class="gado-label">Bezerros</div>
+      <div class="gado-num" id="gado-bezerros-num">0</div>
+      <div class="gado-sub">cabeças</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="editGado('bezerros')">✏️ Editar</button>
+      </div>
+    </div>
+    <div class="gado-card touro" id="gado-card-touros">
+      <div class="gado-icon">🦬</div>
+      <div class="gado-label">Touros</div>
+      <div class="gado-num" id="gado-touros-num">0</div>
+      <div class="gado-sub">cabeças</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="editGado('touros')">✏️ Editar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total -->
+  <div class="cards-row cards-3">
+    <div class="card card-kpi green">
+      <div class="kpi-label">Total Rebanho</div>
+      <div class="kpi-value" id="gado-total-rebanho">0 cab.</div>
+      <div class="kpi-sub">Todas as categorias</div>
+    </div>
+    <div class="card card-kpi gold">
+      <div class="kpi-label">Total Vendido (2026)</div>
+      <div class="kpi-value" id="gado-total-vendido">0 cab.</div>
+      <div class="kpi-sub" id="gado-total-vendido-val">R$ 0,00 em receitas</div>
+    </div>
+    <div class="card card-kpi blue">
+      <div class="kpi-label">Preço Médio / Cabeça</div>
+      <div class="kpi-value" id="gado-preco-medio">—</div>
+      <div class="kpi-sub">Base nas vendas registradas</div>
+    </div>
+  </div>
+
+  <!-- Gráfico -->
+  <div class="charts-row charts-2">
+    <div class="chart-card">
+      <h3>🥧 Composição do Rebanho</h3>
+      <canvas id="chart-gado-pizza" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>📈 Evolução do Rebanho</h3>
+      <canvas id="chart-gado-evolucao" height="220"></canvas>
+    </div>
+  </div>
+
+  <!-- Movimentações -->
+  <div class="table-wrapper">
+    <div class="table-header">
+      <h3>Histórico de Movimentações</h3>
+    </div>
+    <table id="tbl-gado-mov">
+      <thead><tr>
+        <th>Data</th><th>Tipo</th><th>Categoria</th><th class="num">Qtd</th><th class="num">Valor Unit. (R$)</th><th class="num">Total (R$)</th><th>Observação</th><th>Ações</th>
+      </tr></thead>
+      <tbody id="tbody-gado-mov">
+        <tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted)">Nenhuma movimentação registrada.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== EUCALIPTO ==================== -->
+<div id="tab-eucalipto" class="tab-panel">
+
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+    <div class="section-title" style="flex:1; margin:0">🌳 Controle de Eucalipto</div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-green" onclick="openModal('modal-euca-venda')">+ Registrar Venda</button>
+      <button class="btn btn-outline" onclick="openModal('modal-euca-area')">+ Área</button>
+      <button class="btn btn-outline" onclick="exportTableCSV('tbl-euca-vendas','eucalipto_vendas')">⬇️ CSV</button>
+    </div>
+  </div>
+
+  <!-- KPIs Eucalipto -->
+  <div class="euca-grid">
+    <div class="euca-card">
+      <div class="kpi-label">Área Total Cadastrada</div>
+      <div class="kpi-value" id="euca-area-total">0 ha</div>
+      <div class="kpi-sub">Soma das áreas registradas</div>
+    </div>
+    <div class="euca-card">
+      <div class="kpi-label">Área Disponível p/ Corte</div>
+      <div class="kpi-value" id="euca-area-disponivel" style="color:var(--green)">0 ha</div>
+      <div class="kpi-sub">Pronto para colheita</div>
+    </div>
+    <div class="euca-card gold">
+      <div class="kpi-label">Total Vendido (R$)</div>
+      <div class="kpi-value" id="euca-total-vendido">R$ 0</div>
+      <div class="kpi-sub" id="euca-total-m3">0 m³ comercializados</div>
+    </div>
+  </div>
+
+  <div class="charts-row charts-2">
+    <div class="chart-card">
+      <h3>📈 Vendas de Eucalipto por Mês</h3>
+      <canvas id="chart-euca-mensal" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>🌳 Áreas por Status</h3>
+      <canvas id="chart-euca-areas" height="220"></canvas>
+    </div>
+  </div>
+
+  <!-- Áreas -->
+  <div class="table-wrapper" style="margin-bottom:16px">
+    <div class="table-header"><h3>Cadastro de Áreas</h3></div>
+    <table id="tbl-euca-areas">
+      <thead><tr>
+        <th>Identificação</th><th>Área (ha)</th><th>Ano Plantio</th><th>Variedade</th><th>Status</th><th>Previsão Corte</th><th>Ações</th>
+      </tr></thead>
+      <tbody id="tbody-euca-areas">
+        <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted)">Nenhuma área cadastrada.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Vendas -->
+  <div class="table-wrapper">
+    <div class="table-header"><h3>Vendas de Eucalipto</h3></div>
+    <table id="tbl-euca-vendas">
+      <thead><tr>
+        <th>Data</th><th>Área</th><th class="num">Volume (m³)</th><th class="num">Preço/m³</th><th class="num">Total (R$)</th><th>Comprador</th><th>Status</th><th>Ações</th>
+      </tr></thead>
+      <tbody id="tbody-euca-vendas">
+        <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted)">Nenhuma venda registrada.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== INVENTÁRIO ==================== -->
+<div id="tab-inventario" class="tab-panel">
+
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+    <div class="section-title" style="flex:1; margin:0">🗂️ Inventário da Fazenda</div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-green" onclick="openModal('modal-inventario')">+ Novo Item</button>
+      <button class="btn btn-outline" onclick="exportTableCSV('tbl-inv-all','inventario_fazenda')">⬇️ CSV</button>
+    </div>
+  </div>
+
+  <div class="cards-row cards-4" id="kpis-inventario"></div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label>Categoria:</label>
+      <select id="filtro-inv-cat" onchange="renderInventario()">
+        <option value="">Todas</option>
+        <option value="Veículos">Veículos</option>
+        <option value="Máquinas">Máquinas e Equipamentos</option>
+        <option value="Galpões">Benfeitorias / Galpões</option>
+        <option value="Ferramentas">Ferramentas</option>
+        <option value="Outros">Outros</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status:</label>
+      <select id="filtro-inv-status" onchange="renderInventario()">
+        <option value="">Todos</option>
+        <option value="Ativo">Ativo</option>
+        <option value="Manutenção">Em Manutenção</option>
+        <option value="Inativo">Inativo</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table id="tbl-inv-all">
+      <thead><tr>
+        <th>Categoria</th><th>Item</th><th>Descrição / Modelo</th><th class="num">Valor Estimado</th><th>Estado</th><th>Status</th><th>Obs.</th><th>Ações</th>
+      </tr></thead>
+      <tbody id="tbody-inventario">
+        <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted)">Nenhum item cadastrado. Clique em "+ Novo Item".</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- end .content -->
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- Modal: Nova Conta a Pagar -->
+<div class="modal-overlay" id="modal-nova-conta">
+  <div class="modal" style="width:580px">
+    <h2>🔔 Nova Conta a Pagar</h2>
+    <div class="form-row">
+      <label>Descrição *</label>
+      <input type="text" id="nc-desc" placeholder="Ex: INSS Janeiro 2026, Conta de Energia, Parcela Financiamento...">
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Categoria *</label>
+        <select id="nc-cat">
+          <option>Salários / RH</option>
+          <option>Impostos / Fiscal</option>
+          <option>Fornecedores</option>
+          <option>Manutenção</option>
+          <option>Pecuária</option>
+          <option>Utilidades</option>
+          <option>Financiamentos</option>
+          <option>Outros</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Valor (R$) *</label>
+        <input type="number" id="nc-valor" placeholder="0,00" step="0.01" min="0">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Data de Vencimento *</label>
+        <input type="date" id="nc-vencimento">
+      </div>
+      <div class="form-row">
+        <label>Recorrência</label>
+        <select id="nc-recorrencia">
+          <option value="Única">Única (não se repete)</option>
+          <option value="Mensal">Mensal</option>
+          <option value="Bimestral">Bimestral</option>
+          <option value="Trimestral">Trimestral</option>
+          <option value="Semestral">Semestral</option>
+          <option value="Anual">Anual</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Beneficiário / Fornecedor</label>
+        <input type="text" id="nc-beneficiario" placeholder="Para quem será pago">
+      </div>
+      <div class="form-row">
+        <label>Centro de Custo</label>
+        <select id="nc-centro">
+          <option value="">— Geral —</option>
+          <option>Pecuária</option>
+          <option>Eucalipto</option>
+          <option>Administrativo</option>
+          <option>Infraestrutura</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Observação</label>
+      <textarea id="nc-obs" placeholder="Número de nota fiscal, parcela, referência..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-nova-conta')">Cancelar</button>
+      <button class="btn btn-green" onclick="saveConta()">💾 Salvar Conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Baixa / Pagamento -->
+<div class="modal-overlay" id="modal-pagar-conta">
+  <div class="modal" style="width:440px">
+    <h2>✅ Registrar Pagamento</h2>
+    <div id="pagar-info" style="background:#f0f9f4;border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;border-left:4px solid var(--green)"></div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Data do Pagamento *</label>
+        <input type="date" id="pagar-data">
+      </div>
+      <div class="form-row">
+        <label>Valor Pago (R$) *</label>
+        <input type="number" id="pagar-valor" step="0.01">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Forma de Pagamento</label>
+      <select id="pagar-forma">
+        <option>Transferência Bancária</option>
+        <option>Boleto</option>
+        <option>PIX</option>
+        <option>Cheque</option>
+        <option>Débito Automático</option>
+        <option>Dinheiro</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Observação</label>
+      <textarea id="pagar-obs" placeholder="Comprovante, protocolo..." style="height:50px"></textarea>
+    </div>
+    <input type="hidden" id="pagar-idx">
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-pagar-conta')">Cancelar</button>
+      <button class="btn btn-green" onclick="confirmarPagamento()">✅ Confirmar Pagamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Lançar Despesa Manual -->
+<div class="modal-overlay" id="modal-despesa">
+  <div class="modal">
+    <h2>📋 Lançar Despesa</h2>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Ano</label>
+        <select id="dep-ano"><option>2026</option><option>2025</option></select>
+      </div>
+      <div class="form-row">
+        <label>Mês</label>
+        <select id="dep-mes">
+          <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+          <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+          <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+          <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Categoria</label>
+      <select id="dep-cat"></select>
+    </div>
+    <div class="form-row">
+      <label>Valor (R$)</label>
+      <input type="number" id="dep-valor" placeholder="0,00" step="0.01">
+    </div>
+    <div class="form-row">
+      <label>Observação</label>
+      <textarea id="dep-obs" placeholder="Opcional..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-despesa')">Cancelar</button>
+      <button class="btn btn-green" onclick="saveDespesa()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nova Receita -->
+<div class="modal-overlay" id="modal-receita">
+  <div class="modal">
+    <h2>💰 Nova Receita</h2>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Data</label>
+        <input type="date" id="rec-data">
+      </div>
+      <div class="form-row">
+        <label>Categoria</label>
+        <select id="rec-cat">
+          <option>Eucalipto / Madeira</option>
+          <option>Arrendamento / Aluguel</option>
+          <option>Venda de Gado</option>
+          <option>Leite</option>
+          <option>Subsídio / Incentivo</option>
+          <option>Outras Receitas</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Descrição</label>
+      <input type="text" id="rec-desc" placeholder="Ex: Venda de 10 garrotes para Fulano...">
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Valor (R$)</label>
+        <input type="number" id="rec-valor" placeholder="0,00" step="0.01">
+      </div>
+      <div class="form-row">
+        <label>Status</label>
+        <select id="rec-status">
+          <option value="Recebido">Recebido</option>
+          <option value="A Receber">A Receber</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-receita')">Cancelar</button>
+      <button class="btn btn-green" onclick="saveReceita()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Movimentação de Gado -->
+<div class="modal-overlay" id="modal-gado-mov">
+  <div class="modal">
+    <h2>🐄 Movimentação de Gado</h2>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Data</label>
+        <input type="date" id="gado-data">
+      </div>
+      <div class="form-row">
+        <label>Tipo</label>
+        <select id="gado-tipo">
+          <option value="Compra">Compra</option>
+          <option value="Venda">Venda</option>
+          <option value="Nascimento">Nascimento</option>
+          <option value="Morte">Morte</option>
+          <option value="Transferência">Transferência</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Categoria</label>
+        <select id="gado-categoria">
+          <option value="vacas">Vacas</option>
+          <option value="garrotes">Garrotes</option>
+          <option value="bezerros">Bezerros</option>
+          <option value="touros">Touros</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Quantidade</label>
+        <input type="number" id="gado-qtd" placeholder="0" min="1">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Valor por Cabeça (R$)</label>
+        <input type="number" id="gado-valor-unit" placeholder="0,00" step="0.01">
+      </div>
+      <div class="form-row">
+        <label>Contraparte</label>
+        <input type="text" id="gado-contraparte" placeholder="Comprador / Vendedor">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Observação</label>
+      <textarea id="gado-obs" placeholder="Opcional..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-gado-mov')">Cancelar</button>
+      <button class="btn btn-green" onclick="saveGadoMov()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Venda Eucalipto -->
+<div class="modal-overlay" id="modal-euca-venda">
+  <div class="modal">
+    <h2>🌳 Registrar Venda de Eucalipto</h2>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Data</label>
+        <input type="date" id="euca-data">
+      </div>
+      <div class="form-row">
+        <label>Área</label>
+        <select id="euca-venda-area"><option value="">— Selecione —</option></select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Volume (m³)</label>
+        <input type="number" id="euca-volume" placeholder="0" step="0.1">
+      </div>
+      <div class="form-row">
+        <label>Preço por m³ (R$)</label>
+        <input type="number" id="euca-preco-m3" placeholder="0,00" step="0.01" oninput="calcEucaTotal()">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Total (R$)</label>
+        <input type="number" id="euca-total" placeholder="Calculado auto" step="0.01">
+      </div>
+      <div class="form-row">
+        <label>Status</label>
+        <select id="euca-status-venda">
+          <option value="Recebido">Recebido</option>
+          <option value="A Receber">A Receber</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Comprador</label>
+      <input type="text" id="euca-comprador" placeholder="Nome do comprador">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-euca-venda')">Cancelar</button>
+      <button class="btn btn-green" onclick="saveEucaVenda()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Área Eucalipto -->
+<div class="modal-overlay" id="modal-euca-area">
+  <div class="modal">
+    <h2>🌳 Cadastrar Área de Eucalipto</h2>
+    <div class="form-row">
+      <label>Identificação / Nome da Área</label>
+      <input type="text" id="euca-area-nome" placeholder="Ex: Talhão A1, Área Norte...">
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Área (ha)</label>
+        <input type="number" id="euca-area-ha" placeholder="0,0" step="0.1">
+      </div>
+      <div class="form-row">
+        <label>Ano Plantio</label>
+        <input type="number" id="euca-area-plantio" placeholder="2020" min="2000" max="2030">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Variedade</label>
+        <input type="text" id="euca-area-variedade" placeholder="Ex: Urograndis, Camaldulensis...">
+      </div>
+      <div class="form-row">
+        <label>Status</label>
+        <select id="euca-area-status">
+          <option value="Crescimento">Em Crescimento</option>
+          <option value="Disponível">Disponível para Corte</option>
+          <option value="Cortado">Cortado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Previsão de Corte</label>
+      <input type="date" id="euca-area-previsao">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-euca-area')">Cancelar</button>
+      <button class="btn btn-green" onclick="saveEucaArea()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Inventário -->
+<div class="modal-overlay" id="modal-inventario">
+  <div class="modal">
+    <h2>🗂️ Cadastrar Item no Inventário</h2>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Categoria</label>
+        <select id="inv-cat">
+          <option>Veículos</option>
+          <option>Máquinas</option>
+          <option>Galpões</option>
+          <option>Ferramentas</option>
+          <option>Outros</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Status</label>
+        <select id="inv-status">
+          <option>Ativo</option>
+          <option>Manutenção</option>
+          <option>Inativo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Nome do Item</label>
+      <input type="text" id="inv-nome" placeholder="Ex: Trator Massey Ferguson 275">
+    </div>
+    <div class="form-row">
+      <label>Descrição / Modelo</label>
+      <input type="text" id="inv-desc" placeholder="Modelo, ano, cor, placa...">
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Valor Estimado (R$)</label>
+        <input type="number" id="inv-valor" placeholder="0,00" step="0.01">
+      </div>
+      <div class="form-row">
+        <label>Estado de Conservação</label>
+        <select id="inv-estado">
+          <option>Ótimo</option>
+          <option>Bom</option>
+          <option>Regular</option>
+          <option>Ruim</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Observações</label>
+      <textarea id="inv-obs" placeholder="Informações adicionais..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-inventario')">Cancelar</button>
+      <button class="btn btn-green" onclick="saveInventario()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+const GRUPOS = {
+  'Pessoal': ['Salários','Férias','Retiradas Pró Labore','Rescisões Contratuais','13º Salário','13° Salário','Adiantamentos','Horas Extras de Funcionários'],
+  'Fiscal': ['FGTS','INSS','PIS/COFINS','IRRF Rend Trab Assal+Pró Labore','IOF s/ Aplicações','IRF Fonte s/ Aplic. Financeiras','IRF Fonte s/ Juros Empréstimos','ICMS','ISSQN','Darf','Contribuição Sindical - Empreg.'],
+  'Pecuária': ['Remédios/Inseminação (Vacas)','Remédios - Bovinos (Garrotes)','Remédios - Outros','Ração','Silagem','Semoventes','Carbonização'],
+  'Veículos': ['Combustível','Manutenção de Veículos','IPVA + TX. Licenc.','Seguros-Veículos e Máquinas','Fretes','Diária de Viagens'],
+  'Operacional': ['Manutenção e Conservação','Serviços de Terceiros','Manutenção de Maq. e Equip.','Energia Elétrica','Telefone','Refeitório','Despesas Escritório','Produtos de Limpeza','Amortização de Empréstimos','Juros s/ Empréstimos','Despesas Bancárias','Comissões Bancárias'],
+  'Outros': ['Despesas Diversas','Publicidade / Propaganda','Taxas Diversas - IEF','CREA - Anuidade','Construção e Benfeitorias']
+};
+
+function getGrupo(nome) {
+  for (const [g, arr] of Object.entries(GRUPOS)) {
+    if (arr.includes(nome)) return g;
+  }
+  return 'Outros';
+}
+
+const despesas2025 = [
+  {nome:'Manutenção e Conservação', v:[4329.34,3314.39,1344.16,2114.25,1219.9,940,1682.43,2300.3,2574.9,4641.92,8933.33,9892.33]},
+  {nome:'Salários', v:[16509,16750,14750,13812,14438,17389,15996,17162,17518,17672,17658,null]},
+  {nome:'Serviços de Terceiros', v:[9510.68,14313.02,15933.02,13870.54,12186.91,11053.02,11743.02,11873.02,8739.68,8353.02,9268.02,9243.02]},
+  {nome:'Férias', v:[null,3132,6816,2994,null,2593,null,null,null,null,null,null]},
+  {nome:'Retiradas Pró Labore', v:[15000,15000,15000,15000,15000,15000,15000,15000,15000,15000,15000,15000]},
+  {nome:'Rescisões Contratuais', v:[null,null,null,7929.21,null,null,null,null,null,null,null,null]},
+  {nome:'13º Salário', v:[null,null,null,null,null,null,null,null,null,null,9218,12094]},
+  {nome:'FGTS', v:[2259.24,1548.2,1631.01,8119.21,1601.01,1422.23,1467.7,1457.96,1607.35,1621.01,1619.65,2359.46]},
+  {nome:'INSS', v:[17183.28,16789.12,20163.76,22079.2,29813.69,14957.31,26253.15,14859.46,15713.9,23876.11,17983.12,26044.17]},
+  {nome:'PIS/COFINS', v:[4434.24,4788.45,null,null,null,6259.04,4476.24,3369.81,6770.67,2919.26,3012.13,2369.73]},
+  {nome:'IRRF Rend Trab Assal+Pró Labore', v:[9336.66,1410.48,1422.81,11508.08,null,7388.41,9202.89,7727.5,7727.5,7727.58,7727.58,9624]},
+  {nome:'CREA - Anuidade', v:[2691.96,null,null,null,null,null,null,null,null,null,null,null]},
+  {nome:'Fretes', v:[null,664,null,null,null,214,500,300,null,null,null,null]},
+  {nome:'ICMS', v:[1631.41,92.45,null,94.89,93.98,null,13.09,54.88,2.57,268.01,null,null]},
+  {nome:'Telefone', v:[138.93,138.93,148.58,148.58,148.58,148.58,148.58,148.58,148.37,148.58,148.58,148.58]},
+  {nome:'Energia Elétrica', v:[1481.96,1813.93,1432.89,227.26,987.63,797,858.51,1982.68,1513.92,1549.94,1504.85,765.19]},
+  {nome:'IPVA + TX. Licenc.', v:[null,6496.15,1430.38,1395.2,null,null,null,null,null,null,null,null]},
+  {nome:'Seguros-Veículos e Máquinas', v:[null,null,null,null,2083.1,2033.12,7589.8,8684.37,7239.8,7189.8,7507.78,6937.8]},
+  {nome:'Combustível', v:[100,8816.09,6450,2392.13,7929.8,7632.6,7589.8,8684.37,7239.8,7189.8,7507.78,6937.8]},
+  {nome:'Remédios/Inseminação (Vacas)', v:[1982.45,1982.45,1032.5,1967.8,935.3,370,null,null,null,1129.96,4491.97,1129.97]},
+  {nome:'Remédios - Bovinos (Garrotes)', v:[null,1174.27,2288.04,417.91,1315.38,558.08,null,null,null,null,null,null]},
+  {nome:'Remédios - Outros', v:[null,null,null,null,null,null,833.97,1353.5,1882.49,452.34,221,16.8]},
+  {nome:'Ração', v:[2928.33,4512.23,3345.03,4085.83,2946.33,2383.34,2733.83,4461.23,2621.24,1743.7,3833.6,2212.87]},
+  {nome:'Refeitório', v:[736.65,915.75,950.2,1927.08,1313.29,1166.97,1491.28,927.24,833.31,1214.56,929.43,1589.05]},
+  {nome:'Despesas Diversas', v:[7684.28,4116.88,3098.98,3409.47,2406.99,1104.75,2545.93,8653.05,8836.81,2614.99,5615.2,3042.92]},
+  {nome:'Manutenção de Veículos', v:[130,60,null,185,1361.94,22.9,null,143,120,3709.79,4147.64,700]},
+  {nome:'Manutenção de Maq. e Equip.', v:[6075.5,13327.16,3508.31,3753.85,4695.03,2822.8,12239.23,5855.84,4032.06,2173.86,3110.69,3888.51]},
+  {nome:'Publicidade / Propaganda', v:[null,null,null,null,null,null,67.75,300.74,1924.78,1967.18,1934.34,1550.43]},
+  {nome:'Taxas Diversas - IEF', v:[null,null,null,444.21,80.2,33.19,67.75,300.74,1924.78,1967.18,1934.34,1550.43]},
+  {nome:'Silagem', v:[940,null,null,null,null,null,200,421.01,null,41.4,32.92,null]},
+  {nome:'Diária de Viagens', v:[null,85.4,null,85,null,97.4,550,null,null,null,1150,null]},
+  {nome:'Semoventes', v:[null,null,null,null,250,null,550,null,null,null,null,null]},
+  {nome:'Despesas Escritório', v:[336.15,1437.15,1058.6,386.97,537.57,341.97,341.97,379.97,830.47,831.08,1150,547.96]},
+  {nome:'Produtos de Limpeza', v:[null,null,null,null,null,150.46,286,208.85,99.95,149.96,168.83,88.56]},
+  {nome:'Horas Extras de Funcionários', v:[null,null,null,null,null,null,null,1900,null,null,null,null]},
+];
+
+const despesas2026 = [
+  {nome:'Manutenção e Conservação', v:[6390.12,3509.59,4345.19,1196.4,1304.1,null,null,null,null,null,null,null]},
+  {nome:'Salários', v:[18173.14,15941,11948,12122,11422,null,null,null,null,null,null,null]},
+  {nome:'Serviços de Terceiros', v:[13323.02,9842.69,8457.69,9427.69,8667.69,null,null,null,null,null,null,null]},
+  {nome:'Férias', v:[null,2536,2037,null,8444,null,null,null,null,null,null,null]},
+  {nome:'Retiradas Pró Labore', v:[15000,15000,15000,null,null,null,null,null,null,null,null,null]},
+  {nome:'Rescisões Contratuais', v:[4427.43,31304.06,3846.62,null,null,null,null,null,null,null,null,null]},
+  {nome:'FGTS', v:[3046.04,17884.44,1746.8,1142.45,1292.34,null,null,null,null,null,null,null]},
+  {nome:'INSS', v:[27434.47,18787.04,18420.56,21797.08,12993.79,null,null,null,null,null,null,null]},
+  {nome:'PIS/COFINS', v:[637.11,295.26,152.1,139.63,80.87,null,null,null,null,null,null,null]},
+  {nome:'IRRF Rend Trab Assal+Pró Labore', v:[14188.38,9950.69,10877.82,7263.06,null,null,null,null,null,null,null,null]},
+  {nome:'CREA - Anuidade', v:[null,2831.98,null,null,null,null,null,null,null,null,null,null]},
+  {nome:'ICMS', v:[null,52.83,540,10800,null,null,null,null,null,null,null,null]},
+  {nome:'Telefone', v:[148.58,148.58,148.58,45.46,73.27,null,null,null,null,null,null,null]},
+  {nome:'Energia Elétrica', v:[2673.68,339.66,1150.91,980.57,696.83,null,null,null,null,null,null,null]},
+  {nome:'IPVA + TX. Licenc.', v:[null,3404.57,3122.86,3051.59,null,null,null,null,null,null,null,null]},
+  {nome:'Despesas Bancárias', v:[null,205.25,187.62,280.62,279.2,null,null,null,null,null,null,null]},
+  {nome:'Seguros-Veículos e Máquinas', v:[null,null,null,null,997.22,null,null,null,null,null,null,null]},
+  {nome:'Combustível', v:[1872.34,1391.53,7482.82,1989.38,1405.35,null,null,null,null,null,null,null]},
+  {nome:'Remédios/Inseminação (Vacas)', v:[3665.3,3064,null,null,null,null,null,null,null,null,null,null]},
+  {nome:'Remédios - Outros', v:[1484.4,104,1693.05,5622.08,3025.38,null,null,null,null,null,null,null]},
+  {nome:'Ração', v:[2157,2780.6,4599.45,2774.98,2168.99,null,null,null,null,null,null,null]},
+  {nome:'Refeitório', v:[697.07,1035.14,1521.22,865.85,991.9,null,null,null,null,null,null,null]},
+  {nome:'Despesas Diversas', v:[1437.99,2289.76,3145.91,1045.67,1994.77,null,null,null,null,null,null,null]},
+  {nome:'Manutenção de Veículos', v:[901.4,null,1196.1,3379.8,3263,null,null,null,null,null,null,null]},
+  {nome:'Manutenção de Maq. e Equip.', v:[1876.37,null,1682.85,377.1,377.1,null,null,null,null,null,null,null]},
+  {nome:'Silagem', v:[null,1214.4,null,null,null,null,null,null,null,null,null,null]},
+  {nome:'Diária de Viagens', v:[null,60.45,33.25,null,null,null,null,null,null,null,null,null]},
+  {nome:'Despesas Escritório', v:[341.97,389.97,731.87,452.77,383.67,null,null,null,null,null,null,null]},
+  {nome:'Darf', v:[null,null,null,null,1621.15,null,null,null,null,null,null,null]},
+  {nome:'Produtos de Limpeza', v:[null,434.78,399.79,227.05,105.66,null,null,null,null,null,null,null]},
+  {nome:'Horas Extras de Funcionários', v:[550,1200,600,700,1807.3,null,null,null,null,null,null,null]},
+];
+
+// ============================================================
+// RECEITAS 2025 — DADOS REAIS (importados da planilha)
+// ============================================================
+const receitas2025 = [
+  // Eucalipto / Madeira (totais mensais PVR Florestal)
+  {data:'2025-01-31', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Janeiro 2025 — PVR Florestal', valor:131079.60, status:'Recebido', tipo:'madeira'},
+  {data:'2025-02-28', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Fevereiro 2025 — PVR Florestal', valor:89083.08, status:'Recebido', tipo:'madeira'},
+  {data:'2025-03-31', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Março 2025 — PVR Florestal', valor:78611.04, status:'Recebido', tipo:'madeira'},
+  {data:'2025-04-30', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Abril 2025 — PVR Florestal', valor:88426.32, status:'Recebido', tipo:'madeira'},
+  {data:'2025-05-31', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Maio 2025 — PVR Florestal', valor:116017.56, status:'Recebido', tipo:'madeira'},
+  {data:'2025-06-30', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Junho 2025 — PVR Florestal', valor:111386.52, status:'Recebido', tipo:'madeira'},
+  {data:'2025-07-31', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Julho 2025 — PVR Florestal', valor:92323.68, status:'Recebido', tipo:'madeira'},
+  {data:'2025-08-31', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Agosto 2025 — PVR Florestal', valor:109823.80, status:'Recebido', tipo:'madeira'},
+  {data:'2025-09-30', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Setembro 2025 — PVR Florestal', valor:79979.80, status:'Recebido', tipo:'madeira'},
+  {data:'2025-10-31', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Outubro 2025 — PVR Florestal', valor:96524.00, status:'Recebido', tipo:'madeira'},
+  {data:'2025-11-30', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Novembro 2025 — PVR Florestal', valor:64924.00, status:'Recebido', tipo:'madeira'},
+  {data:'2025-12-31', categoria:'Eucalipto / Madeira', descricao:'Venda de madeira Dezembro 2025 — PVR Florestal', valor:17455.00, status:'Recebido', tipo:'madeira'},
+  // Aluguéis mensais
+  {data:'2025-01-31', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Janeiro 2025 (Grua Sebastião, Casa 05, Serraria)', valor:27900.61, status:'Recebido', tipo:'aluguel'},
+  {data:'2025-02-28', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Fevereiro 2025 (Casa 05, Galpão 02, Grua Sebastião)', valor:10855.54, status:'Recebido', tipo:'aluguel'},
+  {data:'2025-03-31', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Março 2025 (Grua Sebastião, Casa 05, Galpão 02)', valor:17300.16, status:'Recebido', tipo:'aluguel'},
+  {data:'2025-04-30', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Abril 2025 (Grua Sebastião, Casa 05, Galpão 02)', valor:22402.25, status:'Recebido', tipo:'aluguel'},
+  {data:'2025-05-31', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Maio 2025 (Grua Sebastião, Casa 05, Galpão 02)', valor:29159.11, status:'Recebido', tipo:'aluguel'},
+  {data:'2025-06-30', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Junho 2025 (Grua Sebastião, Galpão 02)', valor:26200.66, status:'Recebido', tipo:'aluguel'},
+  {data:'2025-07-31', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Julho 2025 (Grua Sebastião, Galpão 02)', valor:22196.73, status:'Recebido', tipo:'aluguel'},
+  {data:'2025-08-31', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Agosto 2025 (Grua Sebastião, Galpão 02)', valor:25193.32, status:'Recebido', tipo:'aluguel'},
+  {data:'2025-09-30', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Setembro 2025 (Grua Sebastião)', valor:19206.12, status:'Recebido', tipo:'aluguel'},
+  {data:'2025-10-31', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Outubro 2025 (Grua Sebastião)', valor:19133.25, status:'Recebido', tipo:'aluguel'},
+  {data:'2025-11-30', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Novembro 2025 (Grua Sebastião)', valor:13755.01, status:'Recebido', tipo:'aluguel'},
+  {data:'2025-12-31', categoria:'Arrendamento / Aluguel', descricao:'Aluguéis Dezembro 2025', valor:6610.44, status:'Recebido', tipo:'aluguel'},
+  // Semoventes (vendas de gado)
+  {data:'2025-03-28', categoria:'Venda de Gado', descricao:'Venda de bezerro — Fernando Murilo da Cunha', valor:3000.00, status:'Recebido', tipo:'semoventes'},
+  {data:'2025-04-07', categoria:'Venda de Gado', descricao:'Venda de semoventes — Carlos Fábio Nogueira Rivelli', valor:66584.09, status:'Recebido', tipo:'semoventes'},
+  {data:'2025-05-30', categoria:'Venda de Gado', descricao:'Venda de semoventes — Carlos Fábio Nogueira Rivelli', valor:55463.08, status:'Recebido', tipo:'semoventes'},
+  {data:'2025-06-06', categoria:'Venda de Gado', descricao:'Venda de semoventes — Jones José de Almeida', valor:11250.00, status:'Recebido', tipo:'semoventes'},
+  {data:'2025-07-01', categoria:'Venda de Gado', descricao:'Venda de leitoa (parcela)', valor:300.00, status:'Recebido', tipo:'semoventes'},
+  {data:'2025-08-01', categoria:'Venda de Gado', descricao:'Venda de leitoa (parcela)', valor:300.00, status:'Recebido', tipo:'semoventes'},
+  {data:'2025-08-25', categoria:'Venda de Gado', descricao:'Venda de vacas', valor:43055.98, status:'Recebido', tipo:'semoventes'},
+  {data:'2025-08-29', categoria:'Venda de Gado', descricao:'Venda de vacas', valor:32617.97, status:'Recebido', tipo:'semoventes'},
+];
+
+// Totais 2025 pré-calculados (do RESUMO da planilha)
+const totaisReceitas2025 = {
+  madeira: 1075634.40,
+  aluguel:  239913.20,
+  semoventes: 212571.12,
+  total: 1528118.72,
+  mensal: [161989.45, 96929.38, 98911.20, 177412.66, 200639.75, 148837.18, 114820.41, 210991.07, 99185.92, 115657.25, 78679.01, 24065.44]
+};
+
+// State
+let receitas = JSON.parse(localStorage.getItem('fazenda_receitas') || '[]');
+let gadoMov = JSON.parse(localStorage.getItem('fazenda_gado_mov') || '[]');
+let gadoEstoque = JSON.parse(localStorage.getItem('fazenda_gado_estoque') || '{"vacas":0,"garrotes":0,"bezerros":0,"touros":0}');
+let eucaAreas = JSON.parse(localStorage.getItem('fazenda_euca_areas') || '[]');
+let eucaVendas = JSON.parse(localStorage.getItem('fazenda_euca_vendas') || '[]');
+let inventario = JSON.parse(localStorage.getItem('fazenda_inventario') || '[]');
+let anoAtivoDespesas = 2026;
+
+function save() {
+  localStorage.setItem('fazenda_receitas', JSON.stringify(receitas));
+  localStorage.setItem('fazenda_gado_mov', JSON.stringify(gadoMov));
+  localStorage.setItem('fazenda_gado_estoque', JSON.stringify(gadoEstoque));
+  localStorage.setItem('fazenda_euca_areas', JSON.stringify(eucaAreas));
+  localStorage.setItem('fazenda_euca_vendas', JSON.stringify(eucaVendas));
+  localStorage.setItem('fazenda_inventario', JSON.stringify(inventario));
+  localStorage.setItem('fazenda_contas', JSON.stringify(contasPagar));
+  const now = new Date().toLocaleString('pt-BR');
+  localStorage.setItem('fazenda_last_update', now);
+  document.getElementById('last-update').textContent = now;
+  syncToSupabase();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fmt(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return 'R$ ' + v.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+function fmtN(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return v.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+function sumRow(arr) { return arr.reduce((a,v) => a + (v||0), 0); }
+function monthTotal(data, mi) { return data.reduce((a,c) => a + (c.v[mi]||0), 0); }
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+
+// ============================================================
+// TABS
+// ============================================================
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'dashboard') initDashboard();
+  if (name === 'contas') renderContas();
+  if (name === 'despesas') renderDespesasTable();
+  if (name === 'receitas') renderReceitas();
+  if (name === 'gado') renderGado();
+  if (name === 'eucalipto') renderEucalipto();
+  if (name === 'inventario') renderInventario();
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportTableCSV(tableId, filename) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  let csv = '';
+  table.querySelectorAll('tr').forEach(row => {
+    const cells = Array.from(row.querySelectorAll('th,td')).map(c => '"' + c.textContent.trim().replace(/"/g,'""') + '"');
+    csv += cells.join(';') + '\n';
+  });
+  const blob = new Blob(['﻿' + csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = filename + '_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+const chartInstances = {};
+function createChart(id, config) {
+  if (chartInstances[id]) { chartInstances[id].destroy(); }
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  chartInstances[id] = new Chart(ctx, config);
+}
+
+const COLORS = ['#2d6a4f','#b5832a','#1a6fa3','#c0392b','#8e44ad','#16a085','#d35400','#2980b9','#27ae60','#e74c3c'];
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function initDashboard() {
+  const tot25desp = MESES.map((_,i) => monthTotal(despesas2025, i));
+  const tot26desp = MESES.map((_,i) => monthTotal(despesas2026, i));
+
+  // Chart 1: Receitas vs Despesas 2025 (barras agrupadas)
+  const resultado25 = MESES.map((_,i) => totaisReceitas2025.mensal[i] - tot25desp[i]);
+  createChart('chart-mensal', {
+    type: 'bar',
+    data: {
+      labels: MESES,
+      datasets: [
+        { label: 'Receitas', data: totaisReceitas2025.mensal, backgroundColor: 'rgba(45,106,79,0.75)', borderColor: '#2d6a4f', borderWidth: 1 },
+        { label: 'Despesas', data: tot25desp, backgroundColor: 'rgba(192,57,43,0.7)', borderColor: '#c0392b', borderWidth: 1 },
+      ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { ticks: { callback: v => 'R$' + (v/1000).toFixed(0) + 'k' } } } }
+  });
+
+  // Chart 2: Composição receitas 2025 (pizza)
+  createChart('chart-categorias', {
+    type: 'doughnut',
+    data: {
+      labels: ['Eucalipto / Madeira', 'Arrendamento / Aluguel', 'Venda de Gado'],
+      datasets: [{ data: [totaisReceitas2025.madeira, totaisReceitas2025.aluguel, totaisReceitas2025.semoventes], backgroundColor: ['#2d6a4f','#b5832a','#1a6fa3'] }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right', labels: { font: { size: 12 } } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.raw)} (${(ctx.raw/totaisReceitas2025.total*100).toFixed(1)}%)` } }
+      }
+    }
+  });
+
+  // Chart 3: Resultado mensal 2025 (linha de resultado)
+  createChart('chart-grupo-2026', {
+    type: 'bar',
+    data: {
+      labels: MESES,
+      datasets: [{
+        label: 'Resultado (R$)',
+        data: resultado25,
+        backgroundColor: resultado25.map(v => v >= 0 ? 'rgba(39,174,96,0.75)' : 'rgba(192,57,43,0.7)'),
+        borderColor: resultado25.map(v => v >= 0 ? '#27ae60' : '#c0392b'),
+        borderWidth: 1
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: v => 'R$' + (v/1000).toFixed(0) + 'k' } } } }
+  });
+
+  // Chart 4: Despesas por grupo 2026 (barras horizontais)
+  const grupos26 = {};
+  despesas2026.forEach(c => { const g = getGrupo(c.nome); grupos26[g] = (grupos26[g]||0) + sumRow(c.v.slice(0,5)); });
+  createChart('chart-resultado', {
+    type: 'bar',
+    data: {
+      labels: Object.keys(grupos26),
+      datasets: [{ label: 'Total (R$)', data: Object.values(grupos26), backgroundColor: COLORS }]
+    },
+    options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { callback: v => 'R$' + (v/1000).toFixed(0) + 'k' } } } }
+  });
+
+  // KPIs 2026
+  const totalRec26 = receitas.filter(r => r.status === 'Recebido' && new Date(r.data).getFullYear()===2026).reduce((a,r) => a + r.valor, 0);
+  const totalDesp26 = tot26desp.reduce((a,v) => a+v, 0);
+  document.getElementById('kpi-receita-total').textContent = fmt(totalRec26);
+  document.getElementById('kpi-receita-sub').textContent = receitas.filter(r=>r.status==='Recebido'&&new Date(r.data).getFullYear()===2026).length + ' lançamentos';
+  const resultado26 = totalRec26 - totalDesp26;
+  document.getElementById('kpi-resultado').textContent = fmt(Math.abs(resultado26));
+  const resEl = document.getElementById('kpi-resultado-sub');
+  resEl.textContent = resultado26 >= 0 ? '✅ Superávit' : '⚠️ Déficit';
+  resEl.className = 'kpi-change ' + (resultado26 >= 0 ? 'up' : 'down');
+
+  // Table top despesas 2026
+  const sorted26 = [...despesas2026].sort((a,b) => sumRow(b.v) - sumRow(a.v)).slice(0,15);
+  const totalGeral26 = despesas2026.reduce((a,c) => a + sumRow(c.v), 0);
+  const tbody = document.getElementById('tbody-top-despesas');
+  tbody.innerHTML = sorted26.map((c,i) => {
+    const tot = sumRow(c.v);
+    return `<tr>
+      <td>${i+1}</td>
+      <td><strong>${c.nome}</strong><br><span class="tag-cat">${getGrupo(c.nome)}</span></td>
+      ${c.v.slice(0,5).map(v => `<td class="num">${v ? fmtN(v) : '—'}</td>`).join('')}
+      <td class="num"><strong>${fmtN(tot)}</strong></td>
+      <td class="num">${(tot/totalGeral26*100).toFixed(1)}%</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// CONTAS A PAGAR
+// ============================================================
+let contasPagar = JSON.parse(localStorage.getItem('fazenda_contas') || '[]');
+
+function saveContas() { localStorage.setItem('fazenda_contas', JSON.stringify(contasPagar)); save(); atualizarBadgeContas(); }
+
+function getStatusConta(c) {
+  if (c.status === 'Paga') return 'Paga';
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const venc = new Date(c.vencimento + 'T00:00:00');
+  const diffDias = Math.round((venc - hoje) / 86400000);
+  if (diffDias < 0) return 'Vencida';
+  if (diffDias === 0) return 'Vence Hoje';
+  if (diffDias <= 7) return 'A Vencer';
+  return 'Em Aberto';
+}
+
+function getDiasInfo(c) {
+  if (c.status === 'Paga') return '';
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const venc = new Date(c.vencimento + 'T00:00:00');
+  const diff = Math.round((venc - hoje) / 86400000);
+  if (diff < 0) return `${Math.abs(diff)} dia${Math.abs(diff)!==1?'s':''} em atraso`;
+  if (diff === 0) return 'Vence hoje!';
+  return `Vence em ${diff} dia${diff!==1?'s':''}`;
+}
+
+function statusBadge(status) {
+  const map = {
+    'Vencida':    'background:#fde8e8;color:#c0392b;font-weight:700',
+    'Vence Hoje': 'background:#fff3cd;color:#856404;font-weight:700',
+    'A Vencer':   'background:#fff8e1;color:#b5832a',
+    'Em Aberto':  'background:#e8f4fd;color:#1a6fa3',
+    'Paga':       'background:#d4edda;color:#155724'
+  };
+  const icons = { 'Vencida':'🔴','Vence Hoje':'🟡','A Vencer':'🟠','Em Aberto':'🔵','Paga':'✅' };
+  return `<span class="badge" style="${map[status]||''}">${icons[status]||''} ${status}</span>`;
+}
+
+function saveConta() {
+  const desc = document.getElementById('nc-desc').value.trim();
+  const valor = parseFloat(document.getElementById('nc-valor').value);
+  const vencimento = document.getElementById('nc-vencimento').value;
+  if (!desc) { alert('Informe a descrição.'); return; }
+  if (!valor || isNaN(valor) || valor <= 0) { alert('Informe um valor válido.'); return; }
+  if (!vencimento) { alert('Informe a data de vencimento.'); return; }
+
+  const recorrencia = document.getElementById('nc-recorrencia').value;
+  const nova = {
+    id: Date.now(),
+    descricao: desc,
+    categoria: document.getElementById('nc-cat').value,
+    valor,
+    vencimento,
+    recorrencia,
+    beneficiario: document.getElementById('nc-beneficiario').value,
+    centro: document.getElementById('nc-centro').value,
+    obs: document.getElementById('nc-obs').value,
+    status: 'Aberta',
+    criadaEm: new Date().toISOString()
+  };
+  contasPagar.push(nova);
+
+  // Se mensal, perguntar quantas parcelas
+  if (recorrencia !== 'Única') {
+    const parcelas = parseInt(prompt(`Quantas parcelas/ocorrências deseja lançar?\n(já contando com a primeira em ${vencimento})`, '12'));
+    if (parcelas && parcelas > 1) {
+      const mesesPorTipo = { 'Mensal':1, 'Bimestral':2, 'Trimestral':3, 'Semestral':6, 'Anual':12 };
+      const salto = mesesPorTipo[recorrencia] || 1;
+      for (let i = 1; i < parcelas; i++) {
+        const d = new Date(vencimento + 'T00:00:00');
+        d.setMonth(d.getMonth() + salto * i);
+        const novaData = d.toISOString().split('T')[0];
+        contasPagar.push({ ...nova, id: Date.now() + i, vencimento: novaData, descricao: `${desc} (${i+1}/${parcelas})`, status: 'Aberta' });
+      }
+      nova.descricao = `${desc} (1/${parcelas})`;
+    }
+  }
+
+  saveContas();
+  closeModal('modal-nova-conta');
+  // Clear form
+  ['nc-desc','nc-beneficiario','nc-obs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nc-valor').value = '';
+  renderContas();
+}
+
+function abrirPagamento(idx) {
+  const c = contasPagar[idx];
+  document.getElementById('pagar-idx').value = idx;
+  document.getElementById('pagar-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('pagar-valor').value = c.valor.toFixed(2);
+  document.getElementById('pagar-obs').value = '';
+  document.getElementById('pagar-info').innerHTML = `
+    <strong>${c.descricao}</strong><br>
+    Vencimento: <strong>${new Date(c.vencimento+'T12:00:00').toLocaleDateString('pt-BR')}</strong> &nbsp;|&nbsp;
+    Valor: <strong style="color:var(--green)">${fmt(c.valor)}</strong><br>
+    ${getDiasInfo(c) ? `<span style="color:${getStatusConta(c)==='Vencida'?'#c0392b':'#856404'}">${getDiasInfo(c)}</span>` : ''}
+  `;
+  openModal('modal-pagar-conta');
+}
+
+function confirmarPagamento() {
+  const idx = parseInt(document.getElementById('pagar-idx').value);
+  const dataPag = document.getElementById('pagar-data').value;
+  const valorPago = parseFloat(document.getElementById('pagar-valor').value);
+  if (!dataPag || !valorPago) { alert('Preencha data e valor pago.'); return; }
+  contasPagar[idx].status = 'Paga';
+  contasPagar[idx].dataPagamento = dataPag;
+  contasPagar[idx].valorPago = valorPago;
+  contasPagar[idx].formaPagamento = document.getElementById('pagar-forma').value;
+  contasPagar[idx].obsPagamento = document.getElementById('pagar-obs').value;
+  saveContas();
+  closeModal('modal-pagar-conta');
+  renderContas();
+}
+
+function reabrirConta(idx) {
+  if (!confirm('Desfazer pagamento desta conta?')) return;
+  contasPagar[idx].status = 'Aberta';
+  delete contasPagar[idx].dataPagamento;
+  delete contasPagar[idx].valorPago;
+  saveContas(); renderContas();
+}
+
+function delConta(idx) {
+  if (!confirm('Excluir esta conta permanentemente?')) return;
+  contasPagar.splice(idx, 1);
+  saveContas(); renderContas();
+}
+
+function limparFiltrosContas() {
+  document.getElementById('cp-filtro-status').value = '';
+  document.getElementById('cp-filtro-cat').value = '';
+  document.getElementById('cp-filtro-de').value = '';
+  document.getElementById('cp-filtro-ate').value = '';
+  document.getElementById('cp-filtro-busca').value = '';
+  renderContas();
+}
+
+function renderContas() {
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const em7 = new Date(hoje); em7.setDate(em7.getDate() + 7);
+
+  // Calcular KPIs
+  const abertas = contasPagar.filter(c => c.status !== 'Paga');
+  const vencidas = abertas.filter(c => new Date(c.vencimento+'T00:00:00') < hoje);
+  const proximas7 = abertas.filter(c => { const v = new Date(c.vencimento+'T00:00:00'); return v >= hoje && v <= em7; });
+  const mesAtual = contasPagar.filter(c => c.status === 'Paga' && c.dataPagamento && new Date(c.dataPagamento).getMonth() === hoje.getMonth() && new Date(c.dataPagamento).getFullYear() === hoje.getFullYear());
+
+  const totalVencidas = vencidas.reduce((a,c)=>a+c.valor,0);
+  const total7dias = proximas7.reduce((a,c)=>a+c.valor,0);
+  const totalAberto = abertas.reduce((a,c)=>a+c.valor,0);
+  const totalPagas = mesAtual.reduce((a,c)=>a+(c.valorPago||c.valor),0);
+  const totalGeral = totalAberto + totalPagas;
+
+  document.getElementById('cp-kpi-vencidas').textContent = fmt(totalVencidas);
+  document.getElementById('cp-kpi-vencidas-n').textContent = vencidas.length + ' conta' + (vencidas.length!==1?'s':'') + ' em atraso';
+  document.getElementById('cp-bar-vencidas').style.width = totalGeral ? Math.min(100,totalVencidas/totalGeral*100)+'%' : '0%';
+
+  document.getElementById('cp-kpi-7dias').textContent = fmt(total7dias);
+  document.getElementById('cp-kpi-7dias-n').textContent = proximas7.length + ' conta' + (proximas7.length!==1?'s':'') + ' próximas';
+  document.getElementById('cp-bar-7dias').style.width = totalGeral ? Math.min(100,total7dias/totalGeral*100)+'%' : '0%';
+
+  document.getElementById('cp-kpi-aberto').textContent = fmt(totalAberto);
+  document.getElementById('cp-kpi-aberto-n').textContent = abertas.length + ' conta' + (abertas.length!==1?'s':'') + ' pendentes';
+  document.getElementById('cp-bar-aberto').style.width = totalGeral ? Math.min(100,totalAberto/totalGeral*100)+'%' : '0%';
+
+  document.getElementById('cp-kpi-pagas').textContent = fmt(totalPagas);
+  document.getElementById('cp-kpi-pagas-n').textContent = mesAtual.length + ' quitada' + (mesAtual.length!==1?'s':'') + ' este mês';
+  document.getElementById('cp-bar-pagas').style.width = totalGeral ? Math.min(100,totalPagas/totalGeral*100)+'%' : '0%';
+
+  // Alerta vencidas
+  const alertEl = document.getElementById('cp-alert-vencidas');
+  if (alertEl) {
+    alertEl.style.display = vencidas.length > 0 ? 'flex' : 'none';
+    alertEl.innerHTML = `🚨 <span><strong>${vencidas.length} conta${vencidas.length!==1?'s':''} vencida${vencidas.length!==1?'s':''}</strong> totalizando <strong>${fmt(totalVencidas)}</strong>. Verifique o filtro "Vencidas" para regularizar.</span>`;
+    alertEl.style.cssText = 'display:flex;background:#fdecea;border-left:4px solid #c0392b;color:#922b21;border-radius:8px;padding:12px 16px;margin-bottom:16px;align-items:flex-start;gap:10px;font-size:13px';
+  }
+
+  // Filtros
+  const filtStatus = document.getElementById('cp-filtro-status').value;
+  const filtCat = document.getElementById('cp-filtro-cat').value;
+  const filtDe = document.getElementById('cp-filtro-de').value;
+  const filtAte = document.getElementById('cp-filtro-ate').value;
+  const filtBusca = document.getElementById('cp-filtro-busca').value.toLowerCase();
+
+  let lista = [...contasPagar].map((c,i) => ({...c, _idx: i}));
+
+  // Sort: vencidas primeiro, depois por data de vencimento asc, pagas por último
+  lista.sort((a,b) => {
+    const pa = a.status === 'Paga' ? 2 : 0;
+    const pb = b.status === 'Paga' ? 2 : 0;
+    if (pa !== pb) return pa - pb;
+    return new Date(a.vencimento) - new Date(b.vencimento);
+  });
+
+  if (filtStatus) lista = lista.filter(c => {
+    if (filtStatus === 'Paga') return c.status === 'Paga';
+    return getStatusConta(c) === filtStatus;
+  });
+  if (filtCat) lista = lista.filter(c => c.categoria === filtCat);
+  if (filtDe) lista = lista.filter(c => c.vencimento >= filtDe);
+  if (filtAte) lista = lista.filter(c => c.vencimento <= filtAte);
+  if (filtBusca) lista = lista.filter(c => c.descricao.toLowerCase().includes(filtBusca) || (c.beneficiario||'').toLowerCase().includes(filtBusca));
+
+  const totalFiltrado = lista.reduce((a,c)=>a+c.valor,0);
+  document.getElementById('cp-table-badge').textContent = lista.length + ' conta' + (lista.length!==1?'s':'');
+  document.getElementById('cp-table-total').textContent = 'Total: ' + fmt(totalFiltrado);
+  document.getElementById('cp-table-title').textContent = filtStatus ? `Contas — ${filtStatus}` : 'Todas as Contas';
+
+  const tbody = document.getElementById('tbody-contas');
+  if (lista.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">
+      Nenhuma conta encontrada com os filtros aplicados.<br>
+      <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="limparFiltrosContas()">Limpar filtros</button>
+    </td></tr>`;
+  } else {
+    tbody.innerHTML = lista.map(c => {
+      const idx = c._idx;
+      const status = getStatusConta(c);
+      const diasInfo = getDiasInfo(c);
+      const isPaga = status === 'Paga';
+      const isVencida = status === 'Vencida';
+      const rowStyle = isVencida ? 'background:#fff8f8' : (status==='Vence Hoje' ? 'background:#fffde7' : '');
+      const vencFormatado = new Date(c.vencimento+'T12:00:00').toLocaleDateString('pt-BR');
+
+      return `<tr style="${rowStyle}">
+        <td>
+          <strong>${c.descricao}</strong>
+          ${c.beneficiario ? `<br><span style="font-size:11px;color:var(--text-muted)">${c.beneficiario}</span>` : ''}
+          ${c.centro ? `<span class="tag-cat" style="margin-left:4px;font-size:10px">${c.centro}</span>` : ''}
+        </td>
+        <td><span class="tag-cat">${c.categoria}</span></td>
+        <td class="num"><strong style="${isVencida?'color:#c0392b':''}">${fmtN(c.valor)}</strong>
+          ${isPaga && c.valorPago && c.valorPago !== c.valor ? `<br><span style="font-size:10px;color:#27ae60">Pago: ${fmtN(c.valorPago)}</span>` : ''}
+        </td>
+        <td>
+          <strong>${vencFormatado}</strong>
+          ${diasInfo ? `<br><span style="font-size:11px;font-weight:600;color:${isVencida?'#c0392b':status==='Vence Hoje'?'#856404':'#888'}">${diasInfo}</span>` : ''}
+          ${isPaga && c.dataPagamento ? `<br><span style="font-size:10px;color:#27ae60">✅ Pago em ${new Date(c.dataPagamento+'T12:00:00').toLocaleDateString('pt-BR')}</span>` : ''}
+        </td>
+        <td>${statusBadge(status)}</td>
+        <td><span class="badge badge-gray" style="font-size:10px">${c.recorrencia||'Única'}</span></td>
+        <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--text-muted)" title="${c.obs||''}">${c.obs||'—'}</td>
+        <td>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            ${!isPaga ? `<button class="btn btn-green btn-sm" onclick="abrirPagamento(${idx})" title="Registrar pagamento">✅ Pagar</button>` : ''}
+            ${isPaga ? `<button class="btn btn-sm" style="background:#e8f4fd;color:#1a6fa3;border:none;cursor:pointer" onclick="reabrirConta(${idx})" title="Desfazer pagamento">↩</button>` : ''}
+            <button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delConta(${idx})" title="Excluir">✕</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Gráfico por categoria (abertas)
+  const catAberta = {};
+  abertas.forEach(c => { catAberta[c.categoria] = (catAberta[c.categoria]||0) + c.valor; });
+  const catKeys = Object.keys(catAberta).filter(k => catAberta[k] > 0);
+  if (catKeys.length > 0) {
+    createChart('chart-contas-cat', {
+      type: 'doughnut',
+      data: { labels: catKeys, datasets: [{ data: catKeys.map(k=>catAberta[k]), backgroundColor: COLORS }] },
+      options: { responsive: true, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.raw)}` } } } }
+    });
+  } else {
+    createChart('chart-contas-cat', { type: 'doughnut', data: { labels: ['Sem contas'], datasets: [{ data: [1], backgroundColor: ['#e0e0e0'] }] }, options: { responsive: true, plugins: { legend: { display: false } } } });
+  }
+
+  // Gráfico timeline — próximos 30 dias agrupados por semana
+  const semanas = ['Semana 1','Semana 2','Semana 3','Semana 4','Após 30 dias'];
+  const semTotais = [0,0,0,0,0];
+  abertas.forEach(c => {
+    const venc = new Date(c.vencimento+'T00:00:00');
+    const diff = Math.round((venc - hoje) / 86400000);
+    if (diff < 0) return; // vencidas não entram aqui
+    if (diff < 7) semTotais[0] += c.valor;
+    else if (diff < 14) semTotais[1] += c.valor;
+    else if (diff < 21) semTotais[2] += c.valor;
+    else if (diff < 30) semTotais[3] += c.valor;
+    else semTotais[4] += c.valor;
+  });
+  createChart('chart-contas-timeline', {
+    type: 'bar',
+    data: {
+      labels: semanas,
+      datasets: [{
+        label: 'A pagar (R$)',
+        data: semTotais,
+        backgroundColor: ['#c0392b','#e67e22','#f39c12','#2980b9','#95a5a6'],
+        borderRadius: 6
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: v => 'R$'+(v/1000).toFixed(0)+'k' } } } }
+  });
+}
+
+// ============================================================
+// DESPESAS TABLE
+// ============================================================
+let despesasChartGrupo = null;
+function renderDespesasTable() {
+  anoAtivoDespesas = parseInt(document.getElementById('filtro-ano-despesa').value);
+  const grupFiltro = document.getElementById('filtro-grupo-despesa').value;
+  const busca = document.getElementById('filtro-busca-despesa').value.toLowerCase();
+  const data = anoAtivoDespesas === 2025 ? despesas2025 : despesas2026;
+  document.getElementById('titulo-tabela-despesas').textContent = `Despesas ${anoAtivoDespesas} — Detalhamento Mensal`;
+  document.getElementById('chart-grupo-title').textContent = anoAtivoDespesas;
+
+  const nMeses = anoAtivoDespesas === 2025 ? 12 : 12;
+  const mesesVisiveis = anoAtivoDespesas === 2025 ? 12 : 12;
+
+  // Header
+  const thead = document.getElementById('thead-despesas');
+  thead.innerHTML = `<tr><th>#</th><th>Categoria</th><th>Grupo</th>${MESES.map(m=>`<th class="num">${m}</th>`).join('')}<th class="num">TOTAL</th></tr>`;
+
+  let filtered = data.filter(c => {
+    const g = getGrupo(c.nome);
+    if (grupFiltro && g !== grupFiltro) return false;
+    if (busca && !c.nome.toLowerCase().includes(busca)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('tbody-despesas');
+  tbody.innerHTML = filtered.map((c,i) => {
+    const tot = sumRow(c.v);
+    return `<tr>
+      <td>${i+1}</td>
+      <td><strong>${c.nome}</strong></td>
+      <td><span class="tag-cat">${getGrupo(c.nome)}</span></td>
+      ${c.v.map(v => `<td class="num">${v ? fmtN(v) : '<span style="color:#ccc">—</span>'}</td>`).join('')}
+      <td class="num"><strong>${fmtN(tot)}</strong></td>
+    </tr>`;
+  }).join('');
+
+  // Footer totals
+  const totais = MESES.map((_,i) => filtered.reduce((a,c) => a + (c.v[i]||0), 0));
+  const totalGeral = totais.reduce((a,v)=>a+v,0);
+  const tfoot = document.getElementById('tfoot-despesas');
+  tfoot.innerHTML = `<tr><td colspan="3">TOTAL GERAL</td>${totais.map(t=>`<td class="num">${fmtN(t)}</td>`).join('')}<td class="num">${fmtN(totalGeral)}</td></tr>`;
+
+  document.getElementById('despesas-total-badge').textContent = 'Total: ' + fmt(totalGeral);
+
+  // KPIs
+  const kpisRow = document.getElementById('kpis-despesa-row');
+  const maisMes = MESES[totais.indexOf(Math.max(...totais))];
+  const menosMes = MESES[totais.filter(v=>v>0).map(v=>v).indexOf(Math.min(...totais.filter(v=>v>0)))];
+  kpisRow.innerHTML = `
+    <div class="card card-kpi red"><div class="kpi-label">Total ${anoAtivoDespesas}</div><div class="kpi-value">${fmt(totalGeral)}</div><div class="kpi-sub">${filtered.length} categorias</div></div>
+    <div class="card card-kpi gold"><div class="kpi-label">Média Mensal</div><div class="kpi-value">${fmt(totalGeral/MESES.filter((_,i)=>totais[i]>0).length)}</div><div class="kpi-sub">Meses com lançamento</div></div>
+    <div class="card card-kpi red"><div class="kpi-label">Mês de Maior Gasto</div><div class="kpi-value">${maisMes}</div><div class="kpi-sub">${fmt(Math.max(...totais))}</div></div>
+    <div class="card card-kpi green"><div class="kpi-label">Mês de Menor Gasto</div><div class="kpi-value">${menosMes}</div><div class="kpi-sub">${fmt(Math.min(...totais.filter(v=>v>0)))}</div></div>
+  `;
+
+  // Chart por grupo
+  const grupos = {};
+  MESES.forEach((_, mi) => {
+    filtered.forEach(c => {
+      const g = getGrupo(c.nome);
+      if (!grupos[g]) grupos[g] = new Array(12).fill(0);
+      grupos[g][mi] += c.v[mi] || 0;
+    });
+  });
+  const datasetsCols = Object.keys(grupos).map((g,i) => ({ label: g, data: grupos[g], backgroundColor: COLORS[i % COLORS.length], stack: 'a' }));
+  createChart('chart-despesas-grupo', {
+    type: 'bar',
+    data: { labels: MESES, datasets: datasetsCols },
+    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => 'R$' + (v/1000).toFixed(0) + 'k' } } } }
+  });
+
+  // Populate dropdown de categorias no modal
+  const depCat = document.getElementById('dep-cat');
+  depCat.innerHTML = data.map(c => `<option>${c.nome}</option>`).join('');
+}
+
+function saveDespesa() {
+  const ano = parseInt(document.getElementById('dep-ano').value);
+  const mes = parseInt(document.getElementById('dep-mes').value);
+  const cat = document.getElementById('dep-cat').value;
+  const valor = parseFloat(document.getElementById('dep-valor').value);
+  if (!valor || isNaN(valor)) { alert('Informe um valor.'); return; }
+  const data = ano === 2025 ? despesas2025 : despesas2026;
+  const found = data.find(c => c.nome === cat);
+  if (found) { found.v[mes] = (found.v[mes] || 0) + valor; }
+  save();
+  closeModal('modal-despesa');
+  renderDespesasTable();
+}
+
+// ============================================================
+// RECEITAS
+// ============================================================
+function renderReceitas() {
+  const ano = parseInt(document.getElementById('filtro-ano-receita')?.value || 2025);
+  const catFiltro = document.getElementById('filtro-cat-receita')?.value || '';
+  document.getElementById('receita-chart-ano').textContent = ano;
+  document.getElementById('receita-pizza-ano').textContent = ano;
+  document.getElementById('receitas-table-title').textContent = `Lançamentos de Receitas — ${ano}`;
+
+  // Para 2025 usamos os dados fixos da planilha
+  const fonte = ano === 2025 ? receitas2025 : receitas.filter(r => new Date(r.data).getFullYear() === ano);
+  const filtradas = catFiltro ? fonte.filter(r => r.categoria === catFiltro) : fonte;
+
+  const cats = ['Eucalipto / Madeira', 'Arrendamento / Aluguel', 'Venda de Gado', 'Outras Receitas'];
+  const catColors = ['#2d6a4f','#b5832a','#1a6fa3','#8e44ad'];
+
+  const totPorCat = {};
+  cats.forEach(c => totPorCat[c] = fonte.filter(r=>r.categoria===c).reduce((a,r)=>a+r.valor,0));
+  const totalGeral = Object.values(totPorCat).reduce((a,v)=>a+v,0);
+
+  document.getElementById('kpi-r-madeira').textContent = fmt(totPorCat['Eucalipto / Madeira']);
+  document.getElementById('kpi-r-madeira-pct').textContent = totalGeral ? (totPorCat['Eucalipto / Madeira']/totalGeral*100).toFixed(1)+'% do total' : '—';
+  document.getElementById('kpi-r-aluguel').textContent = fmt(totPorCat['Arrendamento / Aluguel']);
+  document.getElementById('kpi-r-aluguel-pct').textContent = totalGeral ? (totPorCat['Arrendamento / Aluguel']/totalGeral*100).toFixed(1)+'% do total' : '—';
+  document.getElementById('kpi-r-gado').textContent = fmt(totPorCat['Venda de Gado']);
+  document.getElementById('kpi-r-gado-pct').textContent = totalGeral ? (totPorCat['Venda de Gado']/totalGeral*100).toFixed(1)+'% do total' : '—';
+  document.getElementById('kpi-r-total').textContent = fmt(totalGeral);
+  document.getElementById('kpi-r-total-sub').textContent = `Média: ${fmt(totalGeral/12)}/mês`;
+
+  // Badge
+  const badge = document.getElementById('receitas-total-badge');
+  if (badge) badge.textContent = 'Total: ' + fmt(filtradas.reduce((a,r)=>a+r.valor,0));
+
+  // Gráfico mensal empilhado
+  const datasets = cats.map((cat,ci) => ({
+    label: cat,
+    data: MESES.map((_,mi) => fonte.filter(r=>r.categoria===cat && new Date(r.data).getMonth()===mi).reduce((a,r)=>a+r.valor,0)),
+    backgroundColor: catColors[ci], stack: 'a'
+  }));
+  createChart('chart-receitas-mensal', {
+    type: 'bar',
+    data: { labels: MESES, datasets },
+    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => 'R$'+(v/1000).toFixed(0)+'k' } } } }
+  });
+
+  // Pizza
+  createChart('chart-receitas-pizza', {
+    type: 'doughnut',
+    data: { labels: cats, datasets: [{ data: cats.map(c=>totPorCat[c]), backgroundColor: catColors }] },
+    options: { responsive: true, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.raw)} (${totalGeral?(ctx.raw/totalGeral*100).toFixed(1):'0'}%)` } } } }
+  });
+
+  // Table
+  const tbody = document.getElementById('tbody-receitas');
+  if (filtradas.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted)">${ano===2026?'Nenhuma receita lançada para 2026. Clique em "+ Nova Receita".':'Sem dados.'}</td></tr>`;
+  } else {
+    const sorted = [...filtradas].sort((a,b) => new Date(b.data) - new Date(a.data));
+    tbody.innerHTML = sorted.map((r) => {
+      const isFixo = ano === 2025;
+      const idx = receitas.indexOf(r);
+      return `<tr>
+        <td>${new Date(r.data+'T12:00:00').toLocaleDateString('pt-BR')}</td>
+        <td><span class="tag-cat">${r.categoria}</span></td>
+        <td>${r.descricao}</td>
+        <td class="num"><strong>${fmtN(r.valor)}</strong></td>
+        <td><span class="badge badge-green">Recebido</span></td>
+        <td>${isFixo ? '<span style="color:#aaa;font-size:11px">Importado</span>' : `<button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delReceita(${idx})">✕</button>`}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function saveReceita() {
+  const data = document.getElementById('rec-data').value;
+  const cat = document.getElementById('rec-cat').value;
+  const desc = document.getElementById('rec-desc').value;
+  const valor = parseFloat(document.getElementById('rec-valor').value);
+  const status = document.getElementById('rec-status').value;
+  if (!data || !valor || isNaN(valor)) { alert('Preencha data e valor.'); return; }
+  receitas.push({data, categoria: cat, descricao: desc, valor, status});
+  save();
+  closeModal('modal-receita');
+  document.getElementById('rec-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('rec-valor').value = '';
+  document.getElementById('rec-desc').value = '';
+  // Switch to 2026 view after saving (all new entries are 2026)
+  const filtroAno = document.getElementById('filtro-ano-receita');
+  if (filtroAno) filtroAno.value = new Date(data).getFullYear();
+  renderReceitas();
+  updateDashboardKPIs();
+}
+
+function delReceita(idx) {
+  if (!confirm('Excluir este lançamento?')) return;
+  receitas.splice(idx, 1);
+  save();
+  renderReceitas();
+}
+
+function updateDashboardKPIs() {
+  const totalRec = receitas.filter(r=>r.status==='Recebido').reduce((a,r)=>a+r.valor,0);
+  const el = document.getElementById('kpi-receita-total');
+  if (el) { el.textContent = fmt(totalRec); }
+}
+
+// ============================================================
+// GADO
+// ============================================================
+function renderGado() {
+  ['vacas','garrotes','bezerros','touros'].forEach(c => {
+    document.getElementById('gado-'+c+'-num').textContent = gadoEstoque[c];
+  });
+  const total = Object.values(gadoEstoque).reduce((a,v)=>a+v,0);
+  document.getElementById('gado-total-rebanho').textContent = total + ' cab.';
+
+  const vendas = gadoMov.filter(m=>m.tipo==='Venda');
+  const totalCabVendidas = vendas.reduce((a,m)=>a+m.qtd,0);
+  const totalValVendas = vendas.reduce((a,m)=>a+(m.valorUnit*m.qtd),0);
+  document.getElementById('gado-total-vendido').textContent = totalCabVendidas + ' cab.';
+  document.getElementById('gado-total-vendido-val').textContent = fmt(totalValVendas) + ' em receitas';
+  document.getElementById('gado-preco-medio').textContent = totalCabVendidas > 0 ? fmt(totalValVendas/totalCabVendidas) : '—';
+
+  // Pizza
+  const cats = ['vacas','garrotes','bezerros','touros'];
+  const labels = ['Vacas','Garrotes','Bezerros','Touros'];
+  createChart('chart-gado-pizza', {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: cats.map(c=>gadoEstoque[c]), backgroundColor: ['#2d6a4f','#b5832a','#1a6fa3','#8e44ad'] }] },
+    options: { responsive: true, plugins: { legend: { position: 'right' } } }
+  });
+
+  // Evolução (movimentações)
+  const mesesLabel = MESES.slice(0,6);
+  const entradas = mesesLabel.map((_,mi) => gadoMov.filter(m=>['Compra','Nascimento'].includes(m.tipo) && new Date(m.data).getMonth()===mi).reduce((a,m)=>a+m.qtd,0));
+  const saidas = mesesLabel.map((_,mi) => gadoMov.filter(m=>['Venda','Morte'].includes(m.tipo) && new Date(m.data).getMonth()===mi).reduce((a,m)=>a+m.qtd,0));
+  createChart('chart-gado-evolucao', {
+    type: 'bar',
+    data: { labels: mesesLabel, datasets: [
+      { label: 'Entradas', data: entradas, backgroundColor: 'rgba(45,106,79,.7)' },
+      { label: 'Saídas', data: saidas, backgroundColor: 'rgba(192,57,43,.7)' },
+    ]},
+    options: { responsive: true, plugins: { legend: { position: 'top' } } }
+  });
+
+  // Tabela movimentações
+  const tbody = document.getElementById('tbody-gado-mov');
+  if (gadoMov.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted)">Nenhuma movimentação registrada.</td></tr>';
+  } else {
+    tbody.innerHTML = gadoMov.slice().reverse().map((m,i) => {
+      const idx = gadoMov.length - 1 - i;
+      const isEntry = ['Compra','Nascimento'].includes(m.tipo);
+      return `<tr>
+        <td>${new Date(m.data).toLocaleDateString('pt-BR')}</td>
+        <td><span class="badge ${isEntry?'badge-green':'badge-red'}">${m.tipo}</span></td>
+        <td>${m.categoria.charAt(0).toUpperCase()+m.categoria.slice(1)}</td>
+        <td class="num">${m.qtd}</td>
+        <td class="num">${m.valorUnit ? fmtN(m.valorUnit) : '—'}</td>
+        <td class="num">${m.valorUnit ? fmtN(m.valorUnit*m.qtd) : '—'}</td>
+        <td>${m.obs||'—'}</td>
+        <td><button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delGadoMov(${idx})">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function editGado(cat) {
+  const atual = gadoEstoque[cat];
+  const novo = prompt(`Quantidade atual de ${cat}: ${atual}\n\nInforme a nova quantidade:`, atual);
+  if (novo !== null && !isNaN(parseInt(novo))) {
+    gadoEstoque[cat] = parseInt(novo);
+    save();
+    renderGado();
+  }
+}
+
+function saveGadoMov() {
+  const data = document.getElementById('gado-data').value;
+  const tipo = document.getElementById('gado-tipo').value;
+  const cat = document.getElementById('gado-categoria').value;
+  const qtd = parseInt(document.getElementById('gado-qtd').value);
+  const valorUnit = parseFloat(document.getElementById('gado-valor-unit').value) || 0;
+  const obs = document.getElementById('gado-obs').value;
+  if (!data || !qtd) { alert('Preencha data e quantidade.'); return; }
+
+  // Update estoque
+  if (['Compra','Nascimento'].includes(tipo)) gadoEstoque[cat] += qtd;
+  else if (['Venda','Morte'].includes(tipo)) gadoEstoque[cat] = Math.max(0, gadoEstoque[cat] - qtd);
+
+  gadoMov.push({data, tipo, categoria: cat, qtd, valorUnit, obs, contraparte: document.getElementById('gado-contraparte').value});
+
+  // Auto-create receita from gado sale
+  if (tipo === 'Venda' && valorUnit > 0) {
+    receitas.push({data, categoria:'Venda de Gado', descricao:`Venda de ${qtd} ${cat}`, valor: valorUnit*qtd, status:'Recebido'});
+  }
+
+  save();
+  closeModal('modal-gado-mov');
+  document.getElementById('gado-qtd').value = '';
+  document.getElementById('gado-valor-unit').value = '';
+  document.getElementById('gado-obs').value = '';
+  renderGado();
+}
+
+function delGadoMov(idx) {
+  if (!confirm('Excluir esta movimentação?')) return;
+  gadoMov.splice(idx,1);
+  save();
+  renderGado();
+}
+
+// ============================================================
+// EUCALIPTO
+// ============================================================
+function renderEucalipto() {
+  const areaTotal = eucaAreas.reduce((a,e)=>a+e.ha,0);
+  const areaDisp = eucaAreas.filter(e=>e.status==='Disponível').reduce((a,e)=>a+e.ha,0);
+  const totalVendido = eucaVendas.reduce((a,v)=>a+v.total,0);
+  const totalM3 = eucaVendas.reduce((a,v)=>a+v.volume,0);
+
+  document.getElementById('euca-area-total').textContent = areaTotal.toFixed(1) + ' ha';
+  document.getElementById('euca-area-disponivel').textContent = areaDisp.toFixed(1) + ' ha';
+  document.getElementById('euca-total-vendido').textContent = fmt(totalVendido);
+  document.getElementById('euca-total-m3').textContent = totalM3.toFixed(0) + ' m³ comercializados';
+
+  // Charts
+  const mesesLabel = MESES.slice(0,6);
+  const vendasMes = mesesLabel.map((_,mi) => eucaVendas.filter(v=>new Date(v.data).getMonth()===mi).reduce((a,v)=>a+v.total,0));
+  createChart('chart-euca-mensal', {
+    type: 'bar',
+    data: { labels: mesesLabel, datasets: [{ label: 'Receita Eucalipto', data: vendasMes, backgroundColor: 'rgba(45,106,79,.7)' }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: v=>'R$'+(v/1000).toFixed(0)+'k' } } } }
+  });
+
+  const statusCounts = { 'Em Crescimento': 0, 'Disponível': 0, 'Cortado': 0 };
+  eucaAreas.forEach(a => statusCounts[a.status] = (statusCounts[a.status]||0) + a.ha);
+  createChart('chart-euca-areas', {
+    type: 'doughnut',
+    data: { labels: Object.keys(statusCounts), datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#1a6fa3','#2d6a4f','#b5832a'] }] },
+    options: { responsive: true, plugins: { legend: { position: 'right' } } }
+  });
+
+  // Tables
+  const tbodyAreas = document.getElementById('tbody-euca-areas');
+  if (eucaAreas.length === 0) {
+    tbodyAreas.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted)">Nenhuma área cadastrada.</td></tr>';
+  } else {
+    tbodyAreas.innerHTML = eucaAreas.map((a,i) => `<tr>
+      <td><strong>${a.nome}</strong></td>
+      <td class="num">${a.ha.toFixed(1)}</td>
+      <td>${a.anoPlantio||'—'}</td>
+      <td>${a.variedade||'—'}</td>
+      <td><span class="badge ${a.status==='Disponível'?'badge-green':a.status==='Cortado'?'badge-gray':'badge-blue'}">${a.status}</span></td>
+      <td>${a.previsaoCorte ? new Date(a.previsaoCorte).toLocaleDateString('pt-BR') : '—'}</td>
+      <td><button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delEucaArea(${i})">✕</button></td>
+    </tr>`).join('');
+  }
+
+  // Update venda area select
+  const sel = document.getElementById('euca-venda-area');
+  sel.innerHTML = '<option value="">— Selecione —</option>' + eucaAreas.map(a=>`<option>${a.nome}</option>`).join('');
+
+  const tbodyVendas = document.getElementById('tbody-euca-vendas');
+  if (eucaVendas.length === 0) {
+    tbodyVendas.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted)">Nenhuma venda registrada.</td></tr>';
+  } else {
+    tbodyVendas.innerHTML = eucaVendas.slice().reverse().map((v,i) => {
+      const idx = eucaVendas.length - 1 - i;
+      return `<tr>
+        <td>${new Date(v.data).toLocaleDateString('pt-BR')}</td>
+        <td>${v.area||'—'}</td>
+        <td class="num">${v.volume.toFixed(1)}</td>
+        <td class="num">${fmtN(v.precoM3)}</td>
+        <td class="num"><strong>${fmtN(v.total)}</strong></td>
+        <td>${v.comprador||'—'}</td>
+        <td><span class="badge ${v.status==='Recebido'?'badge-green':'badge-yellow'}">${v.status}</span></td>
+        <td><button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delEucaVenda(${idx})">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function calcEucaTotal() {
+  const vol = parseFloat(document.getElementById('euca-volume').value)||0;
+  const preco = parseFloat(document.getElementById('euca-preco-m3').value)||0;
+  document.getElementById('euca-total').value = (vol*preco).toFixed(2);
+}
+
+function saveEucaArea() {
+  const nome = document.getElementById('euca-area-nome').value;
+  const ha = parseFloat(document.getElementById('euca-area-ha').value)||0;
+  if (!nome || !ha) { alert('Preencha nome e área.'); return; }
+  eucaAreas.push({
+    nome, ha, anoPlantio: document.getElementById('euca-area-plantio').value,
+    variedade: document.getElementById('euca-area-variedade').value,
+    status: document.getElementById('euca-area-status').value,
+    previsaoCorte: document.getElementById('euca-area-previsao').value
+  });
+  save(); closeModal('modal-euca-area'); renderEucalipto();
+}
+
+function saveEucaVenda() {
+  const data = document.getElementById('euca-data').value;
+  const volume = parseFloat(document.getElementById('euca-volume').value)||0;
+  const precoM3 = parseFloat(document.getElementById('euca-preco-m3').value)||0;
+  const total = parseFloat(document.getElementById('euca-total').value)||(volume*precoM3);
+  if (!data || !volume) { alert('Preencha data e volume.'); return; }
+  eucaVendas.push({
+    data, area: document.getElementById('euca-venda-area').value,
+    volume, precoM3, total,
+    comprador: document.getElementById('euca-comprador').value,
+    status: document.getElementById('euca-status-venda').value
+  });
+  receitas.push({data, categoria:'Eucalipto / Carvão', descricao:`Venda eucalipto ${volume}m³`, valor: total, status: document.getElementById('euca-status-venda').value});
+  save(); closeModal('modal-euca-venda'); renderEucalipto();
+}
+
+function delEucaArea(i) { if (!confirm('Excluir área?')) return; eucaAreas.splice(i,1); save(); renderEucalipto(); }
+function delEucaVenda(i) { if (!confirm('Excluir venda?')) return; eucaVendas.splice(i,1); save(); renderEucalipto(); }
+
+// ============================================================
+// INVENTÁRIO
+// ============================================================
+function renderInventario() {
+  const catFiltro = document.getElementById('filtro-inv-cat').value;
+  const statusFiltro = document.getElementById('filtro-inv-status').value;
+
+  const filtered = inventario.filter(item => {
+    if (catFiltro && item.categoria !== catFiltro) return false;
+    if (statusFiltro && item.status !== statusFiltro) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('tbody-inventario');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted)">Nenhum item encontrado.</td></tr>';
+  } else {
+    tbody.innerHTML = filtered.map((item, i) => {
+      const realIdx = inventario.indexOf(item);
+      return `<tr>
+        <td><span class="tag-cat">${item.categoria}</span></td>
+        <td><strong>${item.nome}</strong></td>
+        <td>${item.descricao||'—'}</td>
+        <td class="num">${item.valor ? fmtN(item.valor) : '—'}</td>
+        <td>${item.estado||'—'}</td>
+        <td><span class="badge ${item.status==='Ativo'?'badge-green':item.status==='Manutenção'?'badge-yellow':'badge-gray'}">${item.status}</span></td>
+        <td>${item.obs||'—'}</td>
+        <td><button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delInventario(${realIdx})">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // KPIs
+  const totalValor = inventario.reduce((a,i)=>a+(i.valor||0),0);
+  const cats = [...new Set(inventario.map(i=>i.categoria))];
+  const inativos = inventario.filter(i=>i.status==='Inativo').length;
+  const manut = inventario.filter(i=>i.status==='Manutenção').length;
+  document.getElementById('kpis-inventario').innerHTML = `
+    <div class="card card-kpi green"><div class="kpi-label">Total de Itens</div><div class="kpi-value">${inventario.length}</div><div class="kpi-sub">${cats.length} categorias</div></div>
+    <div class="card card-kpi gold"><div class="kpi-label">Valor Patrimonial</div><div class="kpi-value">${fmt(totalValor)}</div><div class="kpi-sub">Valor estimado total</div></div>
+    <div class="card card-kpi gold"><div class="kpi-label">Em Manutenção</div><div class="kpi-value">${manut}</div><div class="kpi-sub">Itens em reparo</div></div>
+    <div class="card card-kpi red"><div class="kpi-label">Inativos</div><div class="kpi-value">${inativos}</div><div class="kpi-sub">Fora de operação</div></div>
+  `;
+}
+
+function saveInventario() {
+  const nome = document.getElementById('inv-nome').value;
+  if (!nome) { alert('Informe o nome do item.'); return; }
+  inventario.push({
+    categoria: document.getElementById('inv-cat').value,
+    nome, descricao: document.getElementById('inv-desc').value,
+    valor: parseFloat(document.getElementById('inv-valor').value)||0,
+    estado: document.getElementById('inv-estado').value,
+    status: document.getElementById('inv-status').value,
+    obs: document.getElementById('inv-obs').value
+  });
+  save(); closeModal('modal-inventario');
+  document.getElementById('inv-nome').value = ''; document.getElementById('inv-desc').value = '';
+  document.getElementById('inv-valor').value = ''; document.getElementById('inv-obs').value = '';
+  renderInventario();
+}
+
+function delInventario(i) { if (!confirm('Excluir item?')) return; inventario.splice(i,1); save(); renderInventario(); }
+
+// ============================================================
+// INIT
+// ============================================================
+function initDateTime() {
+  const el = document.getElementById('current-datetime');
+  function update() { el.textContent = new Date().toLocaleString('pt-BR', {weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+  update(); setInterval(update, 30000);
+}
+
+function atualizarBadgeContas() {
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const vencidas = contasPagar.filter(c => c.status !== 'Paga' && new Date(c.vencimento+'T00:00:00') < hoje).length;
+  const badge = document.getElementById('badge-contas-venc');
+  if (badge) {
+    badge.style.display = vencidas > 0 ? 'inline' : 'none';
+    badge.textContent = vencidas;
+  }
+}
+
+// ============================================================
+// SUPABASE AUTH & SYNC
+// ============================================================
+const SUPABASE_URL = 'https://gwmtnukexjhtbgxqyjru.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_EMkJ_fQYcG0OUG66tT6ftA_npf5_c2u';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+
+function showAuthMsg(msg, type = 'error') {
+  const el = document.getElementById('auth-msg');
+  el.textContent = msg;
+  el.className = 'auth-msg ' + type;
+}
+
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab-btn').forEach((t, i) => {
+    t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+  });
+  document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('auth-msg').className = 'auth-msg';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  if (!email || !senha) { showAuthMsg('Preencha e-mail e senha.'); return; }
+  const btn = document.getElementById('btn-login');
+  btn.textContent = 'Entrando...'; btn.disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+  btn.textContent = 'Entrar'; btn.disabled = false;
+  if (error) {
+    showAuthMsg(error.message.includes('Invalid login') ? 'E-mail ou senha incorretos.' : error.message);
+    return;
+  }
+  await onLogin(data.user);
+}
+
+async function doRegister() {
+  const email = document.getElementById('reg-email').value.trim();
+  const senha = document.getElementById('reg-senha').value;
+  const senha2 = document.getElementById('reg-senha2').value;
+  if (!email || !senha) { showAuthMsg('Preencha todos os campos.'); return; }
+  if (senha !== senha2) { showAuthMsg('As senhas não coincidem.'); return; }
+  if (senha.length < 6) { showAuthMsg('A senha deve ter pelo menos 6 caracteres.'); return; }
+  const btn = document.getElementById('btn-register');
+  btn.textContent = 'Criando conta...'; btn.disabled = true;
+  const { data, error } = await sb.auth.signUp({ email, password: senha });
+  btn.textContent = 'Criar Conta'; btn.disabled = false;
+  if (error) { showAuthMsg(error.message); return; }
+  if (data.user && data.user.identities && data.user.identities.length === 0) {
+    showAuthMsg('Este e-mail já está cadastrado. Faça login.'); return;
+  }
+  showAuthMsg('✅ Conta criada! Verifique seu e-mail para confirmar o cadastro antes de entrar.', 'success');
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('login-senha').value = '';
+  document.getElementById('auth-msg').className = 'auth-msg';
+  switchAuthTab('login');
+}
+
+async function onLogin(user) {
+  currentUser = user;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('user-email-display').textContent = user.email;
+  setSyncStatus('⟳ Carregando dados...');
+  await loadFromSupabase();
+  setSyncStatus('✓ Sincronizado');
+  initApp();
+}
+
+function setSyncStatus(msg) {
+  const el = document.getElementById('sync-status');
+  if (el) el.textContent = msg;
+}
+
+async function loadFromSupabase() {
+  try {
+    const { data, error } = await sb.from('fazenda_data').select('data_key, data_value');
+    if (error || !data || data.length === 0) return;
+    data.forEach(row => {
+      if (row.data_value !== null && row.data_value !== undefined) {
+        localStorage.setItem('fazenda_' + row.data_key, JSON.stringify(row.data_value));
+      }
+    });
+    receitas     = JSON.parse(localStorage.getItem('fazenda_receitas')      || '[]');
+    gadoMov      = JSON.parse(localStorage.getItem('fazenda_gado_mov')      || '[]');
+    gadoEstoque  = JSON.parse(localStorage.getItem('fazenda_gado_estoque')  || '{"vacas":0,"garrotes":0,"bezerros":0,"touros":0}');
+    eucaAreas    = JSON.parse(localStorage.getItem('fazenda_euca_areas')    || '[]');
+    eucaVendas   = JSON.parse(localStorage.getItem('fazenda_euca_vendas')   || '[]');
+    inventario   = JSON.parse(localStorage.getItem('fazenda_inventario')    || '[]');
+    contasPagar  = JSON.parse(localStorage.getItem('fazenda_contas')        || '[]');
+    const lu = localStorage.getItem('fazenda_last_update');
+    if (lu) document.getElementById('last-update').textContent = lu;
+  } catch(e) { console.warn('Erro ao carregar dados:', e); }
+}
+
+async function syncToSupabase() {
+  if (!currentUser) return;
+  setSyncStatus('⟳ Sincronizando...');
+  const dataMap = {
+    receitas, gado_mov: gadoMov, gado_estoque: gadoEstoque,
+    euca_areas: eucaAreas, euca_vendas: eucaVendas,
+    inventario, contas: contasPagar
+  };
+  try {
+    const rows = Object.entries(dataMap).map(([k, v]) => ({
+      data_key: k,
+      data_value: v,
+      updated_by: currentUser.id,
+      updated_at: new Date().toISOString()
+    }));
+    const { error } = await sb.from('fazenda_data').upsert(rows, { onConflict: 'data_key' });
+    setSyncStatus(error ? '⚠ Erro ao sincronizar' : '✓ Sincronizado');
+  } catch(e) { setSyncStatus('⚠ Sem conexão'); }
+}
+
+function initApp() {
+  initDateTime();
+  initDashboard();
+  renderDespesasTable();
+  atualizarBadgeContas();
+  const today = new Date().toISOString().split('T')[0];
+  ['rec-data','gado-data','euca-data','nc-vencimento','pagar-data'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = today;
+  });
+}
+
+window.addEventListener('load', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session && session.user) {
+    await onLogin(session.user);
+  } else {
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') {
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('auth-screen').style.display = 'flex';
+    }
+  });
+});
+</script>
+</div><!-- #app -->
+</body>
+</html>
