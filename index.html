@@ -910,14 +910,12 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
     <div class="filter-group">
       <label>Visualização</label>
       <select id="dre-modo" onchange="renderDRE()">
+        <option value="mensal-2025" selected>2025</option>
+        <option value="mensal-2026">2026</option>
         <option value="comparar">2025 vs 2026</option>
-        <option value="2025">Somente 2025</option>
-        <option value="2026">Somente 2026</option>
-        <option value="mensal-2025">&#128197; Mensal — 2025</option>
-        <option value="mensal-2026">&#128197; Mensal — 2026</option>
       </select>
     </div>
-    <div class="filter-group" id="dre-periodo-group">
+    <div class="filter-group" id="dre-periodo-group" style="display:none">
       <label>Período</label>
       <select id="dre-periodo" onchange="onDrePeriodoChange()">
         <option value="anual">Anual</option>
