@@ -2419,8 +2419,14 @@ function atualizarBadgeContas() {
 // ============================================================
 const SUPABASE_URL = 'https://gwmtnukexjhtbgxqyjru.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3bXRudWtleGpodGJneHF5anJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzQ1NzAsImV4cCI6MjA5NzA1MDU3MH0.S9lhwg03W4zO9gW4a8R5kqLOFCTXGZMwLs5s-U2Vd0E';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let sb = null;
 let currentUser = null;
+
+try {
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} catch(e) {
+  console.error('Falha ao inicializar Supabase:', e);
+}
 
 function showAuthMsg(msg, type = 'error') {
   const el = document.getElementById('auth-msg');
@@ -2438,21 +2444,34 @@ function switchAuthTab(tab) {
 }
 
 async function doLogin() {
+  if (!sb) { showAuthMsg('Erro: biblioteca de autenticação não carregou. Recarregue a página.'); return; }
   const email = document.getElementById('login-email').value.trim();
   const senha = document.getElementById('login-senha').value;
   if (!email || !senha) { showAuthMsg('Preencha e-mail e senha.'); return; }
   const btn = document.getElementById('btn-login');
   btn.textContent = 'Entrando...'; btn.disabled = true;
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
-  btn.textContent = 'Entrar'; btn.disabled = false;
-  if (error) {
-    showAuthMsg(error.message.includes('Invalid login') ? 'E-mail ou senha incorretos.' : error.message);
-    return;
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+    if (error) {
+      if (error.message.includes('Invalid login') || error.message.includes('invalid_credentials')) {
+        showAuthMsg('E-mail ou senha incorretos.');
+      } else if (error.message.includes('Email not confirmed')) {
+        showAuthMsg('E-mail não confirmado. Verifique sua caixa de entrada ou peça para o administrador confirmar seu acesso no Supabase.');
+      } else {
+        showAuthMsg('Erro: ' + error.message);
+      }
+      return;
+    }
+    await onLogin(data.user);
+  } catch(e) {
+    showAuthMsg('Erro de conexão: ' + e.message);
+  } finally {
+    btn.textContent = 'Entrar'; btn.disabled = false;
   }
-  await onLogin(data.user);
 }
 
 async function doRegister() {
+  if (!sb) { showAuthMsg('Erro: biblioteca de autenticação não carregou. Recarregue a página.'); return; }
   const email = document.getElementById('reg-email').value.trim();
   const senha = document.getElementById('reg-senha').value;
   const senha2 = document.getElementById('reg-senha2').value;
@@ -2461,13 +2480,18 @@ async function doRegister() {
   if (senha.length < 6) { showAuthMsg('A senha deve ter pelo menos 6 caracteres.'); return; }
   const btn = document.getElementById('btn-register');
   btn.textContent = 'Criando conta...'; btn.disabled = true;
-  const { data, error } = await sb.auth.signUp({ email, password: senha });
-  btn.textContent = 'Criar Conta'; btn.disabled = false;
-  if (error) { showAuthMsg(error.message); return; }
-  if (data.user && data.user.identities && data.user.identities.length === 0) {
-    showAuthMsg('Este e-mail já está cadastrado. Faça login.'); return;
+  try {
+    const { data, error } = await sb.auth.signUp({ email, password: senha });
+    if (error) { showAuthMsg('Erro: ' + error.message); return; }
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      showAuthMsg('Este e-mail já está cadastrado. Faça login.'); return;
+    }
+    showAuthMsg('✅ Conta criada! Verifique seu e-mail para confirmar o cadastro antes de entrar.', 'success');
+  } catch(e) {
+    showAuthMsg('Erro de conexão: ' + e.message);
+  } finally {
+    btn.textContent = 'Criar Conta'; btn.disabled = false;
   }
-  showAuthMsg('✅ Conta criada! Verifique seu e-mail para confirmar o cadastro antes de entrar.', 'success');
 }
 
 async function doLogout() {
@@ -2523,31 +2547,4 @@ async function syncToSupabase() {
   const dataMap = {
     receitas, gado_mov: gadoMov, gado_estoque: gadoEstoque,
     euca_areas: eucaAreas, euca_vendas: eucaVendas,
-    inventario, contas: contasPagar
-  };
-  try {
-    const rows = Object.entries(dataMap).map(([k, v]) => ({
-      data_key: k,
-      data_value: v,
-      updated_by: currentUser.id,
-      updated_at: new Date().toISOString()
-    }));
-    const { error } = await sb.from('fazenda_data').upsert(rows, { onConflict: 'data_key' });
-    setSyncStatus(error ? '⚠ Erro ao sincronizar' : '✓ Sincronizado');
-  } catch(e) { setSyncStatus('⚠ Sem conexão'); }
-}
-
-function initApp() {
-  initDateTime();
-  initDashboard();
-  renderDespesasTable();
-  atualizarBadgeContas();
-  const today = new Date().toISOString().split('T')[0];
-  ['rec-data','gado-data','euca-data','nc-vencimento','pagar-data'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = today;
-  });
-}
-
-window.addEventListener('load', async () => {
-  try {
-    const { data: { session } }
+    inventario,
