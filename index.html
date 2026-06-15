@@ -705,40 +705,76 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
 
   <!-- Resumo por categoria -->
   <div class="gado-grid">
-    <div class="gado-card" id="gado-card-vacas">
-      <div class="gado-icon">🐄</div>
-      <div class="gado-label">Vacas</div>
-      <div class="gado-num" id="gado-vacas-num">0</div>
-      <div class="gado-sub">cabeças</div>
-      <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('vacas')">✏️ Editar</button>
-      </div>
-    </div>
-    <div class="gado-card garrote" id="gado-card-garrotes">
-      <div class="gado-icon">🐂</div>
-      <div class="gado-label">Garrotes</div>
-      <div class="gado-num" id="gado-garrotes-num">0</div>
-      <div class="gado-sub">cabeças</div>
-      <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('garrotes')">✏️ Editar</button>
-      </div>
-    </div>
-    <div class="gado-card bezerro" id="gado-card-bezerros">
-      <div class="gado-icon">🐮</div>
-      <div class="gado-label">Bezerros</div>
-      <div class="gado-num" id="gado-bezerros-num">0</div>
-      <div class="gado-sub">cabeças</div>
-      <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('bezerros')">✏️ Editar</button>
-      </div>
-    </div>
-    <div class="gado-card touro" id="gado-card-touros">
+    <div class="gado-card touro" id="gado-card-touro">
       <div class="gado-icon">🦬</div>
-      <div class="gado-label">Touros</div>
-      <div class="gado-num" id="gado-touros-num">0</div>
+      <div class="gado-label">Touro</div>
+      <div class="gado-num" id="gado-touro-num">0</div>
       <div class="gado-sub">cabeças</div>
       <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('touros')">✏️ Editar</button>
+        <button class="btn btn-outline btn-sm" onclick="editGado('touro')">✏️ Editar</button>
+      </div>
+    </div>
+    <div class="gado-card" id="gado-card-vacaLeite">
+      <div class="gado-icon">🐄</div>
+      <div class="gado-label">Vaca de Leite</div>
+      <div class="gado-num" id="gado-vacaLeite-num">0</div>
+      <div class="gado-sub">cabeças</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="editGado('vacaLeite')">✏️ Editar</button>
+      </div>
+    </div>
+    <div class="gado-card bezerro" id="gado-card-bezerroMamando">
+      <div class="gado-icon">🐮</div>
+      <div class="gado-label">Bezerro Mamando</div>
+      <div class="gado-num" id="gado-bezerroMamando-num">0</div>
+      <div class="gado-sub">cabeças</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="editGado('bezerroMamando')">✏️ Editar</button>
+      </div>
+    </div>
+    <div class="gado-card bezerro" id="gado-card-bezerraMamando">
+      <div class="gado-icon">🐮</div>
+      <div class="gado-label">Bezerra Mamando</div>
+      <div class="gado-num" id="gado-bezerraMamando-num">0</div>
+      <div class="gado-sub">cabeças</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="editGado('bezerraMamando')">✏️ Editar</button>
+      </div>
+    </div>
+    <div class="gado-card garrote" id="gado-card-novilhas">
+      <div class="gado-icon">🐄</div>
+      <div class="gado-label">Novilhas</div>
+      <div class="gado-num" id="gado-novilhas-num">0</div>
+      <div class="gado-sub">cabeças</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="editGado('novilhas')">✏️ Editar</button>
+      </div>
+    </div>
+    <div class="gado-card bezerro" id="gado-card-bezerroDesmame">
+      <div class="gado-icon">🐂</div>
+      <div class="gado-label">Bezerro Desmame</div>
+      <div class="gado-num" id="gado-bezerroDesmame-num">0</div>
+      <div class="gado-sub">cabeças</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="editGado('bezerroDesmame')">✏️ Editar</button>
+      </div>
+    </div>
+    <div class="gado-card" id="gado-card-matrizes">
+      <div class="gado-icon">🐄</div>
+      <div class="gado-label">Matrizes</div>
+      <div class="gado-num" id="gado-matrizes-num">0</div>
+      <div class="gado-sub">cabeças</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="editGado('matrizes')">✏️ Editar</button>
+      </div>
+    </div>
+    <div class="gado-card bezerro" id="gado-card-bezerraDesmame">
+      <div class="gado-icon">🐂</div>
+      <div class="gado-label">Bezerra Desmame</div>
+      <div class="gado-num" id="gado-bezerraDesmame-num">0</div>
+      <div class="gado-sub">cabeças</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="editGado('bezerraDesmame')">✏️ Editar</button>
       </div>
     </div>
   </div>
@@ -1203,10 +1239,14 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
       <div class="form-row">
         <label>Categoria</label>
         <select id="gado-categoria">
-          <option value="vacas">Vacas</option>
-          <option value="garrotes">Garrotes</option>
-          <option value="bezerros">Bezerros</option>
-          <option value="touros">Touros</option>
+          <option value="touro">Touro</option>
+          <option value="vacaLeite">Vaca de Leite</option>
+          <option value="bezerroMamando">Bezerro Mamando</option>
+          <option value="bezerraMamando">Bezerra Mamando</option>
+          <option value="novilhas">Novilhas</option>
+          <option value="bezerroDesmame">Bezerro Desmame</option>
+          <option value="matrizes">Matrizes</option>
+          <option value="bezerraDesmame">Bezerra Desmame</option>
         </select>
       </div>
       <div class="form-row">
@@ -1602,7 +1642,7 @@ if (!localStorage.getItem('fazenda_rec2026_v3')) {
   localStorage.setItem('fazenda_rec2026_v3', '1');
 }
 let gadoMov = JSON.parse(localStorage.getItem('fazenda_gado_mov') || '[]');
-let gadoEstoque = JSON.parse(localStorage.getItem('fazenda_gado_estoque') || '{"vacas":0,"garrotes":0,"bezerros":0,"touros":0}');
+let gadoEstoque = JSON.parse(localStorage.getItem('fazenda_gado_estoque') || '{"touro":0,"vacaLeite":0,"bezerroMamando":0,"bezerraMamando":0,"novilhas":0,"bezerroDesmame":0,"matrizes":0,"bezerraDesmame":0}');
 let eucaAreas = JSON.parse(localStorage.getItem('fazenda_euca_areas') || '[]');
 let eucaVendas = JSON.parse(localStorage.getItem('fazenda_euca_vendas') || '[]');
 let inventario = JSON.parse(localStorage.getItem('fazenda_inventario') || '[]');
@@ -2288,8 +2328,9 @@ function updateDashboardKPIs() {
 // GADO
 // ============================================================
 function renderGado() {
-  ['vacas','garrotes','bezerros','touros'].forEach(c => {
-    document.getElementById('gado-'+c+'-num').textContent = gadoEstoque[c];
+  ['touro', 'vacaLeite', 'bezerroMamando', 'bezerraMamando', 'novilhas', 'bezerroDesmame', 'matrizes', 'bezerraDesmame'].forEach(c => {
+    const el = document.getElementById('gado-'+c+'-num');
+    if (el) el.textContent = gadoEstoque[c] || 0;
   });
   const total = Object.values(gadoEstoque).reduce((a,v)=>a+v,0);
   document.getElementById('gado-total-rebanho').textContent = total + ' cab.';
@@ -2302,12 +2343,13 @@ function renderGado() {
   document.getElementById('gado-preco-medio').textContent = totalCabVendidas > 0 ? fmt(totalValVendas/totalCabVendidas) : '—';
 
   // Pizza
-  const cats = ['vacas','garrotes','bezerros','touros'];
-  const labels = ['Vacas','Garrotes','Bezerros','Touros'];
+  const cats = ['touro', 'vacaLeite', 'bezerroMamando', 'bezerraMamando', 'novilhas', 'bezerroDesmame', 'matrizes', 'bezerraDesmame'];
+  const labels = ['Touro', 'Vaca de Leite', 'Bezerro Mamando', 'Bezerra Mamando', 'Novilhas', 'Bezerro Desmame', 'Matrizes', 'Bezerra Desmame'];
+  const gadoCores = ['#8e44ad', '#2d6a4f', '#1a6fa3', '#e91e8c', '#b5832a', '#2980b9', '#5d4037', '#e67e22'];
   createChart('chart-gado-pizza', {
     type: 'doughnut',
-    data: { labels, datasets: [{ data: cats.map(c=>gadoEstoque[c]), backgroundColor: ['#2d6a4f','#b5832a','#1a6fa3','#8e44ad'] }] },
-    options: { responsive: true, plugins: { legend: { position: 'right' } } }
+    data: { labels: labels.filter((_,i)=>(gadoEstoque[cats[i]]||0)>0), datasets: [{ data: cats.filter(c=>(gadoEstoque[c]||0)>0).map(c=>gadoEstoque[c]), backgroundColor: cats.map((_,i)=>gadoCores[i]).filter((_,i)=>(gadoEstoque[cats[i]]||0)>0) }] },
+    options: { responsive: true, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
   });
 
   // Evolução (movimentações)
@@ -2707,7 +2749,7 @@ async function loadFromSupabase() {
     });
     receitas     = JSON.parse(localStorage.getItem('fazenda_receitas')      || '[]');
     gadoMov      = JSON.parse(localStorage.getItem('fazenda_gado_mov')      || '[]');
-    gadoEstoque  = JSON.parse(localStorage.getItem('fazenda_gado_estoque')  || '{"vacas":0,"garrotes":0,"bezerros":0,"touros":0}');
+    gadoEstoque  = JSON.parse(localStorage.getItem('fazenda_gado_estoque')  || '{"touro":0,"vacaLeite":0,"bezerroMamando":0,"bezerraMamando":0,"novilhas":0,"bezerroDesmame":0,"matrizes":0,"bezerraDesmame":0}');
     eucaAreas    = JSON.parse(localStorage.getItem('fazenda_euca_areas')    || '[]');
     eucaVendas   = JSON.parse(localStorage.getItem('fazenda_euca_vendas')   || '[]');
     inventario   = JSON.parse(localStorage.getItem('fazenda_inventario')    || '[]');
