@@ -935,7 +935,7 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
         <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
       </select>
     </div>
-    <div class="filter-group">
+    <div class="filter-group" style="display:none">
       <label>Grupo de Despesa</label>
       <select id="dre-grupo" onchange="renderDRE()">
         <option value="">Todos os Grupos</option>
@@ -944,7 +944,7 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
         <option value="Operacional">Operacional</option><option value="Outros">Outros</option>
       </select>
     </div>
-    <div class="filter-group">
+    <div class="filter-group" style="display:none">
       <label>Categoria Receita</label>
       <select id="dre-cat-rec" onchange="renderDRE()">
         <option value="">Todas</option>
@@ -3004,9 +3004,9 @@ function renderDREMensalCompleto(ano) {
   if (!thead || !tbody) return;
   const ncols = 14;
 
-  let hRow = '<tr><th style="text-align:left;padding:8px 12px;min-width:220px;position:sticky;left:0;background:#fff;z-index:2">Item</th>';
-  mesesNm.forEach(m => { hRow += `<th class="num" style="min-width:88px">${m}</th>`; });
-  hRow += '<th class="num" style="min-width:100px;background:#f0f9f4">Total</th></tr>';
+  let hRow = '<tr style="position:sticky;top:0;z-index:3;background:#f0f4f2"><th style="text-align:left;padding:9px 14px;min-width:220px;position:sticky;left:0;top:0;background:#f0f4f2;z-index:4;font-weight:700;font-size:13px;border-bottom:2px solid var(--green);border-right:1px solid #ddd">Item</th>';
+  mesesNm.forEach(m => { hRow += `<th class="num" style="min-width:88px;padding:9px 8px;background:#f0f4f2;font-size:13px;border-bottom:2px solid var(--green)">${m}</th>`; });
+  hRow += '<th class="num" style="min-width:100px;padding:9px 8px;background:#d4edda;font-weight:700;font-size:13px;border-bottom:2px solid var(--green)">Total</th></tr>';
   thead.innerHTML = hRow;
 
   const stickyLbl = (label, bg) =>
