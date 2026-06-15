@@ -283,6 +283,7 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
 <!-- NAV TABS -->
 <div class="nav-tabs">
   <div class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</div>
+  <div class="nav-tab" onclick="showTab('dre')">📈 DRE</div>
   <div class="nav-tab" onclick="showTab('contas')">🔔 Contas a Pagar <span id="badge-contas-venc" style="display:none;background:#c0392b;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px"></span></div>
   <div class="nav-tab" onclick="showTab('despesas')">📋 Despesas</div>
   <div class="nav-tab" onclick="showTab('receitas')">💰 Receitas</div>
@@ -895,6 +896,104 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
 </div><!-- end .content -->
 
 <!-- ==================== MODALS ==================== -->
+
+<!-- ==================== DRE ==================== -->
+<div id="tab-dre" class="tab-panel">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <span class="section-title" style="margin:0;flex:1">📈 DRE — Demonstração de Resultado do Exercício</span>
+    <button class="btn btn-outline btn-sm" onclick="exportDRE()">⬇️ CSV</button>
+  </div>
+
+  <!-- Filtros -->
+  <div style="background:white;padding:14px 18px;border-radius:10px;box-shadow:var(--shadow);margin-bottom:20px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">
+    <div class="filter-group">
+      <label>Visualização</label>
+      <select id="dre-modo" onchange="renderDRE()">
+        <option value="comparar">2025 vs 2026</option>
+        <option value="2025">Somente 2025</option>
+        <option value="2026">Somente 2026</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Período</label>
+      <select id="dre-periodo" onchange="onDrePeriodoChange()">
+        <option value="anual">Anual</option>
+        <option value="t1">T1 — Jan a Mar</option>
+        <option value="t2">T2 — Abr a Jun</option>
+        <option value="t3">T3 — Jul a Set</option>
+        <option value="t4">T4 — Out a Dez</option>
+        <option value="mensal">Mensal</option>
+      </select>
+    </div>
+    <div class="filter-group" id="dre-mes-group" style="display:none">
+      <label>Mês</label>
+      <select id="dre-mes" onchange="renderDRE()">
+        <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+        <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+        <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+        <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Grupo de Despesa</label>
+      <select id="dre-grupo" onchange="renderDRE()">
+        <option value="">Todos os Grupos</option>
+        <option value="Pessoal">Pessoal</option><option value="Fiscal">Fiscal</option>
+        <option value="Pecuária">Pecuária</option><option value="Veículos">Veículos</option>
+        <option value="Operacional">Operacional</option><option value="Outros">Outros</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Categoria Receita</label>
+      <select id="dre-cat-rec" onchange="renderDRE()">
+        <option value="">Todas</option>
+        <option value="Eucalipto / Madeira">Madeira</option>
+        <option value="Arrendamento / Aluguel">Aluguel</option>
+        <option value="Venda de Gado">Gado</option>
+        <option value="Outras Receitas">Outras</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div id="dre-kpis" class="cards-row cards-4" style="margin-bottom:20px"></div>
+
+  <!-- Tabela DRE -->
+  <div class="table-wrapper" style="margin-bottom:20px">
+    <div class="table-header">
+      <h3>📊 Demonstração de Resultado</h3>
+      <span id="dre-periodo-label" style="font-size:12px;color:var(--text-muted);font-weight:600"></span>
+    </div>
+    <table id="tbl-dre" style="font-size:13px">
+      <thead id="thead-dre"></thead>
+      <tbody id="tbody-dre"></tbody>
+    </table>
+  </div>
+
+  <!-- Gráficos linha 1 -->
+  <div class="charts-row charts-3" style="margin-bottom:20px">
+    <div class="chart-card">
+      <h3>📊 Resultado por Período</h3>
+      <canvas id="chart-dre-resultado" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>💰 Composição Receitas</h3>
+      <canvas id="chart-dre-receitas" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>📋 Composição Despesas</h3>
+      <canvas id="chart-dre-despesas" height="220"></canvas>
+    </div>
+  </div>
+
+  <!-- Gráfico evolução -->
+  <div class="chart-card">
+    <h3>📅 Evolução Mensal — Receitas × Despesas</h3>
+    <canvas id="chart-dre-evolucao" height="110"></canvas>
+  </div>
+
+</div>
 
 <!-- Modal: Nova Conta a Pagar -->
 <div class="modal-overlay" id="modal-nova-conta">
@@ -2506,24 +2605,20 @@ async function doLogout() {
 
 async function onLogin(user) {
   currentUser = user;
-  // 1. Mostrar app imediatamente
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('user-email-display').textContent = user.email;
-  // 2. Inicializar com dados locais (instantâneo)
   try { initApp(); } catch(e) { console.error('Erro ao inicializar app:', e); }
-  // 3. Sincronizar com Supabase em background
-  setSyncStatus('⟳ Sincronizando...');
+  setSyncStatus('⧳ Sincronizando...');
   try {
-    const loaded = await Promise.race([
+    await Promise.race([
       loadFromSupabase(),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000))
+      new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
     ]);
     setSyncStatus('✓ Sincronizado');
-    // Re-renderizar dashboard com dados do servidor
-    try { initDashboard(); renderDespesasTable(); atualizarBadgeContas(); } catch(e) {}
+    try { initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); } catch(e) {}
   } catch(e) {
-    setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexão');
+    setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexao');
   }
 }
 
@@ -2555,38 +2650,25 @@ async function loadFromSupabase() {
 
 async function syncToSupabase() {
   if (!currentUser) return;
-  setSyncStatus('⟳ Sincronizando...');
+  setSyncStatus('⧳ Sincronizando...');
   const dataMap = {
     receitas, gado_mov: gadoMov, gado_estoque: gadoEstoque,
     euca_areas: eucaAreas, euca_vendas: eucaVendas,
     inventario, contas: contasPagar
   };
   try {
-    const rows = Object.entries(dataMap).map(([k, v]) => ({
-      data_key: k,
-      data_value: v,
-      updated_by: currentUser.id,
-      updated_at: new Date().toISOString()
+    const rows = Object.entries(dataMap).map(([k,v]) => ({
+      data_key: k, data_value: v,
+      updated_by: currentUser.id, updated_at: new Date().toISOString()
     }));
     const { error } = await sb.from('fazenda_data').upsert(rows, { onConflict: 'data_key' });
     setSyncStatus(error ? '⚠ Erro ao sincronizar' : '✓ Sincronizado');
-  } catch(e) { setSyncStatus('⚠ Sem conexão'); }
-}
-
-function initApp() {
-  initDateTime();
-  initDashboard();
-  renderDespesasTable();
-  atualizarBadgeContas();
-  const today = new Date().toISOString().split('T')[0];
-  ['rec-data','gado-data','euca-data','nc-vencimento','pagar-data'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = today;
-  });
+  } catch(e) { setSyncStatus('⚠ Sem conexao'); }
 }
 
 window.addEventListener('load', async () => {
   try {
-    if (!sb) { console.error('Supabase não carregou'); return; }
+    if (!sb) { console.error('Supabase nao carregou'); return; }
     const { data: { session } } = await sb.auth.getSession();
     if (session && session.user) {
       await onLogin(session.user);
@@ -2598,7 +2680,7 @@ window.addEventListener('load', async () => {
       }
     });
   } catch(e) {
-    console.error('Erro de inicialização:', e);
+    console.error('Erro de inicializacao:', e);
   }
 });
 </script>
