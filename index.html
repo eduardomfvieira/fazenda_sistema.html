@@ -193,7 +193,7 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
 .tag-cat { font-size: 11px; background: var(--green-pale); color: var(--green); padding: 2px 8px; border-radius: 12px; font-weight: 600; }
 
 /* AUTH SCREEN */
-#auth-screen { display: none; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1a3a28 0%, #2d6a4f 60%, #40916c 100%); position: fixed; inset: 0; z-index: 9999; }
+#auth-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1a3a28 0%, #2d6a4f 60%, #40916c 100%); position: fixed; inset: 0; z-index: 9999; }
 .auth-box { background: white; border-radius: 16px; padding: 40px; width: 420px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.35); }
 .auth-logo { text-align: center; margin-bottom: 28px; }
 .auth-logo .auth-icon { font-size: 48px; }
@@ -2549,8 +2549,9 @@ function initApp() {
 }
 
 window.addEventListener('load', async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session && session.user) {
-    await onLogin(session.user);
-  } else {
-    document.getElementById('auth-screen').style.display = 'flex
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.user) {
+      await onLogin(session.user);
+    }
+    // auth-screen já está visível por padrão (CSS 
