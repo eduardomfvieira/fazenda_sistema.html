@@ -1514,6 +1514,14 @@ const totaisReceitas2025 = {
   total: 1528118.72,
   mensal: [161989.45, 96929.38, 98911.20, 177412.66, 200639.75, 148837.18, 114820.41, 210991.07, 99185.92, 115657.25, 78679.01, 24065.44]
 };
+const totaisReceitas2026 = {
+  mensal: [7801.30, 22169.60, 306822.80, 5215.60, 38425.20, 0, 0, 0, 0, 0, 0, 0],
+  madeira:  [4044.60, 4169.60, 3822.80, 2215.60, 35425.20, 0, 0, 0, 0, 0, 0, 0],
+  aluguel:  [3456.70, 3000.00, 3000.00, 3000.00, 3000.00, 0, 0, 0, 0, 0, 0, 0],
+  semoventes:[300.00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  outras:   [0, 15000.00, 300000.00, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+};
+
 
 // State
 let receitas = JSON.parse(localStorage.getItem('fazenda_receitas') || '[]');
@@ -2722,16 +2730,12 @@ function getDRERecCats(ano, meses, catFiltro) {
     cats['Venda de Gado']          = total * propSem;
     cats['Outras Receitas']        = total * propOut;
   } else {
-    receitas.forEach(r => {
-      if (!r.data) return;
-      const d = new Date(r.data + 'T12:00:00');
-      if (d.getFullYear() !== 2026) return;
-      const m = d.getMonth();
-      if (!meses.includes(m)) return;
-      const key = r.categoria || 'Outras Receitas';
-      if (cats.hasOwnProperty(key)) cats[key] += parseFloat(r.valor) || 0;
-      else cats['Outras Receitas'] += parseFloat(r.valor) || 0;
-    });
+    // Use hardcoded 2026 data from spreadsheet
+    const t = totaisReceitas2026;
+    cats['Eucalipto / Madeira']    = meses.reduce((a,i) => a+(t.madeira[i]||0), 0);
+    cats['Arrendamento / Aluguel'] = meses.reduce((a,i) => a+(t.aluguel[i]||0), 0);
+    cats['Venda de Gado']          = meses.reduce((a,i) => a+(t.semoventes[i]||0), 0);
+    cats['Outras Receitas']        = meses.reduce((a,i) => a+(t.outras[i]||0), 0);
   }
   if (catFiltro) { const f = {}; f[catFiltro] = cats[catFiltro] || 0; return f; }
   return cats;
@@ -2943,11 +2947,7 @@ function renderDREMensalCompleto(ano) {
 
   const getRecMes = (m) => {
     if (ano === 2025) return totaisReceitas2025.mensal[m] || 0;
-    return receitas.filter(r => {
-      if (!r.data) return false;
-      const d = new Date(r.data + 'T12:00:00');
-      return d.getFullYear() === 2026 && d.getMonth() === m;
-    }).reduce((a,r) => a + (parseFloat(r.valor)||0), 0);
+    return totaisReceitas2026.mensal[m] || 0;
   };
 
   const getItemMes = (nome, m) => {
@@ -3071,9 +3071,11 @@ function renderDREMensalCompleto(ano) {
     rows += recRowM('Venda de Gado',          m=>(totaisReceitas2025.mensal[m]||0)*pS);
     rows += recRowM('Outras Receitas',        m=>(totaisReceitas2025.mensal[m]||0)*pO);
   } else {
-    ['Eucalipto / Madeira','Arrendamento / Aluguel','Venda de Gado','Outras Receitas'].forEach(cat => {
-      rows += recRowM(cat, m => receitas.filter(r=>{if(!r.data)return false;const d=new Date(r.data+'T12:00:00');return d.getFullYear()===2026&&d.getMonth()===m&&r.categoria===cat;}).reduce((a,r)=>a+(parseFloat(r.valor)||0),0));
-    });
+    const t2 = totaisReceitas2026;
+    rows += recRowM('Eucalipto / Madeira',    m => t2.madeira[m]||0);
+    rows += recRowM('Arrendamento / Aluguel', m => t2.aluguel[m]||0);
+    rows += recRowM('Venda de Gado',          m => t2.semoventes[m]||0);
+    rows += recRowM('Outras Receitas',        m => t2.outras[m]||0);
   }
   rows += totRecRowM();
 
