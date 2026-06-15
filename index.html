@@ -2506,13 +2506,25 @@ async function doLogout() {
 
 async function onLogin(user) {
   currentUser = user;
+  // 1. Mostrar app imediatamente
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('user-email-display').textContent = user.email;
-  setSyncStatus('⟳ Carregando dados...');
-  await loadFromSupabase();
-  setSyncStatus('✓ Sincronizado');
-  initApp();
+  // 2. Inicializar com dados locais (instantâneo)
+  try { initApp(); } catch(e) { console.error('Erro ao inicializar app:', e); }
+  // 3. Sincronizar com Supabase em background
+  setSyncStatus('⟳ Sincronizando...');
+  try {
+    const loaded = await Promise.race([
+      loadFromSupabase(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000))
+    ]);
+    setSyncStatus('✓ Sincronizado');
+    // Re-renderizar dashboard com dados do servidor
+    try { initDashboard(); renderDespesasTable(); atualizarBadgeContas(); } catch(e) {}
+  } catch(e) {
+    setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexão');
+  }
 }
 
 function setSyncStatus(msg) {
@@ -2534,17 +2546,4 @@ async function loadFromSupabase() {
     gadoEstoque  = JSON.parse(localStorage.getItem('fazenda_gado_estoque')  || '{"vacas":0,"garrotes":0,"bezerros":0,"touros":0}');
     eucaAreas    = JSON.parse(localStorage.getItem('fazenda_euca_areas')    || '[]');
     eucaVendas   = JSON.parse(localStorage.getItem('fazenda_euca_vendas')   || '[]');
-    inventario   = JSON.parse(localStorage.getItem('fazenda_inventario')    || '[]');
-    contasPagar  = JSON.parse(localStorage.getItem('fazenda_contas')        || '[]');
-    const lu = localStorage.getItem('fazenda_last_update');
-    if (lu) document.getElementById('last-update').textContent = lu;
-  } catch(e) { console.warn('Erro ao carregar dados:', e); }
-}
-
-async function syncToSupabase() {
-  if (!currentUser) return;
-  setSyncStatus('⟳ Sincronizando...');
-  const dataMap = {
-    receitas, gado_mov: gadoMov, gado_estoque: gadoEstoque,
-    euca_areas: eucaAreas, euca_vendas: eucaVendas,
-    inventario,
+    inventario   = JSON.parse(loc
