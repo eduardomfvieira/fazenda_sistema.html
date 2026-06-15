@@ -2418,7 +2418,7 @@ function atualizarBadgeContas() {
 // SUPABASE AUTH & SYNC
 // ============================================================
 const SUPABASE_URL = 'https://gwmtnukexjhtbgxqyjru.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_EMkJ_fQYcG0OUG66tT6ftA_npf5_c2u';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3bXRudWtleGpodGJneHF5anJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzQ1NzAsImV4cCI6MjA5NzA1MDU3MH0.S9lhwg03W4zO9gW4a8R5kqLOFCTXGZMwLs5s-U2Vd0E';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 
@@ -2550,8 +2550,4 @@ function initApp() {
 
 window.addEventListener('load', async () => {
   try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session && session.user) {
-      await onLogin(session.user);
-    }
-    // auth-screen já está visível por padrão (CSS 
+    const { data: { session } }
