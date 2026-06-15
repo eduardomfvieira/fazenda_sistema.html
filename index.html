@@ -50,6 +50,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: v
 /* CARDS */
 .cards-row { display: grid; gap: 16px; margin-bottom: 24px; }
 .cards-4 { grid-template-columns: repeat(4, 1fr); }
+.cards-5 { grid-template-columns: repeat(5, 1fr); }
 .cards-3 { grid-template-columns: repeat(3, 1fr); }
 .cards-2 { grid-template-columns: repeat(2, 1fr); }
 .card { background: white; border-radius: 10px; padding: 20px; box-shadow: var(--shadow); }
@@ -307,7 +308,7 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
     <div class="card card-kpi green">
       <div class="kpi-label">Receita Total 2025</div>
       <div class="kpi-value">R$ 1.528.119</div>
-      <div class="kpi-sub">Madeira + Aluguel + Gado</div>
+      <div class="kpi-sub">Madeira + Aluguel + Gado + Outros</div>
       <div class="kpi-change up">Média mensal: R$ 127.343</div>
     </div>
     <div class="card card-kpi red">
@@ -356,6 +357,50 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
       <div class="kpi-value" id="kpi-projecao">R$ 1.249.366</div>
       <div class="kpi-sub">Base na média mensal de despesas</div>
       <div class="kpi-change">Estimativa</div>
+    </div>
+  </div>
+
+  <!-- Receitas 2026 breakdown -->
+  <div style="margin-bottom:8px; margin-top:4px"><span class="section-title">💰 Composição das Receitas 2026 (Jan–Mai)</span></div>
+  <div class="cards-row cards-4">
+    <div class="card card-kpi green">
+      <div class="kpi-label">🌳 Eucalipto / Madeira</div>
+      <div class="kpi-value" id="dash-rec-madeira">R$ 0</div>
+      <div class="kpi-sub" id="dash-rec-madeira-pct">—</div>
+    </div>
+    <div class="card card-kpi gold">
+      <div class="kpi-label">🏠 Arrendamento / Aluguel</div>
+      <div class="kpi-value" id="dash-rec-aluguel">R$ 0</div>
+      <div class="kpi-sub" id="dash-rec-aluguel-pct">—</div>
+    </div>
+    <div class="card card-kpi" style="border-left:4px solid #e67e22">
+      <div class="kpi-label">🚜 Venda de Equipamentos</div>
+      <div class="kpi-value" id="dash-rec-equip">R$ 0</div>
+      <div class="kpi-sub" id="dash-rec-equip-pct">—</div>
+    </div>
+    <div class="card card-kpi blue">
+      <div class="kpi-label">🐄 Venda de Gado</div>
+      <div class="kpi-value" id="dash-rec-gado">R$ 0</div>
+      <div class="kpi-sub" id="dash-rec-gado-pct">—</div>
+    </div>
+  </div>
+  <div class="cards-row cards-4" style="margin-top:8px">
+    <div class="card card-kpi" style="border-left:4px solid #8e44ad">
+      <div class="kpi-label">📦 Outras Receitas</div>
+      <div class="kpi-value" id="dash-rec-outras">R$ 0</div>
+      <div class="kpi-sub" id="dash-rec-outras-pct">—</div>
+    </div>
+  </div>
+
+  <!-- Charts 2026 receitas -->
+  <div class="charts-row charts-2" style="margin-bottom:20px">
+    <div class="chart-card">
+      <h3>🥧 Composição das Receitas 2026</h3>
+      <canvas id="chart-rec2026-pizza" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>📈 Receitas 2026 por Mês</h3>
+      <canvas id="chart-rec2026-mensal" height="220"></canvas>
     </div>
   </div>
 
@@ -619,12 +664,13 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
         <option value="Eucalipto / Madeira">Eucalipto / Madeira</option>
         <option value="Arrendamento / Aluguel">Arrendamento / Aluguel</option>
         <option value="Venda de Gado">Venda de Gado</option>
+        <option value="Venda de Equipamentos">Venda de Equipamentos</option>
         <option value="Outras Receitas">Outras Receitas</option>
       </select>
     </div>
   </div>
 
-  <div class="cards-row cards-4">
+  <div class="cards-row cards-3">
     <div class="card card-kpi green">
       <div class="kpi-label">Eucalipto / Madeira</div>
       <div class="kpi-value" id="kpi-r-madeira">R$ 0</div>
@@ -639,6 +685,18 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
       <div class="kpi-label">Venda de Gado</div>
       <div class="kpi-value" id="kpi-r-gado">R$ 0</div>
       <div class="kpi-sub" id="kpi-r-gado-pct">— do total</div>
+    </div>
+  </div>
+  <div class="cards-row cards-3" style="margin-top:12px">
+    <div class="card card-kpi" style="border-left:4px solid #e67e22">
+      <div class="kpi-label">🚜 Venda de Equipamentos</div>
+      <div class="kpi-value" id="kpi-r-equip">R$ 0</div>
+      <div class="kpi-sub" id="kpi-r-equip-pct">— do total</div>
+    </div>
+    <div class="card card-kpi" style="border-left:4px solid #8e44ad">
+      <div class="kpi-label">Outras Receitas</div>
+      <div class="kpi-value" id="kpi-r-outras">R$ 0</div>
+      <div class="kpi-sub" id="kpi-r-outras-pct">— do total</div>
     </div>
     <div class="card card-kpi green" style="border-left-color:#2980b9">
       <div class="kpi-label">Total Geral</div>
@@ -1519,7 +1577,8 @@ const totaisReceitas2026 = {
   madeira:  [4044.60, 4169.60, 3822.80, 2215.60, 35425.20, 0, 0, 0, 0, 0, 0, 0],
   aluguel:  [3456.70, 3000.00, 3000.00, 3000.00, 3000.00, 0, 0, 0, 0, 0, 0, 0],
   semoventes:[300.00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  outras:   [0, 15000.00, 300000.00, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  equipamentos:[0, 15000.00, 300000.00, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  outras:   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 };
 const RECEITAS_2026_PRELOAD = [
   {data:'2026-01-15',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES",valor:1866.8,status:'Recebido'},
@@ -1531,12 +1590,12 @@ const RECEITAS_2026_PRELOAD = [
   {data:'2026-02-13',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES LTDA",valor:2056.0,status:'Recebido'},
   {data:'2026-02-25',categoria:'Eucalipto / Madeira',descricao:"NOVA ERA",valor:1048.8,status:'Recebido'},
   {data:'2026-02-25',categoria:'Eucalipto / Madeira',descricao:"NOVA ERA",valor:1064.8,status:'Recebido'},
-  {data:'2026-02-09',categoria:'Outras Receitas',descricao:"PAULO SERGIO GOMES",valor:15000.0,status:'Recebido'},
+  {data:'2026-02-09',categoria:'Venda de Equipamentos',descricao:"PAULO SERGIO GOMES",valor:15000.0,status:'Recebido'},
   {data:'2026-02-18',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Galpão",valor:3000.0,status:'Recebido'},
   {data:'2026-03-09',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES LTDA",valor:1967.2,status:'Recebido'},
   {data:'2026-03-25',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES LTDA",valor:1855.6,status:'Recebido'},
-  {data:'2026-03-09',categoria:'Outras Receitas',descricao:"WANDERSON DE MORAIS",valor:110000.0,status:'Recebido'},
-  {data:'2026-03-31',categoria:'Outras Receitas',descricao:"DIEGO JUNIOR DE SOUZA",valor:190000.0,status:'Recebido'},
+  {data:'2026-03-09',categoria:'Venda de Equipamentos',descricao:"WANDERSON DE MORAIS",valor:110000.0,status:'Recebido'},
+  {data:'2026-03-31',categoria:'Venda de Equipamentos',descricao:"DIEGO JUNIOR DE SOUZA",valor:190000.0,status:'Recebido'},
   {data:'2026-03-16',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Galpão",valor:3000.0,status:'Recebido'},
   {data:'2026-04-24',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES LTDA",valor:2215.6,status:'Recebido'},
   {data:'2026-04-15',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Galpão",valor:3000.0,status:'Recebido'},
@@ -1578,13 +1637,13 @@ const RECEITAS_2026_PRELOAD = [
 // State
 let receitas = JSON.parse(localStorage.getItem('fazenda_receitas') || '[]');
 // Pre-carregar receitas 2026 na primeira execução
-if (!localStorage.getItem('fazenda_rec2026_v2')) {
+if (!localStorage.getItem('fazenda_rec2026_v3')) {
   // Remove any 2026 entries added manually to avoid duplicates
   receitas = receitas.filter(r => !r.data || !r.data.startsWith('2026'));
   // Add all 50 pre-loaded 2026 transactions
   RECEITAS_2026_PRELOAD.forEach(function(r) { receitas.push(r); });
   localStorage.setItem('fazenda_receitas', JSON.stringify(receitas));
-  localStorage.setItem('fazenda_rec2026_v2', '1');
+  localStorage.setItem('fazenda_rec2026_v3', '1');
 }
 let gadoMov = JSON.parse(localStorage.getItem('fazenda_gado_mov') || '[]');
 let gadoEstoque = JSON.parse(localStorage.getItem('fazenda_gado_estoque') || '{"vacas":0,"garrotes":0,"bezerros":0,"touros":0}');
@@ -1738,10 +1797,51 @@ function initDashboard() {
   });
 
   // KPIs 2026
-  const totalRec26 = receitas.filter(r => r.status === 'Recebido' && new Date(r.data).getFullYear()===2026).reduce((a,r) => a + (parseFloat(r.valor)||0), 0);
+  const rec26 = receitas.filter(r => r.status === 'Recebido' && new Date(r.data).getFullYear()===2026);
+  const totalRec26 = rec26.reduce((a,r) => a + (parseFloat(r.valor)||0), 0);
   const totalDesp26 = tot26desp.reduce((a,v) => a+v, 0);
   document.getElementById('kpi-receita-total').textContent = fmt(totalRec26);
-  document.getElementById('kpi-receita-sub').textContent = receitas.filter(r=>r.status==='Recebido'&&new Date(r.data).getFullYear()===2026).length + ' lançamentos';
+  document.getElementById('kpi-receita-sub').textContent = rec26.length + ' lançamentos';
+
+  // Receitas 2026 por categoria
+  const catColors26 = {'Eucalipto / Madeira':'#2d6a4f','Arrendamento / Aluguel':'#b5832a','Venda de Equipamentos':'#e67e22','Venda de Gado':'#1a6fa3','Outras Receitas':'#8e44ad'};
+  const rec26Cats = {};
+  Object.keys(catColors26).forEach(c => {
+    rec26Cats[c] = rec26.filter(r=>r.categoria===c).reduce((a,r)=>a+(parseFloat(r.valor)||0),0);
+  });
+  const catLabels26 = ['Eucalipto / Madeira','Arrendamento / Aluguel','Venda de Equipamentos','Venda de Gado','Outras Receitas'];
+  const catIds26 = ['dash-rec-madeira','dash-rec-aluguel','dash-rec-equip','dash-rec-gado','dash-rec-outras'];
+  catLabels26.forEach((c,i) => {
+    const el = document.getElementById(catIds26[i]);
+    const pct = document.getElementById(catIds26[i]+'-pct');
+    if (el) el.textContent = fmt(rec26Cats[c]);
+    if (pct) pct.textContent = totalRec26 ? (rec26Cats[c]/totalRec26*100).toFixed(1)+'% do total' : '—';
+  });
+
+  // Gráfico pizza receitas 2026
+  createChart('chart-rec2026-pizza', {
+    type: 'doughnut',
+    data: {
+      labels: catLabels26.filter(c=>rec26Cats[c]>0),
+      datasets: [{ data: catLabels26.filter(c=>rec26Cats[c]>0).map(c=>rec26Cats[c]), backgroundColor: catLabels26.filter(c=>rec26Cats[c]>0).map(c=>catColors26[c]) }]
+    },
+    options: { responsive:true, plugins:{ legend:{position:'right',labels:{font:{size:11}}}, tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)+' ('+((ctx.raw/totalRec26)*100).toFixed(1)+'%)'}} } }
+  });
+
+  // Gráfico mensal receitas 2026 empilhado
+  const meses26Labels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  createChart('chart-rec2026-mensal', {
+    type: 'bar',
+    data: {
+      labels: meses26Labels,
+      datasets: catLabels26.map(cat => ({
+        label: cat === 'Outras Receitas' ? 'Equipamentos' : cat.split('/')[0].trim(),
+        data: meses26Labels.map((_,mi) => rec26.filter(r=>r.categoria===cat && new Date(r.data).getMonth()===mi).reduce((a,r)=>a+(parseFloat(r.valor)||0),0)),
+        backgroundColor: catColors26[cat], stack:'a'
+      }))
+    },
+    options:{ responsive:true, plugins:{legend:{position:'top',labels:{font:{size:10}}}}, scales:{ x:{stacked:true}, y:{stacked:true, ticks:{callback:v=>'R$'+(v/1000).toFixed(0)+'k'}} } }
+  });
   const resultado26 = totalRec26 - totalDesp26;
   document.getElementById('kpi-resultado').textContent = fmt(Math.abs(resultado26));
   const resEl = document.getElementById('kpi-resultado-sub');
@@ -2169,8 +2269,8 @@ function renderReceitas() {
   const fonte = ano === 2025 ? receitas2025 : receitas.filter(r => new Date(r.data).getFullYear() === ano);
   const filtradas = catFiltro ? fonte.filter(r => r.categoria === catFiltro) : fonte;
 
-  const cats = ['Eucalipto / Madeira', 'Arrendamento / Aluguel', 'Venda de Gado', 'Outras Receitas'];
-  const catColors = ['#2d6a4f','#b5832a','#1a6fa3','#8e44ad'];
+  const cats = ['Eucalipto / Madeira', 'Arrendamento / Aluguel', 'Venda de Gado', 'Venda de Equipamentos', 'Outras Receitas'];
+  const catColors = ['#2d6a4f','#b5832a','#1a6fa3','#e67e22','#8e44ad'];
 
   const totPorCat = {};
   cats.forEach(c => totPorCat[c] = fonte.filter(r=>r.categoria===c).reduce((a,r)=>a+(parseFloat(r.valor)||0),0));
@@ -2182,6 +2282,10 @@ function renderReceitas() {
   document.getElementById('kpi-r-aluguel-pct').textContent = totalGeral ? (totPorCat['Arrendamento / Aluguel']/totalGeral*100).toFixed(1)+'% do total' : '—';
   document.getElementById('kpi-r-gado').textContent = fmt(totPorCat['Venda de Gado']);
   document.getElementById('kpi-r-gado-pct').textContent = totalGeral ? (totPorCat['Venda de Gado']/totalGeral*100).toFixed(1)+'% do total' : '—';
+  document.getElementById('kpi-r-equip').textContent = fmt(totPorCat['Venda de Equipamentos']);
+  document.getElementById('kpi-r-equip-pct').textContent = totalGeral ? (totPorCat['Venda de Equipamentos']/totalGeral*100).toFixed(1)+'% do total' : '—';
+  document.getElementById('kpi-r-outras').textContent = fmt(totPorCat['Outras Receitas']);
+  document.getElementById('kpi-r-outras-pct').textContent = totalGeral ? (totPorCat['Outras Receitas']/totalGeral*100).toFixed(1)+'% do total' : '—';
   document.getElementById('kpi-r-total').textContent = fmt(totalGeral);
   document.getElementById('kpi-r-total-sub').textContent = `Média: ${fmt(totalGeral/12)}/mês`;
 
@@ -2778,6 +2882,7 @@ function getDRERecCats(ano, meses, catFiltro) {
     'Eucalipto / Madeira': 0,
     'Arrendamento / Aluguel': 0,
     'Venda de Gado': 0,
+    'Venda de Equipamentos': 0,
     'Outras Receitas': 0
   };
   if (ano === 2025) {
@@ -2796,6 +2901,7 @@ function getDRERecCats(ano, meses, catFiltro) {
     cats['Eucalipto / Madeira']    = meses.reduce((a,i) => a+(t.madeira[i]||0), 0);
     cats['Arrendamento / Aluguel'] = meses.reduce((a,i) => a+(t.aluguel[i]||0), 0);
     cats['Venda de Gado']          = meses.reduce((a,i) => a+(t.semoventes[i]||0), 0);
+    cats['Venda de Equipamentos']  = meses.reduce((a,i) => a+(t.equipamentos[i]||0), 0);
     cats['Outras Receitas']        = meses.reduce((a,i) => a+(t.outras[i]||0), 0);
   }
   if (catFiltro) { const f = {}; f[catFiltro] = cats[catFiltro] || 0; return f; }
