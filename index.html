@@ -2683,6 +2683,381 @@ window.addEventListener('load', async () => {
     console.error('Erro de inicializacao:', e);
   }
 });
+
+// ==================== DRE FUNCTIONS ====================
+
+function onDrePeriodoChange() {
+  const p = document.getElementById('dre-periodo').value;
+  const grp = document.getElementById('dre-mes-group');
+  if (grp) grp.style.display = (p === 'mensal') ? 'flex' : 'none';
+  renderDRE();
+}
+
+function getMesesDRE(periodo, mes) {
+  switch(periodo) {
+    case 'anual':  return [0,1,2,3,4,5,6,7,8,9,10,11];
+    case 't1':     return [0,1,2];
+    case 't2':     return [3,4,5];
+    case 't3':     return [6,7,8];
+    case 't4':     return [9,10,11];
+    case 'mensal': return [parseInt(mes)||0];
+    default:       return [0,1,2,3,4,5,6,7,8,9,10,11];
+  }
+}
+
+function getDREReceitas(ano, meses, catFiltro) {
+  const cats = {
+    'Eucalipto / Madeira': 0,
+    'Arrendamento / Aluguel': 0,
+    'Venda de Gado': 0,
+    'Outras Receitas': 0
+  };
+
+  if (ano === 2025) {
+    const propMad  = 1075634.40 / 1528118.72;
+    const propAlug = 239913.20  / 1528118.72;
+    const propSem  = 212571.12  / 1528118.72;
+    const propOut  = 1 - propMad - propAlug - propSem;
+    const mensal   = totaisReceitas2025.mensal;
+    const total    = meses.reduce((a, i) => a + (mensal[i] || 0), 0);
+    cats['Eucalipto / Madeira']   = total * propMad;
+    cats['Arrendamento / Aluguel']= total * propAlug;
+    cats['Venda de Gado']         = total * propSem;
+    cats['Outras Receitas']       = total * propOut;
+  } else {
+    receitas.forEach(r => {
+      if (!r.data) return;
+      const d = new Date(r.data + 'T12:00:00');
+      if (d.getFullYear() !== 2026) return;
+      const m = d.getMonth();
+      if (!meses.includes(m)) return;
+      const key = r.categoria || 'Outras Receitas';
+      if (cats.hasOwnProperty(key)) cats[key] += parseFloat(r.valor) || 0;
+      else cats['Outras Receitas'] += parseFloat(r.valor) || 0;
+    });
+  }
+
+  if (catFiltro) {
+    const filtered = {};
+    filtered[catFiltro] = cats[catFiltro] || 0;
+    return filtered;
+  }
+  return cats;
+}
+
+function getDREDespesas(ano, meses, grupFiltro) {
+  const data = (ano === 2025) ? despesas2025 : despesas2026;
+  const grupos = {};
+  data.forEach(cat => {
+    const g = getGrupo(cat.nome);
+    if (grupFiltro && g !== grupFiltro) return;
+    const v = meses.reduce((a, i) => a + (cat.v[i] || 0), 0);
+    if (v > 0) grupos[g] = (grupos[g] || 0) + v;
+  });
+  return grupos;
+}
+
+function varPct(a, b) {
+  if (!a || a === 0) return b > 0 ? '+∞%' : '—';
+  const p = ((b - a) / Math.abs(a)) * 100;
+  return (p >= 0 ? '+' : '') + p.toFixed(1) + '%';
+}
+
+function varSpan(a, b, isExpense) {
+  if (!a || a === 0) return '<span style="color:#888">—</span>';
+  const p = ((b - a) / Math.abs(a)) * 100;
+  // For expenses: increase is bad (red), decrease is good (green)
+  // For revenue/result: increase is good (green), decrease is bad (red)
+  let good;
+  if (isExpense) good = p < 0; else good = p >= 0;
+  const color = good ? '#2d9e5f' : '#e63946';
+  const sign = p >= 0 ? '+' : '';
+  return `<span style="color:${color};font-weight:600">${sign}${p.toFixed(1)}%</span>`;
+}
+
+function renderDRE() {
+  try {
+    const modo      = (document.getElementById('dre-modo')    || {}).value || 'comparar';
+    const periodo   = (document.getElementById('dre-periodo') || {}).value || 'anual';
+    const mes       = (document.getElementById('dre-mes')     || {}).value || '0';
+    const grupFiltro= (document.getElementById('dre-grupo')   || {}).value || '';
+    const catFiltro = (document.getElementById('dre-cat-rec') || {}).value || '';
+
+    const show25  = modo !== '2026';
+    const show26  = modo !== '2025';
+    const showComp= modo === 'comparar';
+
+    const meses = getMesesDRE(periodo, mes);
+
+    // Period label
+    const mesesNomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    let periodoLabel = '';
+    if (periodo === 'anual') periodoLabel = 'Ano Completo';
+    else if (periodo === 'mensal') periodoLabel = mesesNomes[parseInt(mes)] + '/Ano';
+    else periodoLabel = { t1:'T1 (Jan–Mar)', t2:'T2 (Abr–Jun)', t3:'T3 (Jul–Set)', t4:'T4 (Out–Dez)' }[periodo] || '';
+    const lbl = document.getElementById('dre-periodo-label');
+    if (lbl) lbl.textContent = periodoLabel;
+
+    // Get data
+    const rec25  = getDREReceitas(2025, meses, catFiltro);
+    const rec26  = getDREReceitas(2026, meses, catFiltro);
+    const desp25 = getDREDespesas(2025, meses, grupFiltro);
+    const desp26 = getDREDespesas(2026, meses, grupFiltro);
+
+    const tot25R = Object.values(rec25).reduce((a,v) => a+v, 0);
+    const tot26R = Object.values(rec26).reduce((a,v) => a+v, 0);
+    const tot25D = Object.values(desp25).reduce((a,v) => a+v, 0);
+    const tot26D = Object.values(desp26).reduce((a,v) => a+v, 0);
+    const res25  = tot25R - tot25D;
+    const res26  = tot26R - tot26D;
+    const mar25  = tot25R > 0 ? (res25 / tot25R * 100) : 0;
+    const mar26  = tot26R > 0 ? (res26 / tot26R * 100) : 0;
+
+    // KPIs
+    const kpiEl = document.getElementById('dre-kpis');
+    if (kpiEl) {
+      const kpiCard = (label, v25, v26, isExpense) => {
+        const main = show25 ? v25 : v26;
+        const color = isExpense ? (main < 0 ? '#2d9e5f' : '#e63946') : (main >= 0 ? '#2d9e5f' : '#e63946');
+        let html = `<div class="card"><div class="card-label">${label}</div>`;
+        if (show25) html += `<div class="card-value" style="color:${isExpense?'#e63946':'#2d9e5f'};font-size:16px">R$ ${fmtN(Math.abs(v25))}</div><div style="font-size:11px;color:#888">2025</div>`;
+        if (show26) html += `<div class="card-value" style="color:${isExpense?'#e63946':'#2d9e5f'};font-size:${show25?'13':'16'}px">R$ ${fmtN(Math.abs(v26))}</div><div style="font-size:11px;color:#888">2026</div>`;
+        if (showComp) html += `<div style="margin-top:4px">${varSpan(v25,v26,isExpense)}</div>`;
+        html += '</div>';
+        return html;
+      };
+      kpiEl.innerHTML =
+        kpiCard('Total Receitas', tot25R, tot26R, false) +
+        kpiCard('Total Despesas', tot25D, tot26D, true) +
+        kpiCard('Resultado Líquido', res25, res26, false) +
+        `<div class="card"><div class="card-label">Margem Líquida</div>
+          ${show25 ? `<div class="card-value" style="color:${mar25>=0?'#2d9e5f':'#e63946'};font-size:16px">${mar25.toFixed(1)}%</div><div style="font-size:11px;color:#888">2025</div>` : ''}
+          ${show26 ? `<div class="card-value" style="color:${mar26>=0?'#2d9e5f':'#e63946'};font-size:${show25?'13':'16'}px">${mar26.toFixed(1)}%</div><div style="font-size:11px;color:#888">2026</div>` : ''}
+          ${showComp ? `<div style="margin-top:4px">${varSpan(mar25,mar26,false)}</div>` : ''}
+        </div>`;
+    }
+
+    // Table header
+    const thead = document.getElementById('thead-dre');
+    const tbody = document.getElementById('tbody-dre');
+    if (!thead || !tbody) return;
+
+    let cols = 1;
+    if (show25) cols++;
+    if (show26) cols++;
+    if (showComp) cols++;
+
+    let hRow = '<tr><th style="text-align:left;padding:8px 12px">Item</th>';
+    if (show25) hRow += '<th class="num">2025 (R$)</th>';
+    if (show26) hRow += '<th class="num">2026 (R$)</th>';
+    if (showComp) hRow += '<th class="num">Var. %</th>';
+    hRow += '</tr>';
+    thead.innerHTML = hRow;
+
+    // Helpers
+    const secRow = (label) =>
+      `<tr style="background:var(--green);color:white"><td colspan="${cols}" style="padding:7px 12px;font-weight:700;font-size:13px">${label}</td></tr>`;
+
+    const dataRow = (label, v25, v26, bold, isExpense, indent) => {
+      const st = bold ? 'font-weight:700;background:#f0f9f4' : '';
+      const color = (v) => {
+        if (label.includes('Resultado') || label.includes('Margem')) return v >= 0 ? '#2d9e5f' : '#e63946';
+        if (isExpense) return '#e63946';
+        return '#1a3a28';
+      };
+      let r = `<tr style="${st}"><td style="padding:6px 12px 6px ${indent?'28px':'12px'};font-size:13px">${bold?'<strong>'+label+'</strong>':label}</td>`;
+      if (show25) r += `<td class="num" style="color:${color(v25)}">${fmtN(v25)}</td>`;
+      if (show26) r += `<td class="num" style="color:${color(v26)}">${fmtN(v26)}</td>`;
+      if (showComp) r += `<td class="num">${varSpan(v25, v26, isExpense)}</td>`;
+      r += '</tr>';
+      return r;
+    };
+
+    // Build rows
+    let rows = '';
+
+    // RECEITAS
+    rows += secRow('📥 RECEITAS');
+    const recCats = Object.keys(rec25).length ? Object.keys(rec25) : Object.keys(rec26);
+    recCats.forEach(cat => {
+      rows += dataRow(cat, rec25[cat]||0, rec26[cat]||0, false, false, true);
+    });
+    rows += dataRow('TOTAL RECEITAS', tot25R, tot26R, true, false, false);
+
+    // DESPESAS
+    rows += secRow('📤 DESPESAS');
+    const todosGrupos = [...new Set([...Object.keys(desp25), ...Object.keys(desp26)])].sort();
+    todosGrupos.forEach(g => {
+      rows += dataRow(g, desp25[g]||0, desp26[g]||0, false, true, true);
+    });
+    rows += dataRow('TOTAL DESPESAS', tot25D, tot26D, true, true, false);
+
+    // RESULTADO
+    rows += secRow('📊 RESULTADO');
+    rows += dataRow('Resultado Líquido', res25, res26, true, false, false);
+    rows += dataRow('Margem Líquida (%)', mar25, mar26, false, false, true);
+
+    tbody.innerHTML = rows;
+
+    // Charts
+    renderDRECharts(meses, show25, show26, showComp, rec25, rec26, desp25, desp26, recCats, todosGrupos);
+
+  } catch(e) {
+    console.error('Erro renderDRE:', e);
+    const tbody = document.getElementById('tbody-dre');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="color:red;padding:12px">Erro ao carregar DRE: ' + e.message + '</td></tr>';
+  }
+}
+
+let _dreCharts = {};
+function renderDRECharts(meses, show25, show26, showComp, rec25, rec26, desp25, desp26, recCats, despGrupos) {
+  const mesesNomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  function makeChart(id, cfg) {
+    if (_dreCharts[id]) { try { _dreCharts[id].destroy(); } catch(e){} }
+    const el = document.getElementById(id);
+    if (!el) return;
+    _dreCharts[id] = new Chart(el, cfg);
+  }
+
+  // 1. Resultado por período (bar por mês dos meses filtrados)
+  const labels1 = meses.map(i => mesesNomes[i]);
+  const ds1 = [];
+  if (show25) {
+    ds1.push({
+      label: '2025',
+      data: meses.map(m => {
+        const r = totaisReceitas2025.mensal[m] || 0;
+        const d = despesas2025.reduce((a,c) => a+(c.v[m]||0), 0);
+        return r - d;
+      }),
+      backgroundColor: 'rgba(45,158,95,0.7)', borderColor: '#2d9e5f', borderWidth: 1
+    });
+  }
+  if (show26) {
+    ds1.push({
+      label: '2026',
+      data: meses.map(m => {
+        const r = receitas.filter(x => {
+          if (!x.data) return false;
+          const d = new Date(x.data + 'T12:00:00');
+          return d.getFullYear()===2026 && d.getMonth()===m;
+        }).reduce((a,x) => a+(parseFloat(x.valor)||0), 0);
+        const d = despesas2026.reduce((a,c) => a+(c.v[m]||0), 0);
+        return r - d;
+      }),
+      backgroundColor: 'rgba(64,145,108,0.5)', borderColor: '#40916c', borderWidth: 1
+    });
+  }
+  makeChart('chart-dre-resultado', {
+    type: 'bar',
+    data: { labels: labels1, datasets: ds1 },
+    options: { responsive:true, plugins:{ legend:{position:'top'} }, scales:{ y:{ ticks:{ callback: v => 'R$'+fmtN(v) } } } }
+  });
+
+  // 2. Composição Receitas (pie/doughnut)
+  const recColors = ['#2d9e5f','#40916c','#52b788','#74c69d','#95d5b2'];
+  const recData25 = recCats.map(k => rec25[k]||0);
+  const recData26 = recCats.map(k => rec26[k]||0);
+  const recDataMain = show25 ? recData25 : recData26;
+  makeChart('chart-dre-receitas', {
+    type: 'doughnut',
+    data: { labels: recCats, datasets: [{ data: recDataMain, backgroundColor: recColors }] },
+    options: { responsive:true, plugins:{ legend:{position:'bottom'} } }
+  });
+
+  // 3. Composição Despesas (doughnut)
+  const despColors = ['#e63946','#f4a261','#e9c46a','#2a9d8f','#264653','#8338ec'];
+  const despData25 = despGrupos.map(g => desp25[g]||0);
+  const despData26 = despGrupos.map(g => desp26[g]||0);
+  const despDataMain = show25 ? despData25 : despData26;
+  makeChart('chart-dre-despesas', {
+    type: 'doughnut',
+    data: { labels: despGrupos, datasets: [{ data: despDataMain, backgroundColor: despColors }] },
+    options: { responsive:true, plugins:{ legend:{position:'bottom'} } }
+  });
+
+  // 4. Evolução mensal receitas x despesas
+  const allMeses = [0,1,2,3,4,5,6,7,8,9,10,11];
+  const ds4 = [];
+  if (show25) {
+    ds4.push({
+      label:'Receita 2025', data: allMeses.map(m => totaisReceitas2025.mensal[m]||0),
+      borderColor:'#2d9e5f', backgroundColor:'transparent', tension:0.3
+    });
+    ds4.push({
+      label:'Despesa 2025', data: allMeses.map(m => despesas2025.reduce((a,c)=>a+(c.v[m]||0),0)),
+      borderColor:'#e63946', backgroundColor:'transparent', tension:0.3, borderDash:[5,3]
+    });
+  }
+  if (show26) {
+    ds4.push({
+      label:'Receita 2026', data: allMeses.map(m => receitas.filter(x => {
+        if(!x.data) return false;
+        const d=new Date(x.data+'T12:00:00'); return d.getFullYear()===2026&&d.getMonth()===m;
+      }).reduce((a,x)=>a+(parseFloat(x.valor)||0),0)),
+      borderColor:'#52b788', backgroundColor:'transparent', tension:0.3
+    });
+    ds4.push({
+      label:'Despesa 2026', data: allMeses.map(m => despesas2026.reduce((a,c)=>a+(c.v[m]||0),0)),
+      borderColor:'#f4a261', backgroundColor:'transparent', tension:0.3, borderDash:[5,3]
+    });
+  }
+  makeChart('chart-dre-evolucao', {
+    type: 'line',
+    data: { labels: mesesNomes, datasets: ds4 },
+    options: { responsive:true, plugins:{ legend:{position:'top'} }, scales:{ y:{ ticks:{ callback: v => 'R$'+fmtN(v) } } } }
+  });
+}
+
+function exportDRE() {
+  const modo    = (document.getElementById('dre-modo')    || {}).value || 'comparar';
+  const periodo = (document.getElementById('dre-periodo') || {}).value || 'anual';
+  const mes     = (document.getElementById('dre-mes')     || {}).value || '0';
+  const grupFiltro = (document.getElementById('dre-grupo')   || {}).value || '';
+  const catFiltro  = (document.getElementById('dre-cat-rec') || {}).value || '';
+
+  const meses  = getMesesDRE(periodo, mes);
+  const show25 = modo !== '2026';
+  const show26 = modo !== '2025';
+
+  const rec25  = getDREReceitas(2025, meses, catFiltro);
+  const rec26  = getDREReceitas(2026, meses, catFiltro);
+  const desp25 = getDREDespesas(2025, meses, grupFiltro);
+  const desp26 = getDREDespesas(2026, meses, grupFiltro);
+  const tot25R = Object.values(rec25).reduce((a,v)=>a+v,0);
+  const tot26R = Object.values(rec26).reduce((a,v)=>a+v,0);
+  const tot25D = Object.values(desp25).reduce((a,v)=>a+v,0);
+  const tot26D = Object.values(desp26).reduce((a,v)=>a+v,0);
+
+  let csv = 'Item';
+  if (show25) csv += ';2025';
+  if (show26) csv += ';2026';
+  csv += '\n';
+
+  const line = (label, v25, v26) => {
+    let l = label;
+    if (show25) l += ';' + (v25||0).toFixed(2).replace('.',',');
+    if (show26) l += ';' + (v26||0).toFixed(2).replace('.',',');
+    return l + '\n';
+  };
+
+  csv += 'RECEITAS\n';
+  Object.keys(rec25).forEach(k => { csv += line(k, rec25[k]||0, rec26[k]||0); });
+  csv += line('TOTAL RECEITAS', tot25R, tot26R);
+  csv += 'DESPESAS\n';
+  const todosGrupos = [...new Set([...Object.keys(desp25), ...Object.keys(desp26)])].sort();
+  todosGrupos.forEach(g => { csv += line(g, desp25[g]||0, desp26[g]||0); });
+  csv += line('TOTAL DESPESAS', tot25D, tot26D);
+  csv += line('RESULTADO LIQUIDO', tot25R-tot25D, tot26R-tot26D);
+
+  const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'DRE_FazendaDoisCorregosx.csv';
+  a.click();
+}
+// ==================== END DRE ====================
 </script>
 </div><!-- #app -->
 </body>
