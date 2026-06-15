@@ -1521,10 +1521,71 @@ const totaisReceitas2026 = {
   semoventes:[300.00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   outras:   [0, 15000.00, 300000.00, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 };
+const RECEITAS_2026_PRELOAD = [
+  {data:'2026-01-15',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES",valor:'1866.8',status:'recebido'},
+  {data:'2026-01-27',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES",valor:'2177.8',status:'recebido'},
+  {data:'2026-01-01',categoria:'Venda de Gado',descricao:"Venda de leitoa(pagamento por parcela)",valor:'300.0',status:'recebido'},
+  {data:'2026-01-05',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Gruas Paulo Sergio Gomes",valor:'237.25',status:'recebido'},
+  {data:'2026-01-15',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Galpão",valor:'3000.0',status:'recebido'},
+  {data:'2026-01-16',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Gruas Paulo Sergio Gomes",valor:'219.45',status:'recebido'},
+  {data:'2026-02-13',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES LTDA",valor:'2056.0',status:'recebido'},
+  {data:'2026-02-25',categoria:'Eucalipto / Madeira',descricao:"NOVA ERA",valor:'1048.8',status:'recebido'},
+  {data:'2026-02-25',categoria:'Eucalipto / Madeira',descricao:"NOVA ERA",valor:'1064.8',status:'recebido'},
+  {data:'2026-02-09',categoria:'Outras Receitas',descricao:"PAULO SERGIO GOMES",valor:'15000.0',status:'recebido'},
+  {data:'2026-02-18',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Galpão",valor:'3000.0',status:'recebido'},
+  {data:'2026-03-09',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES LTDA",valor:'1967.2',status:'recebido'},
+  {data:'2026-03-25',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES LTDA",valor:'1855.6',status:'recebido'},
+  {data:'2026-03-09',categoria:'Outras Receitas',descricao:"WANDERSON DE MORAIS",valor:'110000.0',status:'recebido'},
+  {data:'2026-03-31',categoria:'Outras Receitas',descricao:"DIEGO JUNIOR DE SOUZA",valor:'190000.0',status:'recebido'},
+  {data:'2026-03-16',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Galpão",valor:'3000.0',status:'recebido'},
+  {data:'2026-04-24',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES LTDA",valor:'2215.6',status:'recebido'},
+  {data:'2026-04-15',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Galpão",valor:'3000.0',status:'recebido'},
+  {data:'2026-05-11',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1056.4',status:'recebido'},
+  {data:'2026-05-11',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1118.4',status:'recebido'},
+  {data:'2026-05-11',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1138.8',status:'recebido'},
+  {data:'2026-05-11',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1062.4',status:'recebido'},
+  {data:'2026-05-11',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1098.8',status:'recebido'},
+  {data:'2026-05-11',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1074.4',status:'recebido'},
+  {data:'2026-05-12',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1032.0',status:'recebido'},
+  {data:'2026-05-12',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1050.4',status:'recebido'},
+  {data:'2026-05-13',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1050.4',status:'recebido'},
+  {data:'2026-05-14',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1038.0',status:'recebido'},
+  {data:'2026-05-14',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1101.2',status:'recebido'},
+  {data:'2026-05-15',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1092.8',status:'recebido'},
+  {data:'2026-05-18',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1159.2',status:'recebido'},
+  {data:'2026-05-18',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1092.8',status:'recebido'},
+  {data:'2026-05-18',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1104.8',status:'recebido'},
+  {data:'2026-05-18',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1086.8',status:'recebido'},
+  {data:'2026-05-19',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1092.8',status:'recebido'},
+  {data:'2026-05-21',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1176.8',status:'recebido'},
+  {data:'2026-05-21',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1132.4',status:'recebido'},
+  {data:'2026-05-22',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1191.6',status:'recebido'},
+  {data:'2026-05-22',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1074.4',status:'recebido'},
+  {data:'2026-05-25',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1074.4',status:'recebido'},
+  {data:'2026-05-25',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1159.2',status:'recebido'},
+  {data:'2026-05-25',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1129.2',status:'recebido'},
+  {data:'2026-05-26',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1165.6',status:'recebido'},
+  {data:'2026-05-26',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1110.8',status:'recebido'},
+  {data:'2026-05-27',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1154.0',status:'recebido'},
+  {data:'2026-05-27',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1218.8',status:'recebido'},
+  {data:'2026-05-28',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES LTDA",valor:'2158.4',status:'recebido'},
+  {data:'2026-05-29',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1165.6',status:'recebido'},
+  {data:'2026-05-29',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:'1063.6',status:'recebido'},
+  {data:'2026-05-31',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Galpão",valor:'3000.0',status:'recebido'}
+];
 
 
 // State
 let receitas = JSON.parse(localStorage.getItem('fazenda_receitas') || '[]');
+// Pre-carregar receitas 2026 na primeira execução
+if (!localStorage.getItem('fazenda_rec_preloaded_2026')) {
+  // Remove any 2026 entries added manually to avoid duplicates
+  receitas = receitas.filter(r => !r.data || !r.data.startsWith('2026'));
+  // Add all 50 pre-loaded 2026 transactions
+  RECEITAS_2026_PRELOAD.forEach(function(r) { receitas.push(r); });
+  localStorage.setItem('fazenda_receitas', JSON.stringify(receitas));
+  localStorage.setItem('fazenda_rec_preloaded_2026', '1');
+}
 let gadoMov = JSON.parse(localStorage.getItem('fazenda_gado_mov') || '[]');
 let gadoEstoque = JSON.parse(localStorage.getItem('fazenda_gado_estoque') || '{"vacas":0,"garrotes":0,"bezerros":0,"touros":0}');
 let eucaAreas = JSON.parse(localStorage.getItem('fazenda_euca_areas') || '[]');
