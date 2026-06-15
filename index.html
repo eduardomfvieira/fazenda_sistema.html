@@ -833,7 +833,7 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
     <div class="section-title" style="flex:1; margin:0">🌳 Controle de Eucalipto</div>
     <div style="display:flex; gap:8px;">
       <button class="btn btn-green" onclick="openModal('modal-euca-venda')">+ Registrar Venda</button>
-      <button class="btn btn-outline" onclick="openModal('modal-euca-area')">+ Área</button>
+      <button class="btn btn-outline" onclick="openEucaAreaModal()">+ Área</button>
       <button class="btn btn-outline" onclick="exportTableCSV('tbl-euca-vendas','eucalipto_vendas')">⬇️ CSV</button>
     </div>
   </div>
@@ -1327,7 +1327,7 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
 <!-- Modal: Área Eucalipto -->
 <div class="modal-overlay" id="modal-euca-area">
   <div class="modal">
-    <h2>🌳 Cadastrar Área de Eucalipto</h2>
+    <h2 id="euca-area-modal-title">🌳 Cadastrar Área de Eucalipto</h2>
     <div class="form-row">
       <label>Identificação / Nome da Área</label>
       <input type="text" id="euca-area-nome" placeholder="Ex: Talhão A1, Área Norte...">
@@ -1645,6 +1645,7 @@ if (!localStorage.getItem('fazenda_rec2026_v3')) {
 let gadoMov = JSON.parse(localStorage.getItem('fazenda_gado_mov') || '[]');
 let gadoEstoque = JSON.parse(localStorage.getItem('fazenda_gado_estoque') || '{"touro":0,"vacaLeite":0,"bezerroMamando":0,"bezerraMamando":0,"novilhas":0,"bezerroDesmame":0,"matrizes":0,"bezerraDesmame":0}');
 let eucaAreas = JSON.parse(localStorage.getItem('fazenda_euca_areas') || '[]');
+let _eucaEditIdx = null;
 let eucaVendas = JSON.parse(localStorage.getItem('fazenda_euca_vendas') || '[]');
 let inventario = JSON.parse(localStorage.getItem('fazenda_inventario') || '[]');
 let anoAtivoDespesas = 2026;
@@ -2476,7 +2477,10 @@ function renderEucalipto() {
       <td>${a.variedade||'—'}</td>
       <td><span class="badge ${a.status==='Disponível'?'badge-green':a.status==='Cortado'?'badge-gray':'badge-blue'}">${a.status}</span></td>
       <td>${a.previsaoCorte ? new Date(a.previsaoCorte).toLocaleDateString('pt-BR') : '—'}</td>
-      <td><button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delEucaArea(${i})">✕</button></td>
+      <td style="display:flex;gap:6px;align-items:center">
+        <button class="btn btn-sm" style="background:#d4efdf;color:#1e6b3a;border:none;cursor:pointer" onclick="editEucaArea(${i})">✏️</button>
+        <button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delEucaArea(${i})">✕</button>
+      </td>
     </tr>`).join('');
   }
 
@@ -2510,16 +2514,49 @@ function calcEucaTotal() {
   document.getElementById('euca-total').value = (vol*preco).toFixed(2);
 }
 
+function openEucaAreaModal() {
+  _eucaEditIdx = null;
+  document.getElementById('euca-area-nome').value = '';
+  document.getElementById('euca-area-ha').value = '';
+  document.getElementById('euca-area-plantio').value = '';
+  document.getElementById('euca-area-variedade').value = '';
+  document.getElementById('euca-area-status').value = 'Crescimento';
+  document.getElementById('euca-area-previsao').value = '';
+  const t = document.getElementById('euca-area-modal-title');
+  if (t) t.textContent = '🌳 Cadastrar Área de Eucalipto';
+  openModal('modal-euca-area');
+}
+
+function editEucaArea(i) {
+  _eucaEditIdx = i;
+  const a = eucaAreas[i];
+  document.getElementById('euca-area-nome').value = a.nome || '';
+  document.getElementById('euca-area-ha').value = a.ha || '';
+  document.getElementById('euca-area-plantio').value = a.anoPlantio || '';
+  document.getElementById('euca-area-variedade').value = a.variedade || '';
+  document.getElementById('euca-area-status').value = a.status || 'Crescimento';
+  document.getElementById('euca-area-previsao').value = a.previsaoCorte || '';
+  const t = document.getElementById('euca-area-modal-title');
+  if (t) t.textContent = '✏️ Editar Área de Eucalipto';
+  openModal('modal-euca-area');
+}
+
 function saveEucaArea() {
   const nome = document.getElementById('euca-area-nome').value;
   const ha = parseFloat(document.getElementById('euca-area-ha').value)||0;
   if (!nome || !ha) { alert('Preencha nome e área.'); return; }
-  eucaAreas.push({
+  const entrada = {
     nome, ha, anoPlantio: document.getElementById('euca-area-plantio').value,
     variedade: document.getElementById('euca-area-variedade').value,
     status: document.getElementById('euca-area-status').value,
     previsaoCorte: document.getElementById('euca-area-previsao').value
-  });
+  };
+  if (_eucaEditIdx !== null) {
+    eucaAreas[_eucaEditIdx] = entrada;
+    _eucaEditIdx = null;
+  } else {
+    eucaAreas.push(entrada);
+  }
   save(); closeModal('modal-euca-area'); renderEucalipto();
 }
 
