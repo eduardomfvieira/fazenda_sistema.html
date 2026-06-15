@@ -2546,4 +2546,62 @@ async function loadFromSupabase() {
     gadoEstoque  = JSON.parse(localStorage.getItem('fazenda_gado_estoque')  || '{"vacas":0,"garrotes":0,"bezerros":0,"touros":0}');
     eucaAreas    = JSON.parse(localStorage.getItem('fazenda_euca_areas')    || '[]');
     eucaVendas   = JSON.parse(localStorage.getItem('fazenda_euca_vendas')   || '[]');
-    inventario   = JSON.parse(loc
+    inventario   = JSON.parse(localStorage.getItem('fazenda_inventario')    || '[]');
+    contasPagar  = JSON.parse(localStorage.getItem('fazenda_contas')        || '[]');
+    const lu = localStorage.getItem('fazenda_last_update');
+    if (lu) document.getElementById('last-update').textContent = lu;
+  } catch(e) { console.warn('Erro ao carregar dados:', e); }
+}
+
+async function syncToSupabase() {
+  if (!currentUser) return;
+  setSyncStatus('⟳ Sincronizando...');
+  const dataMap = {
+    receitas, gado_mov: gadoMov, gado_estoque: gadoEstoque,
+    euca_areas: eucaAreas, euca_vendas: eucaVendas,
+    inventario, contas: contasPagar
+  };
+  try {
+    const rows = Object.entries(dataMap).map(([k, v]) => ({
+      data_key: k,
+      data_value: v,
+      updated_by: currentUser.id,
+      updated_at: new Date().toISOString()
+    }));
+    const { error } = await sb.from('fazenda_data').upsert(rows, { onConflict: 'data_key' });
+    setSyncStatus(error ? '⚠ Erro ao sincronizar' : '✓ Sincronizado');
+  } catch(e) { setSyncStatus('⚠ Sem conexão'); }
+}
+
+function initApp() {
+  initDateTime();
+  initDashboard();
+  renderDespesasTable();
+  atualizarBadgeContas();
+  const today = new Date().toISOString().split('T')[0];
+  ['rec-data','gado-data','euca-data','nc-vencimento','pagar-data'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = today;
+  });
+}
+
+window.addEventListener('load', async () => {
+  try {
+    if (!sb) { console.error('Supabase não carregou'); return; }
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.user) {
+      await onLogin(session.user);
+    }
+    sb.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('auth-screen').style.display = 'flex';
+      }
+    });
+  } catch(e) {
+    console.error('Erro de inicialização:', e);
+  }
+});
+</script>
+</div><!-- #app -->
+</body>
+</html>
