@@ -971,29 +971,7 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
     </table>
   </div>
 
-  <!-- Gráficos linha 1 -->
-  <div class="charts-row charts-3" style="margin-bottom:20px">
-    <div class="chart-card">
-      <h3>📊 Resultado por Período</h3>
-      <canvas id="chart-dre-resultado" height="220"></canvas>
-    </div>
-    <div class="chart-card">
-      <h3>💰 Composição Receitas</h3>
-      <canvas id="chart-dre-receitas" height="220"></canvas>
-    </div>
-    <div class="chart-card">
-      <h3>📋 Composição Despesas</h3>
-      <canvas id="chart-dre-despesas" height="220"></canvas>
-    </div>
-  </div>
 
-  <!-- Gráfico evolução -->
-  <div class="chart-card">
-    <h3>📅 Evolução Mensal — Receitas × Despesas</h3>
-    <canvas id="chart-dre-evolucao" height="110"></canvas>
-  </div>
-
-</div>
 
 <!-- Modal: Nova Conta a Pagar -->
 <div class="modal-overlay" id="modal-nova-conta">
@@ -2953,8 +2931,8 @@ function renderDREResumo(modo) {
   rows += resRow('(=) RESULTADO LÍQUIDO', res25, res26, marLiq25, marLiq26, true);
 
   tbody.innerHTML = rows;
-  renderDRECharts(meses, show25, show26, rec25, rec26);
 }
+
 
 function renderDREMensalCompleto(ano) {
   const lbl = document.getElementById('dre-periodo-label');
@@ -3131,52 +3109,8 @@ function renderDREMensalCompleto(ano) {
   rows += calcRowM('(=) RESULTADO LÍQUIDO', resLiqFn, true, true);
   tbody.innerHTML = rows;
 
-  // Chart for mensal view
-  if (_dreCharts['chart-dre-evolucao']) { try { _dreCharts['chart-dre-evolucao'].destroy(); } catch(e){} }
-  const elEv = document.getElementById('chart-dre-evolucao');
-  if (elEv) {
-    _dreCharts['chart-dre-evolucao'] = new Chart(elEv, {
-      type: 'bar',
-      data: {
-        labels: mesesNm,
-        datasets: [
-          { label:'Receita', data: allM.map(m=>getRecMes(m)), backgroundColor:'rgba(45,158,95,0.6)', order:2 },
-          { label:'Despesas', data: allM.map(m=>getSecMes('CPV',m)+getSecMes('PESSOAL',m)+getSecMes('ADMIN',m)+getSecMes('VEICULOS',m)+getSecMes('FISCAL',m)+getSecMes('FINANCEIRO',m)), backgroundColor:'rgba(230,57,70,0.5)', order:2 },
-          { label:'Resultado', type:'line', data: allM.map(m=>resLiqFn(m)), borderColor:'#2d9e5f', backgroundColor:'transparent', tension:0.3, order:1 }
-        ]
-      },
-      options: { responsive:true, plugins:{legend:{position:'top'}}, scales:{y:{ticks:{callback:v=>'R$'+fmtN(v)}}} }
-    });
-  }
 }
 
-function renderDRECharts(meses, show25, show26, rec25, rec26) {
-  const mesesNm = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const mkChart = (id, cfg) => {
-    if (_dreCharts[id]) { try { _dreCharts[id].destroy(); } catch(e){} }
-    const el = document.getElementById(id);
-    if (el) _dreCharts[id] = new Chart(el, cfg);
-  };
-
-  const ds1 = [];
-  if (show25) ds1.push({ label:'Resultado 2025', data: meses.map(m=>(totaisReceitas2025.mensal[m]||0)-despesas2025.reduce((a,c)=>a+(c.v[m]||0),0)), backgroundColor:'rgba(45,158,95,0.7)', borderColor:'#2d9e5f', borderWidth:1 });
-  if (show26) ds1.push({ label:'Resultado 2026', data: meses.map(m=>{ const r=receitas.filter(x=>{if(!x.data)return false;const d=new Date(x.data+'T12:00:00');return d.getFullYear()===2026&&d.getMonth()===m;}).reduce((a,x)=>a+(parseFloat(x.valor)||0),0); return r-despesas2026.reduce((a,c)=>a+(c.v[m]||0),0); }), backgroundColor:'rgba(64,145,108,0.5)', borderColor:'#40916c', borderWidth:1 });
-  mkChart('chart-dre-resultado', {type:'bar',data:{labels:meses.map(i=>mesesNm[i]),datasets:ds1},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{y:{ticks:{callback:v=>'R$'+fmtN(v)}}}}});
-
-  const recCats = Object.keys(rec25);
-  const recColors = ['#2d9e5f','#40916c','#52b788','#74c69d'];
-  mkChart('chart-dre-receitas', {type:'doughnut',data:{labels:recCats,datasets:[{data:recCats.map(k=>(show25?rec25[k]:rec26[k])||0),backgroundColor:recColors}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
-
-  const despLabels=['CPV','Pessoal','Admin','Veículos','Fiscal','Financeiro'];
-  const despSec=['CPV','PESSOAL','ADMIN','VEICULOS','FISCAL','FINANCEIRO'];
-  const despColors=['#e63946','#f4a261','#e9c46a','#2a9d8f','#264653','#8338ec'];
-  mkChart('chart-dre-despesas', {type:'doughnut',data:{labels:despLabels,datasets:[{data:despSec.map(s=>getDRESectionTotal(show25?2025:2026,s,meses)),backgroundColor:despColors}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
-
-  const ds4=[];
-  if (show25) { ds4.push({label:'Receita 2025',data:[0,1,2,3,4,5,6,7,8,9,10,11].map(m=>totaisReceitas2025.mensal[m]||0),borderColor:'#2d9e5f',backgroundColor:'transparent',tension:0.3}); ds4.push({label:'Desp. 2025',data:[0,1,2,3,4,5,6,7,8,9,10,11].map(m=>despesas2025.reduce((a,c)=>a+(c.v[m]||0),0)),borderColor:'#e63946',backgroundColor:'transparent',tension:0.3,borderDash:[5,3]}); }
-  if (show26) { ds4.push({label:'Receita 2026',data:[0,1,2,3,4,5,6,7,8,9,10,11].map(m=>receitas.filter(x=>{if(!x.data)return false;const d=new Date(x.data+'T12:00:00');return d.getFullYear()===2026&&d.getMonth()===m;}).reduce((a,x)=>a+(parseFloat(x.valor)||0),0)),borderColor:'#52b788',backgroundColor:'transparent',tension:0.3}); ds4.push({label:'Desp. 2026',data:[0,1,2,3,4,5,6,7,8,9,10,11].map(m=>despesas2026.reduce((a,c)=>a+(c.v[m]||0),0)),borderColor:'#f4a261',backgroundColor:'transparent',tension:0.3,borderDash:[5,3]}); }
-  mkChart('chart-dre-evolucao', {type:'line',data:{labels:mesesNm,datasets:ds4},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{y:{ticks:{callback:v=>'R$'+fmtN(v)}}}}});
-}
 
 function exportDRE() {
   const modo=(document.getElementById('dre-modo')||{}).value||'comparar';
