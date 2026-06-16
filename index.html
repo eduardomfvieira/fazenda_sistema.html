@@ -1643,69 +1643,57 @@ let gadoEstoque = JSON.parse(localStorage.getItem('fazenda_gado_estoque') || '{"
 let eucaAreas = JSON.parse(localStorage.getItem('fazenda_euca_areas') || '[]');
 let _eucaEditIdx = null;
 let eucaVendas = JSON.parse(localStorage.getItem('fazenda_euca_vendas') || '[]');
-const _INV_SEED = [
-  {categoria:'Veículos',    nome:'Toyota Hilux CD 2018',          descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Veículos',    nome:'Land Rover Defender',            descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Trator',                         descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Veículos',    nome:'Van Sprinter 2001',              descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Tanque Pipa',                    descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Guincho para Trator',            descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Barrelador de Forno',            descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Arado',                          descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Roçadeira de Trator',            descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Grade',                          descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Lâmina para Arrumar Estrada',    descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Ensiladeira',                    descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Pulverizador',                   descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Esparramador de Calcário',       descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Sucador',                        descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Concha para Trator',             descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Carroça Basculhante',            descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Carroça Comum',                  descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Carroça para Puxar Lenha',       descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Guincho para Trator (extra)',    descricao:'Implemento para trator — Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Compressor de Ar',               descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Mulinha de Puxar Palete',        descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Bomba de Graxa Pneumática',      descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Motosserra Stihl MS382',         descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Motosserra Stihl MS250',         descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Roçadeira Stihl FS 220',         descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Gerador de Energia (grande)',    descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Serra de Lâmina',                descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Furadeira de Bancada',           descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Mesa de Serra Circular',         descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Picadeira de Capim',             descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Balança Arjea',                  descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Máquina de Soldar',              descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Furadeira Manual',               descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Lixadeira Manual',               descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Máquinas',    nome:'Concha para Retroescavadeira',   descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Trado (furar buraco para cerca)',descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Carrinho de Esparramar Adubo',   descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Esmeril',                        descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Outros',      nome:'Charrete',                       descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
-  {categoria:'Ferramentas', nome:'Morsa',                          descricao:'Ferramenta de fixação para segurar peças — Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+// ── Inventário base (dados do Balancete de Ferramentas) ──
+const _INV_BASE = [
+  {categoria:'Veículos',    nome:'Toyota Hilux CD 2018',         descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Veículos',    nome:'Land Rover Defender',           descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Trator',                        descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Veículos',    nome:'Van Sprinter 2001',             descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Tanque Pipa',                   descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Guincho para Trator',           descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Barrelador de Forno',           descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Arado',                         descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Rocadeira de Trator',           descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Grade',                         descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Lamina para Arrumar Estrada',   descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Ensiladeira',                   descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Pulverizador',                  descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Esparramador de Calcario',      descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Sucador',                       descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Concha para Trator',            descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Carroca Basculhante',           descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Carroca Comum',                 descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Carroca para Puxar Lenha',      descricao:'Implemento trator - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Guincho para Trator extra',     descricao:'Implemento trator - Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Compressor de Ar',              descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Mulinha de Puxar Palete',       descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Bomba de Graxa Pneumatica',     descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Motosserra Stihl MS382',        descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Motosserra Stihl MS250',        descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Rocadeira Stihl FS 220',        descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Gerador de Energia Grande',     descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Serra de Lamina',               descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Furadeira de Bancada',          descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Mesa de Serra Circular',        descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Picadeira de Capim',            descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Balanca Arjea',                 descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Maquina de Soldar',             descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Furadeira Manual',              descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Lixadeira Manual',              descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Concha para Retroescavadeira',  descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Trado para Cerca',              descricao:'Furar buraco para fazer cerca - Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Carrinho de Esparramar Adubo',  descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Esmeril',                       descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Outros',      nome:'Charrete',                      descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Morsa',                         descricao:'Ferramenta de fixacao para segurar pecas - Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''}
 ];
-let inventario = (function() {
-  try {
-    const _stored = localStorage.getItem('fazenda_inventario');
-    const _arr = _stored ? (JSON.parse(_stored) || []) : [];
-    if (_arr.length === 0) {
-      localStorage.setItem('fazenda_inventario', JSON.stringify(_INV_SEED));
-      return _INV_SEED.slice();
-    }
-    const _names = _arr.map(function(x){ return x.nome; });
-    const _miss  = _INV_SEED.filter(function(x){ return !_names.includes(x.nome); });
-    if (_miss.length > 0) {
-      const _merged = _arr.concat(_miss);
-      localStorage.setItem('fazenda_inventario', JSON.stringify(_merged));
-      return _merged;
-    }
-    return _arr;
-  } catch(e) {
-    return _INV_SEED.slice();
-  }
-})();
+// Garante itens base sempre presentes; preserva itens adicionados pelo usuario
+var _invStored = [];
+try { _invStored = JSON.parse(localStorage.getItem('fazenda_inventario') || '[]') || []; } catch(e) {}
+var _invBaseNames = _INV_BASE.map(function(x){ return x.nome; });
+var _invUserExtra = _invStored.filter(function(x){ return x && x.nome && !_invBaseNames.includes(x.nome); });
+var inventario = _INV_BASE.concat(_invUserExtra);
+localStorage.setItem('fazenda_inventario', JSON.stringify(inventario));
 let anoAtivoDespesas = 2026;
 
 function save() {
