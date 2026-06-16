@@ -2684,10 +2684,10 @@ function renderInventario() {
         <td>${item.estado||'—'}</td>
         <td><span class="badge ${item.status==='Ativo'?'badge-green':item.status==='Manutenção'?'badge-yellow':'badge-gray'}">${item.status}</span></td>
         <td>${item.obs||'—'}</td>
-        <td style="display:flex;gap:4px">
+        <td><div style="display:flex;gap:4px;align-items:center">
           <button class="btn btn-sm" style="background:#fef9e7;color:#b7950b;border:1px solid #f9e79f;cursor:pointer" onclick="editInventario(${realIdx})" title="Editar">✏️</button>
           <button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delInventario(${realIdx})" title="Excluir">✕</button>
-        </td>
+        </div></td>
       </tr>`;
     }).join('');
   }
