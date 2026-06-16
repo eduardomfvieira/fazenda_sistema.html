@@ -532,7 +532,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
         <tbody id="tbody-contas">
           <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">
             Nenhuma conta lançada ainda.<br>
-            <button class="btn btn-green" style="margin-top:12px" onclick="openModal('modal-nova-conta')">+ Lançar primeira conta</button>
+            <button class="btn btn-green" style="margin-top:12px" onclick="openModal('modal-nova-conta')" class="btn btn-green role-btn-add">+ Lançar primeira conta</button>
           </td></tr>
         </tbody>
       </table>
@@ -559,7 +559,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <div class="section-title" style="flex:1; margin:0">📋 Controle de Despesas</div>
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-green" onclick="openModal('modal-despesa')">+ Lançar Despesa</button>
+      <button class="btn btn-green" onclick="openModal('modal-despesa')" class="btn btn-green role-btn-add">+ Lançar Despesa</button>
       <button class="btn btn-outline" onclick="exportTableCSV('tbl-despesas-detail','despesas_'+anoAtivoDespesas)">⬇️ Exportar CSV</button>
     </div>
   </div>
@@ -622,7 +622,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <div class="section-title" style="flex:1; margin:0">💰 Controle de Receitas</div>
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-green" onclick="openModal('modal-receita')">+ Nova Receita</button>
+      <button class="btn btn-green" onclick="openModal('modal-receita')" class="btn btn-green role-btn-add">+ Nova Receita</button>
       <button class="btn btn-outline" onclick="exportTableCSV('tbl-receitas','receitas')">⬇️ CSV</button>
     </div>
   </div>
@@ -716,7 +716,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <div class="section-title" style="flex:1; margin:0">🐄 Controle de Gado</div>
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-green" onclick="openModal('modal-gado-mov')">+ Movimentação</button>
+      <button class="btn btn-green" onclick="openModal('modal-gado-mov')" class="btn btn-green role-btn-add">+ Movimentação</button>
       <button class="btn btn-outline" onclick="exportTableCSV('tbl-gado-mov','gado_movimentacoes')">⬇️ CSV</button>
     </div>
   </div>
@@ -852,8 +852,8 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <div class="section-title" style="flex:1; margin:0">🌳 Controle de Eucalipto</div>
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-green" onclick="openModal('modal-euca-venda')">+ Registrar Venda</button>
-      <button class="btn btn-outline" onclick="openEucaAreaModal()">+ Área</button>
+      <button class="btn btn-green" onclick="openModal('modal-euca-venda')" class="btn btn-green role-btn-add">+ Registrar Venda</button>
+      <button class="btn btn-outline" onclick="openEucaAreaModal()" class="btn btn-outline role-btn-add">+ Área</button>
       <button class="btn btn-outline" onclick="exportTableCSV('tbl-euca-vendas','eucalipto_vendas')">⬇️ CSV</button>
     </div>
   </div>
