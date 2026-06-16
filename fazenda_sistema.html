@@ -1686,10 +1686,13 @@ const _INV_SEED = [
   {categoria:'Outros',      nome:'Charrete',                       descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
   {categoria:'Ferramentas', nome:'Morsa',                          descricao:'Ferramenta de fixação para segurar peças — Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
 ];
-// Pré-carregar itens do balancete se inventário estiver vazio ou não existir
-const _invRaw = localStorage.getItem('fazenda_inventario');
-if (!_invRaw || JSON.parse(_invRaw).length === 0) {
-  localStorage.setItem('fazenda_inventario', JSON.stringify(_INV_SEED));
+// Força carga do balancete na primeira abertura desta versão do sistema
+if (!localStorage.getItem('fazenda_inv_seed_v1')) {
+  const _existing = JSON.parse(localStorage.getItem('fazenda_inventario') || '[]');
+  const _seedNames = _INV_SEED.map(x => x.nome);
+  const _merged = [..._existing.filter(x => !_seedNames.includes(x.nome)), ..._INV_SEED];
+  localStorage.setItem('fazenda_inventario', JSON.stringify(_merged));
+  localStorage.setItem('fazenda_inv_seed_v1', '1');
 }
 let inventario = JSON.parse(localStorage.getItem('fazenda_inventario') || '[]');
 let anoAtivoDespesas = 2026;
