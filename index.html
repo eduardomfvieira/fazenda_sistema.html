@@ -429,7 +429,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <div class="section-title" style="flex:1; margin:0">🔔 Contas a Pagar</div>
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-green" onclick="openModal('modal-nova-conta')" class="btn btn-green role-btn-add">+ Nova Conta</button>
+      <button class="btn btn-green role-btn-add" onclick="openModal('modal-nova-conta')">+ Nova Conta</button>
       <button class="btn btn-outline" onclick="exportTableCSV('tbl-contas','contas_a_pagar')">⬇️ CSV</button>
     </div>
   </div>
@@ -532,7 +532,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
         <tbody id="tbody-contas">
           <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">
             Nenhuma conta lançada ainda.<br>
-            <button class="btn btn-green" style="margin-top:12px" onclick="openModal('modal-nova-conta')" class="btn btn-green role-btn-add">+ Lançar primeira conta</button>
+            <button class="btn btn-green role-btn-add" style="margin-top:12px" onclick="openModal('modal-nova-conta')">+ Lançar primeira conta</button>
           </td></tr>
         </tbody>
       </table>
@@ -559,7 +559,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <div class="section-title" style="flex:1; margin:0">📋 Controle de Despesas</div>
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-green" onclick="openModal('modal-despesa')" class="btn btn-green role-btn-add">+ Lançar Despesa</button>
+      <button class="btn btn-green role-btn-add" onclick="openModal('modal-despesa')">+ Lançar Despesa</button>
       <button class="btn btn-outline" onclick="exportTableCSV('tbl-despesas-detail','despesas_'+anoAtivoDespesas)">⬇️ Exportar CSV</button>
     </div>
   </div>
@@ -622,7 +622,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <div class="section-title" style="flex:1; margin:0">💰 Controle de Receitas</div>
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-green" onclick="openModal('modal-receita')" class="btn btn-green role-btn-add">+ Nova Receita</button>
+      <button class="btn btn-green role-btn-add" onclick="openModal('modal-receita')">+ Nova Receita</button>
       <button class="btn btn-outline" onclick="exportTableCSV('tbl-receitas','receitas')">⬇️ CSV</button>
     </div>
   </div>
@@ -716,7 +716,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <div class="section-title" style="flex:1; margin:0">🐄 Controle de Gado</div>
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-green" onclick="openModal('modal-gado-mov')" class="btn btn-green role-btn-add">+ Movimentação</button>
+      <button class="btn btn-green role-btn-add" onclick="openModal('modal-gado-mov')">+ Movimentação</button>
       <button class="btn btn-outline" onclick="exportTableCSV('tbl-gado-mov','gado_movimentacoes')">⬇️ CSV</button>
     </div>
   </div>
@@ -731,7 +731,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <div class="gado-num" id="gado-touro-num">0</div>
       <div class="gado-sub">cabeças</div>
       <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('touro')" class="btn btn-outline btn-sm role-btn-edit">✏️ Editar</button>
+        <button class="btn btn-outline btn-sm role-btn-edit" onclick="editGado('touro')">✏️ Editar</button>
       </div>
     </div>
     <div class="gado-card" id="gado-card-vacaLeite">
@@ -740,7 +740,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <div class="gado-num" id="gado-vacaLeite-num">0</div>
       <div class="gado-sub">cabeças</div>
       <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('vacaLeite')" class="btn btn-outline btn-sm role-btn-edit">✏️ Editar</button>
+        <button class="btn btn-outline btn-sm role-btn-edit" onclick="editGado('vacaLeite')">✏️ Editar</button>
       </div>
     </div>
     <div class="gado-card bezerro" id="gado-card-bezerroMamando">
@@ -749,7 +749,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <div class="gado-num" id="gado-bezerroMamando-num">0</div>
       <div class="gado-sub">cabeças</div>
       <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('bezerroMamando')" class="btn btn-outline btn-sm role-btn-edit">✏️ Editar</button>
+        <button class="btn btn-outline btn-sm role-btn-edit" onclick="editGado('bezerroMamando')">✏️ Editar</button>
       </div>
     </div>
     <div class="gado-card bezerro" id="gado-card-bezerraMamando">
@@ -758,7 +758,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <div class="gado-num" id="gado-bezerraMamando-num">0</div>
       <div class="gado-sub">cabeças</div>
       <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('bezerraMamando')" class="btn btn-outline btn-sm role-btn-edit">✏️ Editar</button>
+        <button class="btn btn-outline btn-sm role-btn-edit" onclick="editGado('bezerraMamando')">✏️ Editar</button>
       </div>
     </div>
     <div class="gado-card garrote" id="gado-card-novilhas">
@@ -767,7 +767,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <div class="gado-num" id="gado-novilhas-num">0</div>
       <div class="gado-sub">cabeças</div>
       <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('novilhas')" class="btn btn-outline btn-sm role-btn-edit">✏️ Editar</button>
+        <button class="btn btn-outline btn-sm role-btn-edit" onclick="editGado('novilhas')">✏️ Editar</button>
       </div>
     </div>
     <div class="gado-card bezerro" id="gado-card-bezerroDesmame">
@@ -776,7 +776,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <div class="gado-num" id="gado-bezerroDesmame-num">0</div>
       <div class="gado-sub">cabeças</div>
       <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('bezerroDesmame')" class="btn btn-outline btn-sm role-btn-edit">✏️ Editar</button>
+        <button class="btn btn-outline btn-sm role-btn-edit" onclick="editGado('bezerroDesmame')">✏️ Editar</button>
       </div>
     </div>
     <div class="gado-card" id="gado-card-matrizes">
@@ -785,7 +785,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <div class="gado-num" id="gado-matrizes-num">0</div>
       <div class="gado-sub">cabeças</div>
       <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('matrizes')" class="btn btn-outline btn-sm role-btn-edit">✏️ Editar</button>
+        <button class="btn btn-outline btn-sm role-btn-edit" onclick="editGado('matrizes')">✏️ Editar</button>
       </div>
     </div>
     <div class="gado-card bezerro" id="gado-card-bezerraDesmame">
@@ -794,7 +794,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <div class="gado-num" id="gado-bezerraDesmame-num">0</div>
       <div class="gado-sub">cabeças</div>
       <div style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="editGado('bezerraDesmame')" class="btn btn-outline btn-sm role-btn-edit">✏️ Editar</button>
+        <button class="btn btn-outline btn-sm role-btn-edit" onclick="editGado('bezerraDesmame')">✏️ Editar</button>
       </div>
     </div>
   </div>
@@ -852,8 +852,8 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <div class="section-title" style="flex:1; margin:0">🌳 Controle de Eucalipto</div>
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-green" onclick="openModal('modal-euca-venda')" class="btn btn-green role-btn-add">+ Registrar Venda</button>
-      <button class="btn btn-outline" onclick="openEucaAreaModal()" class="btn btn-outline role-btn-add">+ Área</button>
+      <button class="btn btn-green role-btn-add" onclick="openModal('modal-euca-venda')">+ Registrar Venda</button>
+      <button class="btn btn-outline role-btn-add" onclick="openEucaAreaModal()">+ Área</button>
       <button class="btn btn-outline" onclick="exportTableCSV('tbl-euca-vendas','eucalipto_vendas')">⬇️ CSV</button>
     </div>
   </div>
@@ -921,7 +921,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <div class="section-title" style="flex:1; margin:0">🗂️ Inventário da Fazenda</div>
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-green" onclick="openModal('modal-inventario')" class="btn btn-green role-btn-add">+ Novo Item</button>
+      <button class="btn btn-green role-btn-add" onclick="openModal('modal-inventario')">+ Novo Item</button>
       <button class="btn btn-outline" onclick="exportTableCSV('tbl-inv-all','inventario_fazenda')">⬇️ CSV</button>
     </div>
   </div>
@@ -2391,7 +2391,7 @@ function renderReceitas() {
         <td>${r.descricao}</td>
         <td class="num"><strong>${fmtN(r.valor)}</strong></td>
         <td><span class="badge badge-green">Recebido</span></td>
-        <td>${isFixo ? '<span style="color:#aaa;font-size:11px">Importado</span>' : `<button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delReceita(${idx})" class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer">✕</button>`}</td>
+        <td>${isFixo ? '<span style="color:#aaa;font-size:11px">Importado</span>' : `<button class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delReceita(${idx})" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer">✕</button>`}</td>
       </tr>`;
     }).join('');
   }
@@ -2487,7 +2487,7 @@ function renderGado() {
         <td class="num">${m.valorUnit ? fmtN(m.valorUnit) : '—'}</td>
         <td class="num">${m.valorUnit ? fmtN(m.valorUnit*m.qtd) : '—'}</td>
         <td>${m.obs||'—'}</td>
-        <td><button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delGadoMov(${idx})" class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer">✕</button></td>
+        <td><button class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delGadoMov(${idx})" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer">✕</button></td>
       </tr>`;
     }).join('');
   }
@@ -2582,8 +2582,8 @@ function renderEucalipto() {
       <td><span class="badge ${a.status==='Disponível'?'badge-green':a.status==='Cortado'?'badge-gray':'badge-blue'}">${a.status}</span></td>
       <td>${a.previsaoCorte ? new Date(a.previsaoCorte).toLocaleDateString('pt-BR') : '—'}</td>
       <td style="display:flex;gap:6px;align-items:center">
-        <button class="btn btn-sm" style="background:#d4efdf;color:#1e6b3a;border:none;cursor:pointer" onclick="editEucaArea(${i})" class="btn btn-sm role-btn-edit" style="background:#d4efdf;color:#1e6b3a;border:none;cursor:pointer">✏️</button>
-        <button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delEucaArea(${i})" class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer">✕</button>
+        <button class="btn btn-sm role-btn-edit" style="background:#d4efdf;color:#1e6b3a;border:none;cursor:pointer" onclick="editEucaArea(${i})" style="background:#d4efdf;color:#1e6b3a;border:none;cursor:pointer">✏️</button>
+        <button class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delEucaArea(${i})" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer">✕</button>
       </td>
     </tr>`).join('');
   }
@@ -2606,7 +2606,7 @@ function renderEucalipto() {
         <td class="num"><strong>${fmtN(v.total)}</strong></td>
         <td>${v.comprador||'—'}</td>
         <td><span class="badge ${v.status==='Recebido'?'badge-green':'badge-yellow'}">${v.status}</span></td>
-        <td><button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delEucaVenda(${idx})" class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer">✕</button></td>
+        <td><button class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delEucaVenda(${idx})" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer">✕</button></td>
       </tr>`;
     }).join('');
   }
@@ -2711,8 +2711,8 @@ function renderInventario() {
         <td><span class="badge ${item.status==='Ativo'?'badge-green':item.status==='Manutenção'?'badge-yellow':'badge-gray'}">${item.status}</span></td>
         <td>${item.obs||'—'}</td>
         <td><div style="display:flex;gap:4px;align-items:center">
-          <button class="btn btn-sm" style="background:#fef9e7;color:#b7950b;border:1px solid #f9e79f;cursor:pointer" onclick="editInventario(${realIdx})" title="Editar" class="btn btn-sm role-btn-edit" style="background:#fef9e7;color:#b7950b;border:1px solid #f9e79f;cursor:pointer">✏️</button>
-          <button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delInventario(${realIdx})" title="Excluir" class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer">✕</button>
+          <button class="btn btn-sm role-btn-edit" style="background:#fef9e7;color:#b7950b;border:1px solid #f9e79f;cursor:pointer" onclick="editInventario(${realIdx})" title="Editar">✏️</button>
+          <button class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delInventario(${realIdx})" title="Excluir">✕</button>
         </div></td>
       </tr>`;
     }).join('');
