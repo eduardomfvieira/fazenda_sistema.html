@@ -1686,8 +1686,9 @@ const _INV_SEED = [
   {categoria:'Outros',      nome:'Charrete',                       descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
   {categoria:'Ferramentas', nome:'Morsa',                          descricao:'Ferramenta de fixação para segurar peças — Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
 ];
-// Pré-carregar itens do balancete se inventário ainda estiver vazio
-if (!localStorage.getItem('fazenda_inventario')) {
+// Pré-carregar itens do balancete se inventário estiver vazio ou não existir
+const _invRaw = localStorage.getItem('fazenda_inventario');
+if (!_invRaw || JSON.parse(_invRaw).length === 0) {
   localStorage.setItem('fazenda_inventario', JSON.stringify(_INV_SEED));
 }
 let inventario = JSON.parse(localStorage.getItem('fazenda_inventario') || '[]');
