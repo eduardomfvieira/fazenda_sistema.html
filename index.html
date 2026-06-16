@@ -1686,17 +1686,26 @@ const _INV_SEED = [
   {categoria:'Outros',      nome:'Charrete',                       descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
   {categoria:'Ferramentas', nome:'Morsa',                          descricao:'Ferramenta de fixação para segurar peças — Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
 ];
-// Sempre garante que os itens do balancete estejam no inventário
-{
-  const _existing = JSON.parse(localStorage.getItem('fazenda_inventario') || '[]');
-  const _existingNames = _existing.map(x => x.nome);
-  const _missing = _INV_SEED.filter(x => !_existingNames.includes(x.nome));
-  if (_missing.length > 0) {
-    const _merged = [..._existing, ..._missing];
-    localStorage.setItem('fazenda_inventario', JSON.stringify(_merged));
+let inventario = (function() {
+  try {
+    const _stored = localStorage.getItem('fazenda_inventario');
+    const _arr = _stored ? (JSON.parse(_stored) || []) : [];
+    if (_arr.length === 0) {
+      localStorage.setItem('fazenda_inventario', JSON.stringify(_INV_SEED));
+      return _INV_SEED.slice();
+    }
+    const _names = _arr.map(function(x){ return x.nome; });
+    const _miss  = _INV_SEED.filter(function(x){ return !_names.includes(x.nome); });
+    if (_miss.length > 0) {
+      const _merged = _arr.concat(_miss);
+      localStorage.setItem('fazenda_inventario', JSON.stringify(_merged));
+      return _merged;
+    }
+    return _arr;
+  } catch(e) {
+    return _INV_SEED.slice();
   }
-}
-let inventario = JSON.parse(localStorage.getItem('fazenda_inventario') || '[]');
+})();
 let anoAtivoDespesas = 2026;
 
 function save() {
