@@ -1643,6 +1643,57 @@ let gadoEstoque = JSON.parse(localStorage.getItem('fazenda_gado_estoque') || '{"
 let eucaAreas = JSON.parse(localStorage.getItem('fazenda_euca_areas') || '[]');
 let _eucaEditIdx = null;
 let eucaVendas = JSON.parse(localStorage.getItem('fazenda_euca_vendas') || '[]');
+const _INV_SEED = [
+  {categoria:'Veículos',    nome:'Toyota Hilux CD 2018',          descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Veículos',    nome:'Land Rover Defender',            descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Trator',                         descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Veículos',    nome:'Van Sprinter 2001',              descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Tanque Pipa',                    descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Guincho para Trator',            descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Barrelador de Forno',            descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Arado',                          descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Roçadeira de Trator',            descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Grade',                          descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Lâmina para Arrumar Estrada',    descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Ensiladeira',                    descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Pulverizador',                   descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Esparramador de Calcário',       descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Sucador',                        descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Concha para Trator',             descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Carroça Basculhante',            descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Carroça Comum',                  descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Carroça para Puxar Lenha',       descricao:'Implemento para trator — Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Guincho para Trator (extra)',    descricao:'Implemento para trator — Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Compressor de Ar',               descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Mulinha de Puxar Palete',        descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Bomba de Graxa Pneumática',      descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Motosserra Stihl MS382',         descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Motosserra Stihl MS250',         descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Roçadeira Stihl FS 220',         descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Gerador de Energia (grande)',    descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Serra de Lâmina',                descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Furadeira de Bancada',           descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Mesa de Serra Circular',         descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Picadeira de Capim',             descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Balança Arjea',                  descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Máquina de Soldar',              descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Furadeira Manual',               descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Lixadeira Manual',               descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Máquinas',    nome:'Concha para Retroescavadeira',   descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Trado (furar buraco para cerca)',descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Carrinho de Esparramar Adubo',   descricao:'Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Esmeril',                        descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Outros',      nome:'Charrete',                       descricao:'Qtd: 1', valor:0, estado:'Bom', status:'Ativo', obs:''},
+  {categoria:'Ferramentas', nome:'Morsa',                          descricao:'Ferramenta de fixação para segurar peças — Qtd: 2', valor:0, estado:'Bom', status:'Ativo', obs:''},
+];
+// Força carga do balancete na primeira abertura desta versão do sistema
+if (!localStorage.getItem('fazenda_inv_seed_v1')) {
+  const _existing = JSON.parse(localStorage.getItem('fazenda_inventario') || '[]');
+  const _seedNames = _INV_SEED.map(x => x.nome);
+  const _merged = [..._existing.filter(x => !_seedNames.includes(x.nome)), ..._INV_SEED];
+  localStorage.setItem('fazenda_inventario', JSON.stringify(_merged));
+  localStorage.setItem('fazenda_inv_seed_v1', '1');
+}
 let inventario = JSON.parse(localStorage.getItem('fazenda_inventario') || '[]');
 let anoAtivoDespesas = 2026;
 
@@ -3198,121 +3249,4 @@ function renderDREMensalCompleto(ano) {
         r += `<td class="num" style="font-size:12px;color:${pct>=0?'#2d9e5f':'#e63946'}">${pct.toFixed(1)}%</td>`;
       });
       const pctTot = totR > 0 ? (tot/totR*100) : 0;
-      r += `<td class="num" style="font-size:12px;font-weight:700;color:${pctTot>=0?'#2d9e5f':'#e63946'};background:#f5f5f5">${pctTot.toFixed(1)}%</td>`;
-      r += '</tr>';
-    }
-    return r;
-  };
-
-  const recRowM = (catLabel, getFn) => {
-    const vals = allM.map(m => getFn(m));
-    if (vals.every(v => v === 0)) return '';
-    const tot = vals.reduce((a,v)=>a+v,0);
-    let r = `<tr>${stickyLbl(catLabel, '#fff')}`;
-    vals.forEach(v => { r += `<td class="num" style="color:#1a3a28">${fmtN(v)}</td>`; });
-    r += `<td class="num" style="font-weight:700;color:#1a6a3a;background:#f5f5f5">${fmtN(tot)}</td>`;
-    return r + '</tr>';
-  };
-
-  const totRecRowM = () => {
-    const vals = allM.map(m => getRecMes(m));
-    const tot = vals.reduce((a,v)=>a+v,0);
-    let r = `<tr style="background:#f0f9f4;border-top:2px solid #b2dfdb">${stickyLbl('<strong>(=) Receita Bruta Total</strong>', '#f0f9f4')}`;
-    vals.forEach(v => { r += `<td class="num" style="font-weight:700;color:#1a6a3a">${fmtN(v)}</td>`; });
-    r += `<td class="num" style="font-weight:700;color:#1a6a3a;background:#f5f5f5">${fmtN(tot)}</td>`;
-    return r + '</tr>';
-  };
-
-  let rows = '';
-  rows += secHdrM('📥 1. Receita Bruta');
-  if (ano === 2025) {
-    const pM=1075634.40/1528118.72, pA=239913.20/1528118.72, pS=212571.12/1528118.72, pO=1-pM-pA-pS;
-    rows += recRowM('Eucalipto / Madeira',    m=>(totaisReceitas2025.mensal[m]||0)*pM);
-    rows += recRowM('Arrendamento / Aluguel', m=>(totaisReceitas2025.mensal[m]||0)*pA);
-    rows += recRowM('Venda de Gado',          m=>(totaisReceitas2025.mensal[m]||0)*pS);
-    rows += recRowM('Outras Receitas',        m=>(totaisReceitas2025.mensal[m]||0)*pO);
-  } else {
-    const t2 = totaisReceitas2026;
-    rows += recRowM('Eucalipto / Madeira',    m => t2.madeira[m]||0);
-    rows += recRowM('Arrendamento / Aluguel', m => t2.aluguel[m]||0);
-    rows += recRowM('Venda de Gado',          m => t2.semoventes[m]||0);
-    rows += recRowM('Venda de Equipamentos',  m => t2.equipamentos[m]||0);
-    rows += recRowM('Outras Receitas',        m => t2.outras[m]||0);
-  }
-  rows += totRecRowM();
-
-  rows += secHdrM('🐄 2. (-) Custos Diretos — CPV');
-  DRE_ITENS.CPV.forEach(n => { rows += itemRowM(n, true); });
-  rows += secTotM('(-) Total CPV', 'CPV', true);
-  rows += calcRowM('(=) LUCRO BRUTO', m=>getRecMes(m)-getSecMes('CPV',m), true, false);
-
-  rows += secHdrM('👥 3. (-) Despesas com Pessoal');
-  DRE_ITENS.PESSOAL.forEach(n => { rows += itemRowM(n, true); });
-  rows += secTotM('(-) Total Pessoal', 'PESSOAL', true);
-
-  rows += secHdrM('🏢 4. (-) Despesas Administrativas');
-  DRE_ITENS.ADMIN.forEach(n => { rows += itemRowM(n, true); });
-  rows += secTotM('(-) Total Administrativas', 'ADMIN', true);
-
-  rows += secHdrM('🚗 5. (-) Despesas com Veículos');
-  DRE_ITENS.VEICULOS.forEach(n => { rows += itemRowM(n, true); });
-  rows += secTotM('(-) Total Veículos', 'VEICULOS', true);
-
-  rows += secHdrM('📋 6. (-) Despesas Tributárias');
-  DRE_ITENS.FISCAL.forEach(n => { rows += itemRowM(n, true); });
-  rows += secTotM('(-) Total Tributárias', 'FISCAL', true);
-
-  const ebitdaFn = m=>getRecMes(m)-getSecMes('CPV',m)-getSecMes('PESSOAL',m)-getSecMes('ADMIN',m)-getSecMes('VEICULOS',m)-getSecMes('FISCAL',m);
-  rows += calcRowM('(=) EBITDA', ebitdaFn, true, false);
-
-  rows += secHdrM('🏦 7. (-) Resultado Financeiro');
-  DRE_ITENS.FINANCEIRO.forEach(n => { rows += itemRowM(n, true); });
-  rows += secTotM('(-) Total Financeiro', 'FINANCEIRO', true);
-
-  const resLiqFn = m=>ebitdaFn(m)-getSecMes('FINANCEIRO',m);
-  rows += calcRowM('(=) RESULTADO LÍQUIDO', resLiqFn, true, true);
-  tbody.innerHTML = rows;
-
-}
-
-
-function exportDRE() {
-  const modo=(document.getElementById('dre-modo')||{}).value||'comparar';
-  const isMensal=modo.startsWith('mensal-');
-  const ano=isMensal?(modo==='mensal-2025'?2025:2026):null;
-  const periodo=(document.getElementById('dre-periodo')||{}).value||'anual';
-  const mes=(document.getElementById('dre-mes')||{}).value||'0';
-  const meses=isMensal?[0,1,2,3,4,5,6,7,8,9,10,11]:getMesesDRE(periodo,mes);
-  const show25=!isMensal&&modo!=='2026', show26=!isMensal&&modo!=='2025';
-  const mesesNm=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const n=(v)=>v.toFixed(2).replace('.',',');
-  let csv='Item';
-  if (isMensal){mesesNm.forEach(m=>csv+=';'+m);csv+=';Total\n';}
-  else{if(show25)csv+=';2025';if(show26)csv+=';2026';csv+='\n';}
-  const getRecMes=(m)=>{if(ano===2025)return totaisReceitas2025.mensal[m]||0;return receitas.filter(r=>{if(!r.data)return false;const d=new Date(r.data+'T12:00:00');return d.getFullYear()===2026&&d.getMonth()===m;}).reduce((a,r)=>a+(parseFloat(r.valor)||0),0);};
-  const getSecMes=(secao,m,a)=>{const data=a===2025?despesas2025:despesas2026;return DRE_ITENS[secao].reduce((tot,nm)=>{const c=data.find(x=>x.nome===nm);return tot+(c?c.v[m]||0:0);},0);};
-  if (isMensal){
-    const lineM=(label,getFn)=>{const vals=[0,1,2,3,4,5,6,7,8,9,10,11].map(m=>getFn(m));const tot=vals.reduce((a,v)=>a+v,0);return label+';'+vals.map(n).join(';')+';'+n(tot)+'\n';};
-    csv+='RECEITA BRUTA\n';csv+=lineM('Receita Total',m=>getRecMes(m));
-    ['CPV','PESSOAL','ADMIN','VEICULOS','FISCAL','FINANCEIRO'].forEach(s=>{csv+=lineM(s,m=>getSecMes(s,m,ano));});
-    csv+=lineM('RESULTADO LIQUIDO',m=>getRecMes(m)-['CPV','PESSOAL','ADMIN','VEICULOS','FISCAL','FINANCEIRO'].reduce((a,s)=>a+getSecMes(s,m,ano),0));
-  } else {
-    const catF=(document.getElementById('dre-cat-rec')||{}).value||'';
-    const rec25=getDRERecCats(2025,meses,catF),rec26=getDRERecCats(2026,meses,catF);
-    const lineR=(label,v25,v26)=>{let l=label;if(show25)l+=';'+n(v25||0);if(show26)l+=';'+n(v26||0);return l+'\n';};
-    Object.keys(rec25).forEach(k=>csv+=lineR(k,rec25[k]||0,rec26[k]||0));
-    ['CPV','PESSOAL','ADMIN','VEICULOS','FISCAL','FINANCEIRO'].forEach(s=>{csv+=lineR(s,getDRESectionTotal(2025,s,meses),getDRESectionTotal(2026,s,meses));});
-    const r25=Object.values(rec25).reduce((a,v)=>a+v,0),r26=Object.values(rec26).reduce((a,v)=>a+v,0);
-    const d25=['CPV','PESSOAL','ADMIN','VEICULOS','FISCAL','FINANCEIRO'].reduce((a,s)=>a+getDRESectionTotal(2025,s,meses),0);
-    const d26=['CPV','PESSOAL','ADMIN','VEICULOS','FISCAL','FINANCEIRO'].reduce((a,s)=>a+getDRESectionTotal(2026,s,meses),0);
-    csv+=lineR('RESULTADO LIQUIDO',r25-d25,r26-d26);
-  }
-  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='DRE_FazendaDoisCorregosx.csv';a.click();
-}
-// ==================== END DRE ====================
-
-</script>
-</div><!-- #app -->
-</body>
-</html>
+      r += `<td class="num" style="font-size:12px;font-weight:700;color:${pctTot>=0?'#2d9e5f':'#e6394
