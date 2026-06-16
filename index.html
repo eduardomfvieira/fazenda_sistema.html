@@ -2890,13 +2890,13 @@ async function onLogin(user) {
   try {
     const { data: profile } = await sb.from('user_profiles').select('role,nome').eq('id', user.id).single();
     if (profile) {
-      userRole = profile.role || 'visualizador';
+      userRole = profile.role || 'socio';
       userNome = profile.nome || user.email;
     } else {
-      userRole = 'visualizador';
+      userRole = 'socio';
       userNome = user.email;
     }
-  } catch(e) { userRole = 'visualizador'; userNome = user.email; }
+  } catch(e) { userRole = 'socio'; userNome = user.email; }
 
   document.body.className = (document.body.className || '').replace(/role-\S+/g,'').trim() + ' role-' + userRole;
   document.getElementById('auth-screen').style.display = 'none';
