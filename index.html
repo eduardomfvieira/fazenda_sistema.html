@@ -307,14 +307,14 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
 
 <!-- NAV TABS -->
 <div class="nav-tabs">
-  <div class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</div>
-  <div class="nav-tab" onclick="showTab('dre')">📈 DRE</div>
-  <div class="nav-tab" onclick="showTab('contas')">🔔 Contas a Pagar <span id="badge-contas-venc" style="display:none;background:#c0392b;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px"></span></div>
-  <div class="nav-tab" onclick="showTab('despesas')">📋 Despesas</div>
-  <div class="nav-tab" onclick="showTab('receitas')">💰 Receitas</div>
-  <div class="nav-tab" onclick="showTab('gado')">🐄 Gado</div>
-  <div class="nav-tab" onclick="showTab('eucalipto')">🌳 Eucalipto</div>
-  <div class="nav-tab" onclick="showTab('inventario')">🗂️ Inventário</div>
+  <div class="nav-tab active" onclick=\"showTab('dashboard', this)\">📊 Dashboard</div>
+  <div class="nav-tab" onclick=\"showTab('dre', this)\">📈 DRE</div>
+  <div class="nav-tab" onclick=\"showTab('contas', this)\">🔔 Contas a Pagar <span id="badge-contas-venc" style="display:none;background:#c0392b;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px"></span></div>
+  <div class="nav-tab" onclick=\"showTab('despesas', this)\">📋 Despesas</div>
+  <div class="nav-tab" onclick=\"showTab('receitas', this)\">💰 Receitas</div>
+  <div class="nav-tab" onclick=\"showTab('gado', this)\">🐄 Gado</div>
+  <div class="nav-tab" onclick=\"showTab('eucalipto', this)\">🌳 Eucalipto</div>
+  <div class="nav-tab" onclick=\"showTab('inventario', this)\">🗂️ Inventário</div>
 </div>
 
 <div class="content">
@@ -1755,11 +1755,13 @@ document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('cli
 // ============================================================
 // TABS
 // ============================================================
-function showTab(name) {
+function showTab(name, el) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  event.currentTarget.classList.add('active');
+  const panel = document.getElementById('tab-' + name);
+  if (panel) panel.classList.add('active');
+  const btn = el || (typeof event !== 'undefined' && event && event.currentTarget) || null;
+  if (btn && btn.classList) btn.classList.add('active');
   if (name === 'dashboard') initDashboard();
   if (name === 'contas') renderContas();
   if (name === 'despesas') renderDespesasTable();
@@ -2905,7 +2907,6 @@ async function onLogin(user) {
     const roleColors = { admin:'role-badge-admin', socio:'role-badge-socio', assistente:'role-badge-assistente' };
     emailEl.innerHTML = userNome + ` <span class="role-badge ${roleColors[userRole]}">${roleLabels[userRole]||userRole}</span>`;
   }
-  try { initApp(); } catch(e) { console.error('Erro ao inicializar app:', e); }
   setSyncStatus('⧳ Sincronizando...');
   try {
     await Promise.race([
