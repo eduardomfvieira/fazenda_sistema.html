@@ -1085,7 +1085,7 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
       <textarea id="nc-obs" placeholder="Número de nota fiscal, parcela, referência..."></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modal-nova-conta')">Cancelar</button>
+      <button class="btn btn-outline" onclick="_contaEditIdx=null; document.querySelector('#modal-nova-conta h2').textContent='🔔 Nova Conta a Pagar'; closeModal('modal-nova-conta')">Cancelar</button>
       <button class="btn btn-green" onclick="saveConta()">💾 Salvar Conta</button>
     </div>
   </div>
@@ -1415,7 +1415,7 @@ select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rg
       <textarea id="inv-obs" placeholder="Informações adicionais..."></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modal-inventario')">Cancelar</button>
+      <button class="btn btn-outline" onclick="_invEditIdx=null; document.querySelector('#modal-inventario h2').textContent='🗂️ Cadastrar Item no Inventário'; closeModal('modal-inventario')">Cancelar</button>
       <button class="btn btn-green" onclick="saveInventario()">Salvar</button>
     </div>
   </div>
@@ -1874,6 +1874,8 @@ function initDashboard() {
 // CONTAS A PAGAR
 // ============================================================
 let contasPagar = JSON.parse(localStorage.getItem('fazenda_contas') || '[]');
+let _contaEditIdx = null;
+let _invEditIdx   = null;
 
 function saveContas() { localStorage.setItem('fazenda_contas', JSON.stringify(contasPagar)); save(); atualizarBadgeContas(); }
 
@@ -1932,6 +1934,20 @@ function saveConta() {
     status: 'Aberta',
     criadaEm: new Date().toISOString()
   };
+  if (_contaEditIdx !== null) {
+    const statusAtual = contasPagar[_contaEditIdx].status;
+    const dataPag     = contasPagar[_contaEditIdx].dataPagamento;
+    const valorPago   = contasPagar[_contaEditIdx].valorPago;
+    const formaPag    = contasPagar[_contaEditIdx].formaPagamento;
+    contasPagar[_contaEditIdx] = { ...nova, status: statusAtual, dataPagamento: dataPag, valorPago: valorPago, formaPagamento: formaPag };
+    _contaEditIdx = null;
+    saveContas(); closeModal('modal-nova-conta');
+    ['nc-desc','nc-beneficiario','nc-obs'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('nc-valor').value = '';
+    document.querySelector('#modal-nova-conta h2').textContent = '🔔 Nova Conta a Pagar';
+    renderContas(); return;
+  }
+
   contasPagar.push(nova);
 
   // Se mensal, perguntar quantas parcelas
@@ -1956,6 +1972,21 @@ function saveConta() {
   ['nc-desc','nc-beneficiario','nc-obs'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('nc-valor').value = '';
   renderContas();
+}
+
+function editConta(idx) {
+  const c = contasPagar[idx];
+  _contaEditIdx = idx;
+  document.getElementById('nc-desc').value        = c.descricao || '';
+  document.getElementById('nc-cat').value         = c.categoria || 'Outros';
+  document.getElementById('nc-valor').value       = c.valor || '';
+  document.getElementById('nc-vencimento').value  = c.vencimento || '';
+  document.getElementById('nc-recorrencia').value = c.recorrencia || 'Única';
+  document.getElementById('nc-beneficiario').value= c.beneficiario || '';
+  document.getElementById('nc-centro').value      = c.centro || '';
+  document.getElementById('nc-obs').value         = c.obs || '';
+  document.querySelector('#modal-nova-conta h2').textContent = '✏️ Editar Conta';
+  openModal('modal-nova-conta');
 }
 
 function abrirPagamento(idx) {
@@ -2120,6 +2151,7 @@ function renderContas() {
           <div style="display:flex;gap:4px;flex-wrap:wrap">
             ${!isPaga ? `<button class="btn btn-green btn-sm" onclick="abrirPagamento(${idx})" title="Registrar pagamento">✅ Pagar</button>` : ''}
             ${isPaga ? `<button class="btn btn-sm" style="background:#e8f4fd;color:#1a6fa3;border:none;cursor:pointer" onclick="reabrirConta(${idx})" title="Desfazer pagamento">↩</button>` : ''}
+            <button class="btn btn-sm" style="background:#fef9e7;color:#b7950b;border:1px solid #f9e79f;cursor:pointer" onclick="editConta(${idx})" title="Editar">✏️</button>
             <button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delConta(${idx})" title="Excluir">✕</button>
           </div>
         </td>
@@ -2652,7 +2684,10 @@ function renderInventario() {
         <td>${item.estado||'—'}</td>
         <td><span class="badge ${item.status==='Ativo'?'badge-green':item.status==='Manutenção'?'badge-yellow':'badge-gray'}">${item.status}</span></td>
         <td>${item.obs||'—'}</td>
-        <td><button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delInventario(${realIdx})">✕</button></td>
+        <td style="display:flex;gap:4px">
+          <button class="btn btn-sm" style="background:#fef9e7;color:#b7950b;border:1px solid #f9e79f;cursor:pointer" onclick="editInventario(${realIdx})" title="Editar">✏️</button>
+          <button class="btn btn-sm" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delInventario(${realIdx})" title="Excluir">✕</button>
+        </td>
       </tr>`;
     }).join('');
   }
@@ -2673,18 +2708,39 @@ function renderInventario() {
 function saveInventario() {
   const nome = document.getElementById('inv-nome').value;
   if (!nome) { alert('Informe o nome do item.'); return; }
-  inventario.push({
+  const itemData = {
     categoria: document.getElementById('inv-cat').value,
     nome, descricao: document.getElementById('inv-desc').value,
     valor: parseFloat(document.getElementById('inv-valor').value)||0,
     estado: document.getElementById('inv-estado').value,
     status: document.getElementById('inv-status').value,
     obs: document.getElementById('inv-obs').value
-  });
+  };
+  if (_invEditIdx !== null) {
+    inventario[_invEditIdx] = itemData;
+    _invEditIdx = null;
+    document.querySelector('#modal-inventario h2').textContent = '🗂️ Cadastrar Item no Inventário';
+  } else {
+    inventario.push(itemData);
+  }
   save(); closeModal('modal-inventario');
   document.getElementById('inv-nome').value = ''; document.getElementById('inv-desc').value = '';
   document.getElementById('inv-valor').value = ''; document.getElementById('inv-obs').value = '';
   renderInventario();
+}
+
+function editInventario(i) {
+  const item = inventario[i];
+  _invEditIdx = i;
+  document.getElementById('inv-cat').value    = item.categoria || 'Ferramentas';
+  document.getElementById('inv-nome').value   = item.nome      || '';
+  document.getElementById('inv-desc').value   = item.descricao || '';
+  document.getElementById('inv-valor').value  = item.valor     || '';
+  document.getElementById('inv-estado').value = item.estado    || 'Bom';
+  document.getElementById('inv-status').value = item.status    || 'Ativo';
+  document.getElementById('inv-obs').value    = item.obs       || '';
+  document.querySelector('#modal-inventario h2').textContent = '✏️ Editar Item';
+  openModal('modal-inventario');
 }
 
 function delInventario(i) { if (!confirm('Excluir item?')) return; inventario.splice(i,1); save(); renderInventario(); }
