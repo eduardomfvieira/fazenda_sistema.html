@@ -483,14 +483,31 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <label>Categoria:</label>
       <select id="cp-filtro-cat" onchange="renderContas()">
         <option value="">Todas</option>
-        <option>Salários / RH</option>
-        <option>Impostos / Fiscal</option>
-        <option>Fornecedores</option>
-        <option>Manutenção</option>
-        <option>Pecuária</option>
-        <option>Utilidades</option>
-        <option>Financiamentos</option>
-        <option>Outros</option>
+        <optgroup label="── Pessoal ──">
+          <option>Salários</option><option>Férias</option><option>Retiradas Pró Labore</option>
+          <option>Rescisões Contratuais</option><option>13º Salário</option><option>Horas Extras de Funcionários</option>
+        </optgroup>
+        <optgroup label="── Fiscal ──">
+          <option>FGTS</option><option>INSS</option><option>PIS/COFINS</option>
+          <option>IRRF Rend Trab Assal+Pró Labore</option><option>ICMS</option><option>Darf</option><option>CREA - Anuidade</option>
+        </optgroup>
+        <optgroup label="── Operacional ──">
+          <option>Manutenção e Conservação</option><option>Serviços de Terceiros</option><option>Manutenção de Maq. e Equip.</option>
+          <option>Energia Elétrica</option><option>Telefone</option><option>Refeitório</option>
+          <option>Despesas Escritório</option><option>Produtos de Limpeza</option><option>Despesas Bancárias</option>
+        </optgroup>
+        <optgroup label="── Veículos ──">
+          <option>Combustível</option><option>Manutenção de Veículos</option><option>IPVA + TX. Licenc.</option>
+          <option>Seguros-Veículos e Máquinas</option><option>Fretes</option><option>Diária de Viagens</option>
+        </optgroup>
+        <optgroup label="── Pecuária ──">
+          <option>Remédios/Inseminação (Vacas)</option><option>Remédios - Bovinos (Garrotes)</option>
+          <option>Remédios - Outros</option><option>Ração</option><option>Silagem</option><option>Semoventes</option>
+        </optgroup>
+        <optgroup label="── Outros ──">
+          <option>Despesas Diversas</option><option>Publicidade / Propaganda</option>
+          <option>Taxas Diversas - IEF</option><option>Construção e Benfeitorias</option>
+        </optgroup>
       </select>
     </div>
     <div class="filter-group">
@@ -1056,14 +1073,62 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <div class="form-row">
         <label>Categoria *</label>
         <select id="nc-cat">
-          <option>Salários / RH</option>
-          <option>Impostos / Fiscal</option>
-          <option>Fornecedores</option>
-          <option>Manutenção</option>
-          <option>Pecuária</option>
-          <option>Utilidades</option>
-          <option>Financiamentos</option>
-          <option>Outros</option>
+
+          <optgroup label="── Pessoal ──">
+            <option>Salários</option>
+            <option>Férias</option>
+            <option>Retiradas Pró Labore</option>
+            <option>Rescisões Contratuais</option>
+            <option>13º Salário</option>
+            <option>Horas Extras de Funcionários</option>
+            <option>Adiantamentos</option>
+          </optgroup>
+          <optgroup label="── Fiscal ──">
+            <option>FGTS</option>
+            <option>INSS</option>
+            <option>PIS/COFINS</option>
+            <option>IRRF Rend Trab Assal+Pró Labore</option>
+            <option>ICMS</option>
+            <option>Darf</option>
+            <option>CREA - Anuidade</option>
+            <option>Contribuição Sindical - Empreg.</option>
+          </optgroup>
+          <optgroup label="── Operacional ──">
+            <option>Manutenção e Conservação</option>
+            <option>Serviços de Terceiros</option>
+            <option>Manutenção de Maq. e Equip.</option>
+            <option>Energia Elétrica</option>
+            <option>Telefone</option>
+            <option>Refeitório</option>
+            <option>Despesas Escritório</option>
+            <option>Produtos de Limpeza</option>
+            <option>Despesas Bancárias</option>
+            <option>Amortização de Empréstimos</option>
+            <option>Juros s/ Empréstimos</option>
+          </optgroup>
+          <optgroup label="── Veículos ──">
+            <option>Combustível</option>
+            <option>Manutenção de Veículos</option>
+            <option>IPVA + TX. Licenc.</option>
+            <option>Seguros-Veículos e Máquinas</option>
+            <option>Fretes</option>
+            <option>Diária de Viagens</option>
+          </optgroup>
+          <optgroup label="── Pecuária ──">
+            <option>Remédios/Inseminação (Vacas)</option>
+            <option>Remédios - Bovinos (Garrotes)</option>
+            <option>Remédios - Outros</option>
+            <option>Ração</option>
+            <option>Silagem</option>
+            <option>Semoventes</option>
+            <option>Carbonização</option>
+          </optgroup>
+          <optgroup label="── Outros ──">
+            <option>Despesas Diversas</option>
+            <option>Publicidade / Propaganda</option>
+            <option>Taxas Diversas - IEF</option>
+            <option>Construção e Benfeitorias</option>
+          </optgroup>
         </select>
       </div>
       <div class="form-row">
@@ -3445,3 +3510,4 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+                                                                                             
