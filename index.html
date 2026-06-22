@@ -3546,9 +3546,16 @@ function renderDREMensalCompleto(ano) {
   if (!thead || !tbody) return;
   const ncols = 14;
 
-  let hRow = '<tr style="position:sticky;top:0;z-index:3;background:#f0f4f2"><th style="text-align:left;padding:9px 14px;min-width:220px;position:sticky;left:0;top:0;background:#f0f4f2;z-index:4;font-weight:700;font-size:13px;border-bottom:2px solid var(--green);border-right:1px solid #ddd">Item</th>';
-  mesesNm.forEach(m => { hRow += `<th class="num" style="min-width:88px;padding:9px 8px;background:#f0f4f2;font-size:13px;border-bottom:2px solid var(--green)">${m}</th>`; });
-  hRow += '<th class="num" style="min-width:100px;padding:9px 8px;background:#d4edda;font-weight:700;font-size:13px;border-bottom:2px solid var(--green)">Total</th></tr>';
+  const curMes = new Date().getMonth();
+  const curAno = new Date().getFullYear();
+  let hRow = '<tr style="position:sticky;top:0;z-index:3;background:#1a6a3a"><th style="text-align:left;padding:10px 14px;min-width:220px;position:sticky;left:0;top:0;background:#1a6a3a;z-index:4;font-weight:700;font-size:13px;color:white;border-right:1px solid rgba(255,255,255,.2)">Item</th>';
+  mesesNm.forEach((m, i) => {
+    const isAtual = (i === curMes && ano === curAno);
+    const bg = isAtual ? '#f9a825' : '#1a6a3a';
+    const fw = isAtual ? '800' : '600';
+    hRow += `<th class="num" style="min-width:88px;padding:10px 8px;background:${bg};font-size:13px;color:white;font-weight:${fw}">${m}</th>`;
+  });
+  hRow += '<th class="num" style="min-width:100px;padding:10px 8px;background:#0d4a28;font-weight:800;font-size:13px;color:white">Total</th></tr>';
   thead.innerHTML = hRow;
 
   const stickyLbl = (label, bg) =>
@@ -3663,7 +3670,7 @@ function renderDREMensalCompleto(ano) {
   html += secTotM('Total Financeiro', 'FINANCEIRO', true);
 
   // RESULTADO LÍQUIDO
-  const totDesp = m => getDRESectionTotal('CPV',m)+getDRESectionTotal('PESSOAL',m)+getDRESectionTotal('ADMIN',m)+getDRESectionTotal('VEICULOS',m)+getDRESectionTotal('FISCAL',m)+getDRESectionTotal('FINANCEIRO',m);
+  const totDesp = m => getSecMes('CPV',m)+getSecMes('PESSOAL',m)+getSecMes('ADMIN',m)+getSecMes('VEICULOS',m)+getSecMes('FISCAL',m)+getSecMes('FINANCEIRO',m);
   html += calcRowM('RESULTADO LÍQUIDO', m => getRecMes(m) - totDesp(m), true, true);
 
   html += '</tbody></table></div>';
