@@ -2261,19 +2261,28 @@ function abrirPagamento(idx) {
   openModal('modal-pagar-conta');
 }
 
-// Migração única: lança no despesas todas as contas já pagas antes do fix
+// Migração v3: reset completo + rebuild correto (corrige acúmulo de v1+v2+confirmarPagamento)
 function migrarContasPagasParaDespesas() {
-  const FLAG = 'fazenda_migr_contas_v2'; // v2: despesas agora persistidas
+  const FLAG = 'fazenda_migr_contas_v3';
   if (localStorage.getItem(FLAG)) return; // já executou
-  let lancadas = 0;
+  // Remove flags antigas para não confundir
+  localStorage.removeItem('fazenda_migr_contas_v1');
+  localStorage.removeItem('fazenda_migr_contas_v2');
+  // RESET: volta ao base da planilha (zera qualquer acúmulo incorreto)
+  despesas2026 = JSON.parse(JSON.stringify(_DESP2026_BASE));
+  // REBUILD despesasDetalhes apenas das contas pagas (evita duplicatas)
+  despesasDetalhes = contasPagar
+    .filter(c => c.status === 'Paga' && c.dataPagamento && c.valorPago && c.categoria)
+    .map(c => ({data: c.dataPagamento, categoria: c.categoria, valor: c.valorPago, conta: c.contaPagamento || '', obs: c.obsPagamento || ''}));
+  // Adiciona cada conta paga UMA vez no agregado
   contasPagar.forEach(c => {
     if (c.status === 'Paga' && c.dataPagamento && c.valorPago && c.categoria) {
       _lancaDespesaConta(c.categoria, c.valorPago, c.dataPagamento, +1);
-      lancadas++;
     }
   });
-  if (lancadas > 0) { save(); console.log(`Migração: ${lancadas} contas pagas lançadas em despesas.`); }
+  save();
   localStorage.setItem(FLAG, '1');
+  console.log('Migração v3: despesas2026 reconstruído corretamente.');
 }
 
 function _lancaDespesaConta(cat, valorPago, dataPag, sinal) {
@@ -2350,7 +2359,7 @@ function renderContas() {
   const abertas = contasPagar.filter(c => c.status !== 'Paga');
   const vencidas = abertas.filter(c => new Date(c.vencimento+'T00:00:00') < hoje);
   const proximas7 = abertas.filter(c => { const v = new Date(c.vencimento+'T00:00:00'); return v >= hoje && v <= em7; });
-  const mesAtual = contasPagar.filter(c => c.status === 'Paga' && c.dataPagamento && new Date(c.dataPagamento).getMonth() === hoje.getMonth() && new Date(c.dataPagamento).getFullYear() === hoje.getFullYear());
+  const mesAtual = contasPagar.filter(c => { if (c.status !== 'Paga' || !c.dataPagamento) return false; const d = new Date(c.dataPagamento + 'T12:00:00'); return d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear(); });
 
   const totalVencidas = vencidas.reduce((a,c)=>a+c.valor,0);
   const total7dias = proximas7.reduce((a,c)=>a+c.valor,0);
@@ -4031,91 +4040,78 @@ function _microRows(cols, data, saldoInis, saldoFins, totEnt, totSai) {
   return h;
 }
 
-function _renderCaixaMensal(ano, MESES_NOMES, MESES_FULL) {
-  const mData = Array.from({length:12}, (_,m) => {
-    const ent=getEntradasMes(ano,m), sai=getSaidasMes(ano,m);
-    return {ent, sai, totEnt:Object.values(ent).reduce((a,v)=>a+v,0), totSai:Object.values(sai).reduce((a,v)=>a+v,0)};
-  });
-  let saldoIni0 = getSaldoInicial(ano,0) ?? 0;
-  const saldoFins=[], saldoInis=[];
-  let prev=saldoIni0;
-  for(let m=0;m<12;m++){
-    const ini = getSaldoInicial(ano,m)??prev;
-    saldoInis.push(ini);
-    const fin=ini+mData[m].totEnt-mData[m].totSai;
-    saldoFins.push(fin); prev=fin;
+function _buildMesCaixa(ano, mes) {
+  const ent = {};
+  if (ano === 2025) {
+    receitas2025.filter(r => {
+      const d = new Date((r.data||'')+'T12:00:00');
+      return d.getFullYear()===2025 && d.getMonth()===mes;
+    }).forEach(r => { const c=r.categoria||'Outras Receitas'; ent[c]=(ent[c]||0)+(parseFloat(r.valor)||0); });
   }
-  const totEnt=mData.reduce((a,d)=>a+d.totEnt,0), totSai=mData.reduce((a,d)=>a+d.totSai,0);
-  document.getElementById('caixa-kpis').innerHTML=`
-    <div class="card card-kpi green"><div class="kpi-label">Saldo inicial</div><div class="kpi-value">${fmt(saldoIni0)}</div><div class="kpi-sub">Jan/${ano}</div></div>
-    <div class="card card-kpi green"><div class="kpi-label">Total entradas</div><div class="kpi-value">${fmt(totEnt)}</div><div class="kpi-sub">${ano}</div></div>
-    <div class="card card-kpi red"><div class="kpi-label">Total saídas</div><div class="kpi-value">${fmt(totSai)}</div><div class="kpi-sub">${ano}</div></div>
-    <div class="card card-kpi ${totEnt-totSai>=0?'green':'red'}"><div class="kpi-label">Resultado</div><div class="kpi-value">${fmt(totEnt-totSai)}</div><div class="kpi-sub">Acumulado</div></div>`;
-  const th=_tableHeader(MESES_NOMES,'Item');
-  document.getElementById('caixa-macro-table').innerHTML=th+'<tbody>'+_macroRows(MESES_NOMES,mData,saldoInis,saldoFins,totEnt,totSai)+'</tbody>';
-  document.getElementById('caixa-micro-table').innerHTML=_tableHeader(MESES_NOMES,'Categoria')+'<tbody>'+_microRows(MESES_NOMES,mData,saldoInis,saldoFins,totEnt,totSai)+'</tbody>';
-  renderDemonstrativo(saldoIni0, totEnt, totSai);
+  receitas.filter(r => {
+    const d = new Date((r.data||'')+'T12:00:00');
+    return d.getFullYear()===ano && d.getMonth()===mes;
+  }).forEach(r => { const c=r.categoria||'Outras Receitas'; ent[c]=(ent[c]||0)+(parseFloat(r.valor)||0); });
+  const sai = getSaidasMes(ano, mes);
+  const totEnt = Object.values(ent).reduce((a,v)=>a+v,0);
+  const totSai = Object.values(sai).reduce((a,v)=>a+v,0);
+  return {ent, sai, totEnt, totSai};
+}
+
+function _renderCaixaMensal(ano, MESES_NOMES, MESES_FULL) {
+  const cols = MESES_NOMES;
+  const data = cols.map((_, mes) => _buildMesCaixa(ano, mes));
+  const sIni = getSaldoInicial(ano, 0) ?? 0;
+  const saldoInis = [], saldoFins = [];
+  let saldo = sIni;
+  data.forEach(d => { saldoInis.push(saldo); saldo += d.totEnt - d.totSai; saldoFins.push(saldo); });
+  const totEnt = data.reduce((a,d)=>a+d.totEnt,0);
+  const totSai = data.reduce((a,d)=>a+d.totSai,0);
+  const res = totEnt - totSai;
+  const kpiEl = document.getElementById('caixa-kpis');
+  if (kpiEl) {
+    kpiEl.innerHTML = `
+      <div class="card card-kpi"><div class="kpi-label">Total Entradas ${ano}</div><div class="kpi-value" style="color:#2e7d32">${fmt(totEnt)}</div></div>
+      <div class="card card-kpi red"><div class="kpi-label">Total Saídas ${ano}</div><div class="kpi-value" style="color:#c62828">${fmt(totSai)}</div></div>
+      <div class="card card-kpi ${res>=0?'':'red'}"><div class="kpi-label">Resultado ${ano}</div><div class="kpi-value" style="color:${res>=0?'#2e7d32':'#c62828'}">${fmt(res)}</div></div>
+      <div class="card card-kpi blue"><div class="kpi-label">Saldo Inicial ${ano}</div><div class="kpi-value">${fmt(sIni)}</div></div>`;
+  }
+  const macroT = document.getElementById('caixa-macro-table');
+  if (macroT) macroT.innerHTML = _tableHeader(cols,'Fluxo Anual')+'<tbody>'+_macroRows(cols,data,saldoInis,saldoFins,totEnt,totSai)+'</tbody>';
+  const microT = document.getElementById('caixa-micro-table');
+  if (microT) microT.innerHTML = _tableHeader(cols,'Categoria')+'<tbody>'+_microRows(cols,data,saldoInis,saldoFins,totEnt,totSai)+'</tbody>';
 }
 
 function _renderCaixaSemanal(ano, mes, MESES_FULL) {
-  const sems=semanasDoMes(ano,mes);
-  const semData=sems.map(s=>{
-    const ent=getEntradasSemana(ano,mes,s.idx), sai=getSaidasSemana(ano,mes,s.idx);
-    return {ent,sai,totEnt:Object.values(ent).reduce((a,v)=>a+v,0),totSai:Object.values(sai).reduce((a,v)=>a+v,0)};
+  const semanas = semanasDoMes(ano, mes);
+  const cols = semanas.map(s=>s.label);
+  const data = semanas.map(s => {
+    const ent = getEntradasSemana(ano, mes, s.idx);
+    const sai = getSaidasSemana(ano, mes, s.idx);
+    const totEnt = Object.values(ent).reduce((a,v)=>a+v,0);
+    const totSai = Object.values(sai).reduce((a,v)=>a+v,0);
+    return {ent, sai, totEnt, totSai};
   });
-  const totEnt=semData.reduce((a,d)=>a+d.totEnt,0), totSai=semData.reduce((a,d)=>a+d.totSai,0);
-  const saldoIniMes=getSaldoInicial(ano,mes)??0;
-  let cur=saldoIniMes;
-  const saldoFins=semData.map(d=>{cur+=d.totEnt-d.totSai;return cur;});
-  const saldoInis=[saldoIniMes,...saldoFins.slice(0,-1)];
-  const cols=sems.map(s=>s.label);
-  document.getElementById('caixa-kpis').innerHTML=`
-    <div class="card card-kpi green"><div class="kpi-label">Saldo inicial</div><div class="kpi-value">${fmt(saldoIniMes)}</div><div class="kpi-sub">${MESES_FULL[mes]}/${ano}</div></div>
-    <div class="card card-kpi green"><div class="kpi-label">Total entradas</div><div class="kpi-value">${fmt(totEnt)}</div><div class="kpi-sub">Receitas no mês</div></div>
-    <div class="card card-kpi red"><div class="kpi-label">Total saídas</div><div class="kpi-value">${fmt(totSai)}</div><div class="kpi-sub">Contas pagas</div></div>
-    <div class="card card-kpi ${totEnt-totSai>=0?'green':'red'}"><div class="kpi-label">Resultado</div><div class="kpi-value">${fmt(totEnt-totSai)}</div><div class="kpi-sub">Acumulado mês</div></div>`;
-  document.getElementById('caixa-macro-table').innerHTML=_tableHeader(cols,'Item')+'<tbody>'+_macroRows(cols,semData,saldoInis,saldoFins,totEnt,totSai)+'</tbody>';
-  document.getElementById('caixa-micro-table').innerHTML=_tableHeader(cols,'Categoria')+'<tbody>'+_microRows(cols,semData,saldoInis,saldoFins,totEnt,totSai)+'</tbody>';
-  renderDemonstrativo(saldoIniMes, totEnt, totSai);
+  const sIni = getSaldoInicial(ano, mes) ?? 0;
+  const saldoInis = [], saldoFins = [];
+  let saldo = sIni;
+  data.forEach(d => { saldoInis.push(saldo); saldo += d.totEnt - d.totSai; saldoFins.push(saldo); });
+  const totEnt = data.reduce((a,d)=>a+d.totEnt,0);
+  const totSai = data.reduce((a,d)=>a+d.totSai,0);
+  const res = totEnt - totSai;
+  const kpiEl = document.getElementById('caixa-kpis');
+  if (kpiEl) {
+    kpiEl.innerHTML = `
+      <div class="card card-kpi"><div class="kpi-label">Entradas em ${MESES_FULL[mes]}</div><div class="kpi-value" style="color:#2e7d32">${fmt(totEnt)}</div></div>
+      <div class="card card-kpi red"><div class="kpi-label">Saídas em ${MESES_FULL[mes]}</div><div class="kpi-value" style="color:#c62828">${fmt(totSai)}</div></div>
+      <div class="card card-kpi ${res>=0?'':'red'}"><div class="kpi-label">Resultado ${MESES_FULL[mes]}</div><div class="kpi-value" style="color:${res>=0?'#2e7d32':'#c62828'}">${fmt(res)}</div></div>
+      <div class="card card-kpi blue"><div class="kpi-label">Saldo Inicial</div><div class="kpi-value">${fmt(sIni)}</div></div>`;
+  }
+  const macroT = document.getElementById('caixa-macro-table');
+  if (macroT) macroT.innerHTML = _tableHeader(cols,'Semana')+'<tbody>'+_macroRows(cols,data,saldoInis,saldoFins,totEnt,totSai)+'</tbody>';
+  const microT = document.getElementById('caixa-micro-table');
+  if (microT) microT.innerHTML = _tableHeader(cols,'Categoria')+'<tbody>'+_microRows(cols,data,saldoInis,saldoFins,totEnt,totSai)+'</tbody>';
 }
-
-function renderDemonstrativo(saldoAnterior, totEntradas, totSaidas) {
-  const key=getCaixaKey();
-  const s=saldosCaixa[key]||{banco1:0,banco2:0,fisico:0,aplicacoes:0,reserva:0,a_receber:[],a_pagar:[]};
-  document.getElementById('caixa-saldo-banco1').value     = s.banco1||'';
-  document.getElementById('caixa-saldo-banco2').value     = s.banco2||'';
-  document.getElementById('caixa-saldo-fisico').value     = s.fisico||'';
-  document.getElementById('caixa-saldo-aplicacoes').value = s.aplicacoes||'';
-  document.getElementById('caixa-saldo-reserva').value    = s.reserva||'';
-  const bancos=(s.banco1||0)+(s.banco2||0), totDisp=bancos+(s.fisico||0)+(s.aplicacoes||0)+(s.reserva||0);
-  document.getElementById('caixa-saldo-total').textContent=fmt(totDisp);
-  document.getElementById('ds-caixa').textContent      = fmt(s.fisico||0);
-  document.getElementById('ds-bancos').textContent     = fmt(bancos);
-  document.getElementById('ds-aplicacoes').textContent = fmt(s.aplicacoes||0);
-  document.getElementById('ds-reserva').textContent    = fmt(s.reserva||0);
-  document.getElementById('ds-total-disp').textContent = fmt(totDisp);
-  const aRec=s.a_receber||[], totRec=aRec.reduce((a,i)=>a+(i.valor||0),0);
-  document.getElementById('ds-receber-list').innerHTML=aRec.length===0
-    ?'<div style="padding:7px 16px;font-size:12px;color:#999;border-bottom:1px solid #f0f0f0">Nenhum item</div>'
-    :aRec.map((item,i)=>`<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:1px solid #f0f0f0;font-size:13px"><span>${item.desc}</span><span style="display:flex;align-items:center;gap:8px"><strong style="color:#1565C0">${fmt(item.valor)}</strong><button onclick="removeItemDS('receber',${i})" style="background:none;border:none;color:#999;cursor:pointer">✕</button></span></div>`).join('');
-  document.getElementById('ds-total-receber').textContent=fmt(totRec);
-  const aPag=s.a_pagar||[];
-  const contasAbertasTotal=contasPagar.filter(c=>c.status!=='Paga').reduce((a,c)=>a+(parseFloat(c.valor)||0),0);
-  const contasAbertas=contasPagar.filter(c=>c.status!=='Paga').length;
-  const totPag=aPag.reduce((a,i)=>a+(i.valor||0),0)+contasAbertasTotal;
-  let pRows=contasAbertasTotal>0?`<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:1px solid #f0f0f0;font-size:13px"><span>Contas a Pagar em Aberto <span style="font-size:11px;background:#ffebee;color:#c62828;padding:1px 6px;border-radius:10px">${contasAbertas}</span></span><strong style="color:#c62828">${fmt(contasAbertasTotal)}</strong></div>`:'';
-  pRows+=aPag.length===0&&contasAbertasTotal===0?'<div style="padding:7px 16px;font-size:12px;color:#999;border-bottom:1px solid #f0f0f0">Nenhum item</div>':aPag.map((item,i)=>`<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:1px solid #f0f0f0;font-size:13px"><span>${item.desc}</span><span style="display:flex;align-items:center;gap:8px"><strong style="color:#c62828">${fmt(item.valor)}</strong><button onclick="removeItemDS('pagar',${i})" style="background:none;border:none;color:#999;cursor:pointer">✕</button></span></div>`).join('');
-  document.getElementById('ds-pagar-list').innerHTML=pRows;
-  document.getElementById('ds-total-pagar').textContent=fmt(totPag);
-  const somaEsq=saldoAnterior+totEntradas, somaDireita=totSaidas+totDisp+totRec+totPag;
-  const diff=somaEsq-somaDireita, bal=Math.abs(diff)<0.05;
-  document.getElementById('ds-soma-total').innerHTML=
-    `<span style="font-size:13px;font-weight:400;opacity:.8;margin-right:12px">Entradas: ${fmt(somaEsq)}</span>`+
-    `<span style="font-size:13px;font-weight:400;opacity:.8;margin-right:16px">Saídas+Demo: ${fmt(somaDireita)}</span>`+
-    `<span style="${bal?'color:#81c784':'color:#ef9a9a'}">${fmt(somaEsq)}</span>`+
-    (bal?'':`<span style="font-size:11px;margin-left:10px;color:#ef9a9a">⚠ Diferença: ${fmt(Math.abs(diff))}</span>`);
-}
-
 </script>
 </body>
 </html>
