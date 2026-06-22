@@ -1522,7 +1522,7 @@ function getGrupo(nome) {
   return 'Outros';
 }
 
-const despesas2025 = [
+const _DESP2025_BASE = [
   {nome:'Manutenção e Conservação', v:[4329.34,3314.39,1344.16,2114.25,1219.9,940,1682.43,2300.3,2574.9,4641.92,8933.33,9892.33]},
   {nome:'Salários', v:[16509,16750,14750,13812,14438,17389,15996,17162,17518,17672,17658,null]},
   {nome:'Serviços de Terceiros', v:[9510.68,14313.02,15933.02,13870.54,12186.91,11053.02,11743.02,11873.02,8739.68,8353.02,9268.02,9243.02]},
@@ -1560,7 +1560,7 @@ const despesas2025 = [
   {nome:'Horas Extras de Funcionários', v:[null,null,null,null,null,null,null,1900,null,null,null,null]},
 ];
 
-const despesas2026 = [
+const _DESP2026_BASE = [
   {nome:'Manutenção e Conservação', v:[6390.12,3509.59,4345.19,1196.4,1304.1,null,null,null,null,null,null,null]},
   {nome:'Salários', v:[18173.14,15941,11948,12122,11422,null,null,null,null,null,null,null]},
   {nome:'Serviços de Terceiros', v:[13323.02,9842.69,8457.69,9427.69,8667.69,null,null,null,null,null,null,null]},
@@ -1593,6 +1593,9 @@ const despesas2026 = [
   {nome:'Produtos de Limpeza', v:[null,434.78,399.79,227.05,105.66,null,null,null,null,null,null,null]},
   {nome:'Horas Extras de Funcionários', v:[550,1200,600,700,1807.3,null,null,null,null,null,null,null]},
 ];
+// Carrega despesas do localStorage (persistência) ou usa base hardcoded
+let despesas2025 = (function(){ try { const s=localStorage.getItem('fazenda_desp2025'); return s ? JSON.parse(s) : _DESP2025_BASE.map(r=>({...r,v:[...r.v]})); } catch(e){ return _DESP2025_BASE.map(r=>({...r,v:[...r.v]})); } })();
+let despesas2026 = (function(){ try { const s=localStorage.getItem('fazenda_desp2026'); return s ? JSON.parse(s) : _DESP2026_BASE.map(r=>({...r,v:[...r.v]})); } catch(e){ return _DESP2026_BASE.map(r=>({...r,v:[...r.v]})); } })();
 
 // ============================================================
 // RECEITAS 2025 — DADOS REAIS (importados da planilha)
@@ -1775,6 +1778,8 @@ localStorage.setItem('fazenda_inventario', JSON.stringify(inventario));
 let anoAtivoDespesas = 2026;
 
 function save() {
+  localStorage.setItem('fazenda_desp2025', JSON.stringify(despesas2025));
+  localStorage.setItem('fazenda_desp2026', JSON.stringify(despesas2026));
   localStorage.setItem('fazenda_receitas', JSON.stringify(receitas));
   localStorage.setItem('fazenda_gado_mov', JSON.stringify(gadoMov));
   localStorage.setItem('fazenda_gado_estoque', JSON.stringify(gadoEstoque));
@@ -2092,7 +2097,7 @@ function abrirPagamento(idx) {
 
 // Migração única: lança no despesas todas as contas já pagas antes do fix
 function migrarContasPagasParaDespesas() {
-  const FLAG = 'fazenda_migr_contas_v1';
+  const FLAG = 'fazenda_migr_contas_v2'; // v2: despesas agora persistidas
   if (localStorage.getItem(FLAG)) return; // já executou
   let lancadas = 0;
   contasPagar.forEach(c => {
@@ -3052,6 +3057,8 @@ async function loadFromSupabase() {
     eucaVendas   = JSON.parse(localStorage.getItem('fazenda_euca_vendas')   || '[]');
     inventario   = JSON.parse(localStorage.getItem('fazenda_inventario')    || '[]');
     contasPagar  = JSON.parse(localStorage.getItem('fazenda_contas')        || '[]');
+    const d25 = localStorage.getItem('fazenda_desp2025'); if (d25) despesas2025 = JSON.parse(d25);
+    const d26 = localStorage.getItem('fazenda_desp2026'); if (d26) despesas2026 = JSON.parse(d26);
     const lu = localStorage.getItem('fazenda_last_update');
     if (lu) document.getElementById('last-update').textContent = lu;
   } catch(e) { console.warn('Erro ao carregar dados:', e); }
@@ -3063,7 +3070,8 @@ async function syncToSupabase() {
   const dataMap = {
     receitas, gado_mov: gadoMov, gado_estoque: gadoEstoque,
     euca_areas: eucaAreas, euca_vendas: eucaVendas,
-    inventario, contas: contasPagar
+    inventario, contas: contasPagar,
+    desp2025: despesas2025, desp2026: despesas2026
   };
   try {
     const rows = Object.entries(dataMap).map(([k,v]) => ({
@@ -3514,41 +3522,4 @@ function renderDREMensalCompleto(ano) {
   html += secTotM('Total Veículos', 'VEICULOS', true);
 
   // FISCAL
-  html += secHdrM('DESPESAS FISCAIS / TRIBUTÁRIAS');
-  DRE_ITENS.FISCAL.forEach(n => { html += itemRowM(n, true); });
-  html += secTotM('Total Fiscal', 'FISCAL', true);
-
-  // EBITDA
-  html += calcRowM('EBITDA', m => getRecMes(m)-getSecMes('CPV',m)-getSecMes('PESSOAL',m)-getSecMes('ADMIN',m)-getSecMes('VEICULOS',m)-getSecMes('FISCAL',m), true, false);
-
-  // FINANCEIRO
-  html += secHdrM('RESULTADO FINANCEIRO');
-  DRE_ITENS.FINANCEIRO.forEach(n => { html += itemRowM(n, true); });
-  html += secTotM('Total Financeiro', 'FINANCEIRO', true);
-
-  // RESULTADO LÍQUIDO
-  html += calcRowM('RESULTADO LÍQUIDO', m => getRecMes(m)-getSecMes('CPV',m)-getSecMes('PESSOAL',m)-getSecMes('ADMIN',m)-getSecMes('VEICULOS',m)-getSecMes('FISCAL',m)-getSecMes('FINANCEIRO',m), true, true);
-
-  tbody.innerHTML = html;
-}
-
-// ============================================================
-// DATA / HORA
-// ============================================================
-function initDateTime() {
-  const el = document.getElementById('current-datetime');
-  function update() {
-    if (el) el.textContent = new Date().toLocaleString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  }
-  update(); setInterval(update, 30000);
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  initDateTime();
-  showTab('dashboard');
-  atualizarBadgeContas();
-});
-</script>
-</body>
-</html>
-                                                                                             
+  html += secHdrM('DESPESAS FISCAIS / TRI
