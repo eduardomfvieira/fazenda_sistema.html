@@ -2090,26 +2090,52 @@ function abrirPagamento(idx) {
   openModal('modal-pagar-conta');
 }
 
+function _lancaDespesaConta(cat, valorPago, dataPag, sinal) {
+  // sinal: +1 para lançar, -1 para estornar
+  const d = new Date(dataPag + 'T12:00:00');
+  const ano = d.getFullYear();
+  const mes = d.getMonth();
+  const tabela = ano === 2025 ? despesas2025 : despesas2026;
+  let linha = tabela.find(c => c.nome === cat);
+  if (!linha) {
+    linha = {nome: cat, v: Array(12).fill(null)};
+    tabela.push(linha);
+  }
+  linha.v[mes] = ((linha.v[mes] || 0) + sinal * valorPago);
+  if (linha.v[mes] < 0) linha.v[mes] = 0;
+}
+
 function confirmarPagamento() {
   const idx = parseInt(document.getElementById('pagar-idx').value);
   const dataPag = document.getElementById('pagar-data').value;
   const valorPago = parseFloat(document.getElementById('pagar-valor').value);
   if (!dataPag || !valorPago) { alert('Preencha data e valor pago.'); return; }
-  contasPagar[idx].status = 'Paga';
-  contasPagar[idx].dataPagamento = dataPag;
-  contasPagar[idx].valorPago = valorPago;
-  contasPagar[idx].formaPagamento = document.getElementById('pagar-forma').value;
-  contasPagar[idx].obsPagamento = document.getElementById('pagar-obs').value;
+  const conta = contasPagar[idx];
+  conta.status = 'Paga';
+  conta.dataPagamento = dataPag;
+  conta.valorPago = valorPago;
+  conta.formaPagamento = document.getElementById('pagar-forma').value;
+  conta.obsPagamento = document.getElementById('pagar-obs').value;
+  // Lança automaticamente na aba de Despesas
+  _lancaDespesaConta(conta.categoria, valorPago, dataPag, +1);
+  save();
   saveContas();
   closeModal('modal-pagar-conta');
   renderContas();
+  renderDespesasTable();
 }
 
 function reabrirConta(idx) {
   if (!confirm('Desfazer pagamento desta conta?')) return;
-  contasPagar[idx].status = 'Aberta';
-  delete contasPagar[idx].dataPagamento;
-  delete contasPagar[idx].valorPago;
+  const conta = contasPagar[idx];
+  // Estorna o valor das despesas
+  if (conta.dataPagamento && conta.valorPago) {
+    _lancaDespesaConta(conta.categoria, conta.valorPago, conta.dataPagamento, -1);
+    save();
+  }
+  conta.status = 'Aberta';
+  delete conta.dataPagamento;
+  delete conta.valorPago;
   saveContas(); renderContas();
 }
 
