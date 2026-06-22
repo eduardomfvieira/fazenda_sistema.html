@@ -3187,7 +3187,6 @@ async function loadFromSupabase() {
     eucaVendas   = JSON.parse(localStorage.getItem('fazenda_euca_vendas')   || '[]');
     inventario   = JSON.parse(localStorage.getItem('fazenda_inventario')    || '[]');
     contasPagar  = JSON.parse(localStorage.getItem('fazenda_contas')        || '[]');
-    const sc = localStorage.getItem('fazenda_saldos_caixa'); if (sc) saldosCaixa = JSON.parse(sc);
     const sc = localStorage.getItem('fazenda_saldos_caixa'); if (sc) try { saldosCaixa = JSON.parse(sc); } catch(e){}
     const d25 = localStorage.getItem('fazenda_desp2025'); if (d25) despesas2025 = JSON.parse(d25);
     const d26 = localStorage.getItem('fazenda_desp2026'); if (d26) despesas2026 = JSON.parse(d26);
