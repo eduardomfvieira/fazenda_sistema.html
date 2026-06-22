@@ -2090,6 +2090,21 @@ function abrirPagamento(idx) {
   openModal('modal-pagar-conta');
 }
 
+// Migração única: lança no despesas todas as contas já pagas antes do fix
+function migrarContasPagasParaDespesas() {
+  const FLAG = 'fazenda_migr_contas_v1';
+  if (localStorage.getItem(FLAG)) return; // já executou
+  let lancadas = 0;
+  contasPagar.forEach(c => {
+    if (c.status === 'Paga' && c.dataPagamento && c.valorPago && c.categoria) {
+      _lancaDespesaConta(c.categoria, c.valorPago, c.dataPagamento, +1);
+      lancadas++;
+    }
+  });
+  if (lancadas > 0) { save(); console.log(`Migração: ${lancadas} contas pagas lançadas em despesas.`); }
+  localStorage.setItem(FLAG, '1');
+}
+
 function _lancaDespesaConta(cat, valorPago, dataPag, sinal) {
   // sinal: +1 para lançar, -1 para estornar
   const d = new Date(dataPag + 'T12:00:00');
@@ -3010,7 +3025,7 @@ async function onLogin(user) {
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
     ]);
     setSyncStatus('✓ Sincronizado');
-    try { initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); } catch(e) {}
+    try { migrarContasPagasParaDespesas(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); } catch(e) {}
   } catch(e) {
     setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexao');
   }
