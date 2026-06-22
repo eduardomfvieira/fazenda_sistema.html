@@ -3835,6 +3835,7 @@ function getSaidasMes(ano, mes) {
 function getEntradasSemana(ano, mes, semIdx) {
   const {ini, fim} = getSemana(ano, mes, semIdx);
   const cats = {};
+  // Receitas dinâmicas (2026+)
   receitas.filter(r => {
     if (!r.data) return false;
     const d = new Date(r.data+'T12:00:00');
@@ -3843,12 +3844,24 @@ function getEntradasSemana(ano, mes, semIdx) {
     const c = r.categoria || 'Outras Receitas';
     cats[c] = (cats[c]||0) + (parseFloat(r.valor)||0);
   });
+  // Receitas 2025 estáticas (base da planilha)
+  if (ano === 2025) {
+    receitas2025.filter(r => {
+      if (!r.data) return false;
+      const d = new Date(r.data+'T12:00:00');
+      return d >= ini && d <= fim;
+    }).forEach(r => {
+      const c = r.categoria || 'Outras Receitas';
+      cats[c] = (cats[c]||0) + (parseFloat(r.valor)||0);
+    });
+  }
   return cats;
 }
 
 function getSaidasSemana(ano, mes, semIdx) {
   const {ini, fim} = getSemana(ano, mes, semIdx);
   const cats = {};
+  // Contas a pagar com data individual
   contasPagar.filter(c => {
     if (c.status !== 'Paga' || !c.dataPagamento) return false;
     const d = new Date(c.dataPagamento+'T12:00:00');
@@ -3857,6 +3870,22 @@ function getSaidasSemana(ano, mes, semIdx) {
     const cat = c.categoria || 'Outros';
     cats[cat] = (cats[cat]||0) + (parseFloat(c.valorPago)||0);
   });
+  // Fallback para meses sem contas a pagar individuais (planilha histórica):
+  // mostra o total mensal do agregado na semana 1
+  if (semIdx === 0) {
+    const cpMes = contasPagar.filter(c => {
+      if (c.status !== 'Paga' || !c.dataPagamento) return false;
+      const d = new Date(c.dataPagamento+'T12:00:00');
+      return d.getFullYear()===ano && d.getMonth()===mes;
+    });
+    if (cpMes.length === 0) {
+      const tabela = ano === 2025 ? despesas2025 : despesas2026;
+      tabela.forEach(row => {
+        const v = row.v[mes];
+        if (v && v > 0) cats[row.nome] = (cats[row.nome]||0) + v;
+      });
+    }
+  }
   return cats;
 }
 
