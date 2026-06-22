@@ -5,7 +5,462 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema de Gestão — Fazenda Dois Córregos</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
+// ============================================================
+// MAPA DE CAIXA
+// ============================================================
+let saldosCaixa = (function(){
+  try { return JSON.parse(localStorage.getItem('fazenda_saldos_caixa') || '{}'); } catch(e){ return {}; }
+})();
+
+// salvarSaldosCaixa moved to demonstrativo section
+
+function getSaldoInicial(ano, mes) {
+  const key = ano + '-' + String(mes).padStart(2,'0');
+  const s = saldosCaixa[key];
+  return s ? (s.banco1||0)+(s.banco2||0)+(s.fisico||0) : null;
+}
+
+function getEntradasMes(ano, mes) {
+  const cats = {};
+  const all = ano === 2025
+    ? (receitas2025 || []).map((r,i) => ({data:'2025-'+String(Math.floor(i/3)+1).padStart(2,'0')+'-01', valor:r.valor||0, categoria:r.categoria||'Receitas'}))
+    : receitas.filter(r => r.data && new Date(r.data+'T12:00:00').getFullYear()===ano);
+  all.forEach(r => {
+    if (!r.data) return;
+    const d = new Date(r.data+'T12:00:00');
+    if (d.getMonth() !== mes) return;
+    const c = r.categoria || 'Outras Receitas';
+    cats[c] = (cats[c]||0) + (parseFloat(r.valor)||0);
+  });
+  return cats;
+}
+
+function getSaidasMes(ano, mes) {
+  const tabela = ano === 2025 ? despesas2025 : despesas2026;
+  const cats = {};
+  tabela.forEach(row => {
+    const v = row.v[mes];
+    if (v && v > 0) cats[row.nome] = (cats[row.nome]||0) + v;
+  });
+  return cats;
+}
+
+function getEntradasSemana(ano, mes, semIdx) {
+  const {ini, fim} = getSemana(ano, mes, semIdx);
+  const cats = {};
+  receitas.filter(r => {
+    if (!r.data) return false;
+    const d = new Date(r.data+'T12:00:00');
+    return d >= ini && d <= fim;
+  }).forEach(r => {
+    const c = r.categoria || 'Outras Receitas';
+    cats[c] = (cats[c]||0) + (parseFloat(r.valor)||0);
+  });
+  return cats;
+}
+
+function getSaidasSemana(ano, mes, semIdx) {
+  const {ini, fim} = getSemana(ano, mes, semIdx);
+  const cats = {};
+  contasPagar.filter(c => {
+    if (c.status !== 'Paga' || !c.dataPagamento) return false;
+    const d = new Date(c.dataPagamento+'T12:00:00');
+    return d >= ini && d <= fim;
+  }).forEach(c => {
+    const cat = c.categoria || 'Outros';
+    cats[cat] = (cats[cat]||0) + (parseFloat(c.valorPago)||0);
+  });
+  return cats;
+}
+
+function getSemana(ano, mes, semIdx) {
+  const ini = new Date(ano, mes, 1 + semIdx*7);
+  const fim = new Date(ano, mes, Math.min(7 + semIdx*7, new Date(ano, mes+1, 0).getDate()));
+  fim.setHours(23,59,59);
+  return {ini, fim};
+}
+
+function semanas(ano, mes) {
+  const diasMes = new Date(ano, mes+1, 0).getDate();
+  const qtd = Math.ceil(diasMes / 7);
+  return Array.from({length:qtd}, (_,i) => {
+    const d1 = 1 + i*7;
+    const d2 = Math.min(d1+6, diasMes);
+    return {label: d1+'/'+String(mes+1).padStart(2,'0')+' – '+d2+'/'+String(mes+1).padStart(2,'0'), idx:i};
+  });
+}
+
+const GRUPOS_CAIXA = {
+  'Pessoal': ['Salários','Férias','Retiradas Pró Labore','Rescisões Contratuais','13º Salário','Horas Extras de Funcionários','Adiantamentos'],
+  'Fiscal':  ['FGTS','INSS','PIS/COFINS','IRRF Rend Trab Assal+Pró Labore','ICMS','Darf','CREA - Anuidade','Contribuição Sindical - Empreg.'],
+  'Pecuária':['Remédios/Inseminação (Vacas)','Remédios - Bovinos (Garrotes)','Remédios - Outros','Ração','Silagem','Semoventes','Carbonização'],
+  'Veículos':['Combustível','Manutenção de Veículos','IPVA + TX. Licenc.','Seguros-Veículos e Máquinas','Fretes','Diária de Viagens'],
+  'Operacional':['Manutenção e Conservação','Serviços de Terceiros','Manutenção de Maq. e Equip.','Energia Elétrica','Telefone','Refeitório','Despesas Escritório','Produtos de Limpeza','Despesas Bancárias','Amortização de Empréstimos','Juros s/ Empréstimos'],
+  'Outros':  ['Despesas Diversas','Publicidade / Propaganda','Taxas Diversas - IEF','Construção e Benfeitorias']
+};
+
+function getGrupoCaixa(nome) {
+  for (const [g, arr] of Object.entries(GRUPOS_CAIXA)) {
+    if (arr.includes(nome)) return g;
+  }
+  return 'Outros';
+}
+
+function renderCaixa() {
+  const view = document.getElementById('caixa-view')?.value || 'mensal';
+  const ano  = parseInt(document.getElementById('caixa-ano').value);
+  const mesSel = parseInt(document.getElementById('caixa-mes')?.value ?? new Date().getMonth());
+  const mesSelect = document.getElementById('caixa-mes');
+  if (mesSelect) mesSelect.style.display = view === 'semanal' ? '' : 'none';
+
+  // Update saldo fields for current period
+  const key = view === 'mensal'
+    ? ano + '-00'
+    : ano + '-' + String(mesSel).padStart(2,'0');
+  const s = saldosCaixa[key] || {banco1:0, banco2:0, fisico:0};
+  document.getElementById('caixa-saldo-banco1').value = s.banco1 || '';
+  document.getElementById('caixa-saldo-banco2').value = s.banco2 || '';
+  document.getElementById('caixa-saldo-fisico').value = s.fisico || '';
+  const tot = (s.banco1||0)+(s.banco2||0)+(s.fisico||0);
+  document.getElementById('caixa-saldo-total').textContent = fmt(tot);
+
+  const MESES_NOMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const MESES_FULL  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  if (view === 'mensal') {
+    document.getElementById('caixa-mes-label').textContent = 'de ' + ano;
+    _renderCaixaMensal(ano, MESES_NOMES, MESES_FULL);
+  } else {
+    document.getElementById('caixa-mes-label').textContent = 'de ' + MESES_FULL[mesSel] + '/' + ano;
+    _renderCaixaSemanal(ano, mesSel, MESES_FULL);
+  }
+}
+
+function _renderCaixaMensal(ano, MESES_NOMES, MESES_FULL) {
+  // Collect data for all 12 months
+  const mData = Array.from({length:12}, (_,m) => {
+    const ent = getEntradasMes(ano, m);
+    const sai = getSaidasMes(ano, m);
+    const totEnt = Object.values(ent).reduce((a,v)=>a+v,0);
+    const totSai = Object.values(sai).reduce((a,v)=>a+v,0);
+    return {ent, sai, totEnt, totSai};
+  });
+
+  // Saldos encadeados
+  let saldoIni0 = getSaldoInicial(ano, 0);
+  if (saldoIni0 === null) saldoIni0 = 0;
+  const saldoFins = [];
+  let prev = saldoIni0;
+  for (let m=0; m<12; m++) {
+    const ini = getSaldoInicial(ano, m) !== null ? getSaldoInicial(ano, m) : (m===0 ? saldoIni0 : saldoFins[m-1]);
+    const fin = ini + mData[m].totEnt - mData[m].totSai;
+    saldoFins.push(fin);
+    prev = fin;
+  }
+  const saldoInis = Array.from({length:12}, (_,m) =>
+    getSaldoInicial(ano, m) !== null ? getSaldoInicial(ano, m) : (m===0 ? saldoIni0 : saldoFins[m-1])
+  );
+
+  // KPIs
+  const totEnt = mData.reduce((a,d)=>a+d.totEnt, 0);
+  const totSai = mData.reduce((a,d)=>a+d.totSai, 0);
+  document.getElementById('caixa-kpis').innerHTML = `
+    <div class="card card-kpi green"><div class="kpi-label">Saldo inicial</div><div class="kpi-value">${fmt(saldoIni0)}</div><div class="kpi-sub">Jan/${ano}</div></div>
+    <div class="card card-kpi green"><div class="kpi-label">Total entradas</div><div class="kpi-value">${fmt(totEnt)}</div><div class="kpi-sub">${ano}</div></div>
+    <div class="card card-kpi red"><div class="kpi-label">Total saídas</div><div class="kpi-value">${fmt(totSai)}</div><div class="kpi-sub">${ano}</div></div>
+    <div class="card card-kpi ${totEnt-totSai>=0?'green':'red'}"><div class="kpi-label">Resultado</div><div class="kpi-value">${fmt(totEnt-totSai)}</div><div class="kpi-sub">Acumulado</div></div>
+  `;
+
+  const cols = MESES_NOMES;
+  const thCols = cols.map(c=>`<th style="text-align:right;white-space:nowrap">${c}</th>`).join('') + '<th style="text-align:right;background:#f0f0f0">Total</th>';
+
+  // MACRO TABLE
+  const macroRows = [
+    `<tr style="background:#f0f9f4"><td style="padding:8px 12px;font-weight:600;color:#1a6f3c">Saldo inicial <small style="font-weight:400;color:#888">(manual)</small></td>${cols.map((_,m)=>`<td style="text-align:right;color:#1a6f3c;font-weight:500">${fmt(saldoInis[m])}</td>`).join('')}<td style="text-align:right;background:#f0f0f0">—</td></tr>`,
+    `<tr style="background:#e8f5e9"><td style="padding:8px 12px;font-weight:600;color:#2e7d32">↑ Total Entradas</td>${cols.map((_,m)=>`<td style="text-align:right;color:#2e7d32;font-weight:500">${mData[m].totEnt>0?fmt(mData[m].totEnt):'—'}</td>`).join('')}<td style="text-align:right;background:#e8f5e9;font-weight:600;color:#2e7d32">${fmt(totEnt)}</td></tr>`,
+    `<tr style="background:#ffebee"><td style="padding:8px 12px;font-weight:600;color:#c62828">↓ Total Saídas</td>${cols.map((_,m)=>`<td style="text-align:right;color:#c62828;font-weight:500">${mData[m].totSai>0?fmt(mData[m].totSai):'—'}</td>`).join('')}<td style="text-align:right;background:#ffebee;font-weight:600;color:#c62828">${fmt(totSai)}</td></tr>`,
+    `<tr><td style="padding:8px 12px;font-weight:600">Resultado do mês</td>${cols.map((_,m)=>{const r=mData[m].totEnt-mData[m].totSai;return `<td style="text-align:right;font-weight:600;color:${r>=0?'#2e7d32':'#c62828'}">${r!==0?fmt(r):'—'}</td>`;}).join('')}<td style="text-align:right;background:#f0f0f0;font-weight:600;color:${totEnt-totSai>=0?'#2e7d32':'#c62828'}">${fmt(totEnt-totSai)}</td></tr>`,
+    `<tr style="background:#f5f5f5"><td style="padding:8px 12px;font-weight:700">Saldo final estimado</td>${cols.map((_,m)=>`<td style="text-align:right;font-weight:700">${fmt(saldoFins[m])}</td>`).join('')}<td style="text-align:right;background:#e0e0e0;font-weight:700">${fmt(saldoFins[11])}</td></tr>`
+  ];
+  document.getElementById('caixa-macro-table').innerHTML =
+    `<thead><tr><th style="text-align:left;padding:8px 12px;min-width:200px">Item</th>${thCols}</tr></thead><tbody>${macroRows.join('')}</tbody>`;
+
+  // MICRO TABLE — all categories
+  // Collect all category names across all months
+  const allEntCats = new Set();
+  const allSaiCats = new Set();
+  mData.forEach(d => {
+    Object.keys(d.ent).forEach(c => allEntCats.add(c));
+    Object.keys(d.sai).forEach(c => allSaiCats.add(c));
+  });
+
+  let microRows = '';
+
+  // Saldo inicial row
+  microRows += `<tr style="background:#f0f9f4"><td style="padding:7px 12px;font-weight:600;color:#1a6f3c">Saldo inicial</td>${cols.map((_,m)=>`<td style="text-align:right;color:#1a6f3c;font-weight:500">${fmt(saldoInis[m])}</td>`).join('')}<td style="text-align:right;background:#f0f0f0">—</td></tr>`;
+
+  // ENTRADAS section
+  microRows += `<tr style="background:#c8e6c9"><td colspan="${cols.length+2}" style="padding:7px 12px;font-weight:700;color:#1b5e20;font-size:13px">↑ ENTRADAS</td></tr>`;
+  [...allEntCats].sort().forEach(cat => {
+    const rowTot = mData.reduce((a,d)=>a+(d.ent[cat]||0),0);
+    if (rowTot === 0) return;
+    microRows += `<tr><td style="padding:6px 12px 6px 22px;font-size:12px">${cat}</td>${cols.map((_,m)=>`<td style="text-align:right;font-size:12px;color:#2e7d32">${(d=>d>0?fmt(d):'—')(mData[m].ent[cat]||0)}</td>`).join('')}<td style="text-align:right;background:#f9f9f9;font-size:12px;color:#2e7d32">${fmt(rowTot)}</td></tr>`;
+  });
+  microRows += `<tr style="background:#e8f5e9"><td style="padding:7px 12px;font-weight:600;color:#2e7d32;padding-left:14px">Subtotal entradas</td>${cols.map((_,m)=>`<td style="text-align:right;font-weight:600;color:#2e7d32">${mData[m].totEnt>0?fmt(mData[m].totEnt):'—'}</td>`).join('')}<td style="text-align:right;background:#e8f5e9;font-weight:700;color:#2e7d32">${fmt(totEnt)}</td></tr>`;
+
+  // SAÍDAS by group
+  microRows += `<tr style="background:#ffcdd2"><td colspan="${cols.length+2}" style="padding:7px 12px;font-weight:700;color:#b71c1c;font-size:13px">↓ SAÍDAS</td></tr>`;
+  const saiByGroup = {};
+  [...allSaiCats].forEach(cat => {
+    const g = getGrupoCaixa(cat);
+    if (!saiByGroup[g]) saiByGroup[g] = [];
+    saiByGroup[g].push(cat);
+  });
+  let totSaiCalc = 0;
+  Object.entries(saiByGroup).sort().forEach(([grupo, cats]) => {
+    microRows += `<tr style="background:#fff3e0"><td colspan="${cols.length+2}" style="padding:5px 12px 5px 14px;font-weight:600;font-size:12px;color:#e65100">${grupo}</td></tr>`;
+    const grpTots = cols.map((_,m) => cats.reduce((a,c)=>a+(mData[m].sai[c]||0),0));
+    cats.sort().forEach(cat => {
+      const rowTot = mData.reduce((a,d)=>a+(d.sai[cat]||0),0);
+      if (rowTot === 0) return;
+      microRows += `<tr><td style="padding:5px 12px 5px 28px;font-size:12px">${cat}</td>${cols.map((_,m)=>`<td style="text-align:right;font-size:12px;color:#c62828">${(v=>v>0?fmt(v):'—')(mData[m].sai[cat]||0)}</td>`).join('')}<td style="text-align:right;background:#f9f9f9;font-size:12px;color:#c62828">${fmt(rowTot)}</td></tr>`;
+    });
+    const grpTot = grpTots.reduce((a,v)=>a+v,0);
+    microRows += `<tr style="background:#fafafa"><td style="padding:6px 12px 6px 18px;font-weight:600;font-size:12px;color:#c62828">Subtotal ${grupo}</td>${grpTots.map(v=>`<td style="text-align:right;font-weight:600;font-size:12px;color:#c62828">${v>0?fmt(v):'—'}</td>`).join('')}<td style="text-align:right;background:#f5f5f5;font-weight:600;font-size:12px;color:#c62828">${fmt(grpTot)}</td></tr>`;
+    totSaiCalc += grpTot;
+  });
+  microRows += `<tr style="background:#ffebee"><td style="padding:7px 12px;font-weight:600;color:#c62828">Subtotal saídas</td>${cols.map((_,m)=>`<td style="text-align:right;font-weight:600;color:#c62828">${mData[m].totSai>0?fmt(mData[m].totSai):'—'}</td>`).join('')}<td style="text-align:right;background:#ffebee;font-weight:700;color:#c62828">${fmt(totSai)}</td></tr>`;
+
+  // Resultado + saldo final
+  microRows += `<tr><td style="padding:7px 12px;font-weight:600">Resultado do mês</td>${cols.map((_,m)=>{const r=mData[m].totEnt-mData[m].totSai;return `<td style="text-align:right;font-weight:600;color:${r>=0?'#2e7d32':'#c62828'}">${r!==0?fmt(r):'—'}</td>`;}).join('')}<td style="text-align:right;background:#f0f0f0;font-weight:700;color:${totEnt-totSai>=0?'#2e7d32':'#c62828'}">${fmt(totEnt-totSai)}</td></tr>`;
+  microRows += `<tr style="background:#f5f5f5"><td style="padding:7px 12px;font-weight:700">Saldo final estimado</td>${cols.map((_,m)=>`<td style="text-align:right;font-weight:700">${fmt(saldoFins[m])}</td>`).join('')}<td style="text-align:right;background:#e0e0e0;font-weight:700">${fmt(saldoFins[11])}</td></tr>`;
+
+  document.getElementById('caixa-micro-table').innerHTML =
+    `<thead><tr><th style="text-align:left;padding:8px 12px;min-width:220px">Categoria</th>${thCols}</tr></thead><tbody>${microRows}</tbody>`;
+  renderDemonstrativo(saldoIni0, totEnt, totSai);
+}
+
+function _renderCaixaSemanal(ano, mes, MESES_FULL) {
+  const sems = semanas(ano, mes);
+  const cols = sems.map(s => s.label);
+
+  const semData = sems.map(s => {
+    const ent = getEntradasSemana(ano, mes, s.idx);
+    const sai = getSaidasSemana(ano, mes, s.idx);
+    const totEnt = Object.values(ent).reduce((a,v)=>a+v,0);
+    const totSai = Object.values(sai).reduce((a,v)=>a+v,0);
+    return {ent, sai, totEnt, totSai};
+  });
+
+  const totEnt = semData.reduce((a,d)=>a+d.totEnt,0);
+  const totSai = semData.reduce((a,d)=>a+d.totSai,0);
+  const saldoIniMes = getSaldoInicial(ano, mes) ?? 0;
+
+  document.getElementById('caixa-kpis').innerHTML = `
+    <div class="card card-kpi green"><div class="kpi-label">Saldo inicial</div><div class="kpi-value">${fmt(saldoIniMes)}</div><div class="kpi-sub">${MESES_FULL[mes]}/${ano}</div></div>
+    <div class="card card-kpi green"><div class="kpi-label">Total entradas</div><div class="kpi-value">${fmt(totEnt)}</div><div class="kpi-sub">Contas pagas + receitas</div></div>
+    <div class="card card-kpi red"><div class="kpi-label">Total saídas</div><div class="kpi-value">${fmt(totSai)}</div><div class="kpi-sub">Contas pagas no mês</div></div>
+    <div class="card card-kpi ${totEnt-totSai>=0?'green':'red'}"><div class="kpi-label">Resultado</div><div class="kpi-value">${fmt(totEnt-totSai)}</div><div class="kpi-sub">Acumulado mês</div></div>
+  `;
+
+  const thCols = cols.map(c=>`<th style="text-align:right;white-space:nowrap;font-size:11px">${c}</th>`).join('') + '<th style="text-align:right;background:#f0f0f0">Total</th>';
+
+  // MACRO semanal
+  let saldoCurr = saldoIniMes;
+  const saldoFins = semData.map(d => { saldoCurr += d.totEnt - d.totSai; return saldoCurr; });
+  const saldoInis = [saldoIniMes, ...saldoFins.slice(0,-1)];
+
+  const macroRows = [
+    `<tr style="background:#f0f9f4"><td style="padding:8px 12px;font-weight:600;color:#1a6f3c">Saldo inicial</td>${saldoInis.map(v=>`<td style="text-align:right;color:#1a6f3c;font-weight:500">${fmt(v)}</td>`).join('')}<td style="text-align:right;background:#f0f0f0">—</td></tr>`,
+    `<tr style="background:#e8f5e9"><td style="padding:8px 12px;font-weight:600;color:#2e7d32">↑ Total Entradas</td>${semData.map(d=>`<td style="text-align:right;color:#2e7d32;font-weight:500">${d.totEnt>0?fmt(d.totEnt):'—'}</td>`).join('')}<td style="text-align:right;background:#e8f5e9;font-weight:600;color:#2e7d32">${fmt(totEnt)}</td></tr>`,
+    `<tr style="background:#ffebee"><td style="padding:8px 12px;font-weight:600;color:#c62828">↓ Total Saídas</td>${semData.map(d=>`<td style="text-align:right;color:#c62828;font-weight:500">${d.totSai>0?fmt(d.totSai):'—'}</td>`).join('')}<td style="text-align:right;background:#ffebee;font-weight:600;color:#c62828">${fmt(totSai)}</td></tr>`,
+    `<tr><td style="padding:8px 12px;font-weight:600">Resultado da semana</td>${semData.map(d=>{const r=d.totEnt-d.totSai;return `<td style="text-align:right;font-weight:600;color:${r>=0?'#2e7d32':'#c62828'}">${r!==0?fmt(r):'—'}</td>`;}).join('')}<td style="text-align:right;background:#f0f0f0;font-weight:600">${fmt(totEnt-totSai)}</td></tr>`,
+    `<tr style="background:#f5f5f5"><td style="padding:8px 12px;font-weight:700">Saldo final estimado</td>${saldoFins.map(v=>`<td style="text-align:right;font-weight:700">${fmt(v)}</td>`).join('')}<td style="text-align:right;background:#e0e0e0;font-weight:700">${fmt(saldoFins[saldoFins.length-1])}</td></tr>`
+  ];
+  document.getElementById('caixa-macro-table').innerHTML =
+    `<thead><tr><th style="text-align:left;padding:8px 12px;min-width:200px">Item</th>${thCols}</tr></thead><tbody>${macroRows.join('')}</tbody>`;
+
+  // MICRO semanal
+  const allEntCats = new Set();
+  const allSaiCats = new Set();
+  semData.forEach(d => { Object.keys(d.ent).forEach(c=>allEntCats.add(c)); Object.keys(d.sai).forEach(c=>allSaiCats.add(c)); });
+
+  let microRows = '';
+  microRows += `<tr style="background:#f0f9f4"><td style="padding:7px 12px;font-weight:600;color:#1a6f3c">Saldo inicial</td>${saldoInis.map(v=>`<td style="text-align:right;color:#1a6f3c;font-weight:500">${fmt(v)}</td>`).join('')}<td style="text-align:right;background:#f0f0f0">—</td></tr>`;
+  microRows += `<tr style="background:#c8e6c9"><td colspan="${cols.length+2}" style="padding:7px 12px;font-weight:700;color:#1b5e20;font-size:13px">↑ ENTRADAS</td></tr>`;
+  [...allEntCats].sort().forEach(cat => {
+    const rowTot = semData.reduce((a,d)=>a+(d.ent[cat]||0),0);
+    if (rowTot===0) return;
+    microRows += `<tr><td style="padding:5px 12px 5px 22px;font-size:12px">${cat}</td>${semData.map(d=>`<td style="text-align:right;font-size:12px;color:#2e7d32">${(v=>v>0?fmt(v):'—')(d.ent[cat]||0)}</td>`).join('')}<td style="text-align:right;background:#f9f9f9;font-size:12px;color:#2e7d32">${fmt(rowTot)}</td></tr>`;
+  });
+  microRows += `<tr style="background:#e8f5e9"><td style="padding:7px 12px;font-weight:600;color:#2e7d32">Subtotal entradas</td>${semData.map(d=>`<td style="text-align:right;font-weight:600;color:#2e7d32">${d.totEnt>0?fmt(d.totEnt):'—'}</td>`).join('')}<td style="text-align:right;background:#e8f5e9;font-weight:700;color:#2e7d32">${fmt(totEnt)}</td></tr>`;
+
+  microRows += `<tr style="background:#ffcdd2"><td colspan="${cols.length+2}" style="padding:7px 12px;font-weight:700;color:#b71c1c;font-size:13px">↓ SAÍDAS (contas pagas com data)</td></tr>`;
+  const saiByGroup = {};
+  [...allSaiCats].forEach(cat => { const g=getGrupoCaixa(cat); if(!saiByGroup[g])saiByGroup[g]=[]; saiByGroup[g].push(cat); });
+  Object.entries(saiByGroup).sort().forEach(([grupo, cats]) => {
+    microRows += `<tr style="background:#fff3e0"><td colspan="${cols.length+2}" style="padding:5px 12px 5px 14px;font-weight:600;font-size:12px;color:#e65100">${grupo}</td></tr>`;
+    cats.sort().forEach(cat => {
+      const rowTot = semData.reduce((a,d)=>a+(d.sai[cat]||0),0);
+      if (rowTot===0) return;
+      microRows += `<tr><td style="padding:5px 12px 5px 28px;font-size:12px">${cat}</td>${semData.map(d=>`<td style="text-align:right;font-size:12px;color:#c62828">${(v=>v>0?fmt(v):'—')(d.sai[cat]||0)}</td>`).join('')}<td style="text-align:right;background:#f9f9f9;font-size:12px;color:#c62828">${fmt(rowTot)}</td></tr>`;
+    });
+  });
+  microRows += `<tr style="background:#ffebee"><td style="padding:7px 12px;font-weight:600;color:#c62828">Subtotal saídas</td>${semData.map(d=>`<td style="text-align:right;font-weight:600;color:#c62828">${d.totSai>0?fmt(d.totSai):'—'}</td>`).join('')}<td style="text-align:right;background:#ffebee;font-weight:700;color:#c62828">${fmt(totSai)}</td></tr>`;
+  microRows += `<tr><td style="padding:7px 12px;font-weight:600">Resultado</td>${semData.map(d=>{const r=d.totEnt-d.totSai;return `<td style="text-align:right;font-weight:600;color:${r>=0?'#2e7d32':'#c62828'}">${r!==0?fmt(r):'—'}</td>`;}).join('')}<td style="text-align:right;background:#f0f0f0;font-weight:700">${fmt(totEnt-totSai)}</td></tr>`;
+  microRows += `<tr style="background:#f5f5f5"><td style="padding:7px 12px;font-weight:700">Saldo final estimado</td>${saldoFins.map(v=>`<td style="text-align:right;font-weight:700">${fmt(v)}</td>`).join('')}<td style="text-align:right;background:#e0e0e0;font-weight:700">${fmt(saldoFins[saldoFins.length-1])}</td></tr>`;
+  document.getElementById('caixa-micro-table').innerHTML =
+    `<thead><tr><th style="text-align:left;padding:8px 12px;min-width:220px">Categoria</th>${thCols}</tr></thead><tbody>${microRows}</tbody>`;
+  renderDemonstrativo(saldoIniMes, totEnt, totSai);
+}
+
+
+// ============================================================
+// DEMONSTRATIVO DE SALDO
+// ============================================================
+function salvarSaldosCaixa() {
+  const ano  = parseInt(document.getElementById('caixa-ano').value);
+  const view = document.getElementById('caixa-view')?.value || 'mensal';
+  const mes  = parseInt(document.getElementById('caixa-mes')?.value ?? new Date().getMonth());
+  const key  = view === 'mensal' ? ano + '-00' : ano + '-' + String(mes).padStart(2,'0');
+  const prev = saldosCaixa[key] || {};
+  saldosCaixa[key] = {
+    banco1:      parseFloat(document.getElementById('caixa-saldo-banco1').value)      || 0,
+    banco2:      parseFloat(document.getElementById('caixa-saldo-banco2').value)      || 0,
+    fisico:      parseFloat(document.getElementById('caixa-saldo-fisico').value)      || 0,
+    aplicacoes:  parseFloat(document.getElementById('caixa-saldo-aplicacoes').value)  || 0,
+    reserva:     parseFloat(document.getElementById('caixa-saldo-reserva').value)     || 0,
+    a_receber:   prev.a_receber  || [],
+    a_pagar:     prev.a_pagar    || []
+  };
+  const s = saldosCaixa[key];
+  const totDisp = s.banco1 + s.banco2 + s.fisico + s.aplicacoes + s.reserva;
+  document.getElementById('caixa-saldo-total').textContent = fmt(totDisp);
+  localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
+  save();
+  renderCaixa();
+}
+
+function getCaixaKey() {
+  const ano  = parseInt(document.getElementById('caixa-ano').value);
+  const view = document.getElementById('caixa-view')?.value || 'mensal';
+  const mes  = parseInt(document.getElementById('caixa-mes')?.value ?? 0);
+  return view === 'mensal' ? ano + '-00' : ano + '-' + String(mes).padStart(2,'0');
+}
+
+function addItemAReceber() {
+  const desc  = prompt('Descrição do item a receber:');
+  if (!desc) return;
+  const valor = parseFloat(prompt('Valor (R$):') || '0') || 0;
+  const key   = getCaixaKey();
+  if (!saldosCaixa[key]) saldosCaixa[key] = {banco1:0,banco2:0,fisico:0,aplicacoes:0,reserva:0,a_receber:[],a_pagar:[]};
+  if (!saldosCaixa[key].a_receber) saldosCaixa[key].a_receber = [];
+  saldosCaixa[key].a_receber.push({desc, valor});
+  localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
+  save();
+  renderCaixa();
+}
+
+function addItemAPagar() {
+  const desc  = prompt('Descrição do item a pagar:');
+  if (!desc) return;
+  const valor = parseFloat(prompt('Valor (R$):') || '0') || 0;
+  const key   = getCaixaKey();
+  if (!saldosCaixa[key]) saldosCaixa[key] = {banco1:0,banco2:0,fisico:0,aplicacoes:0,reserva:0,a_receber:[],a_pagar:[]};
+  if (!saldosCaixa[key].a_pagar) saldosCaixa[key].a_pagar = [];
+  saldosCaixa[key].a_pagar.push({desc, valor});
+  localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
+  save();
+  renderCaixa();
+}
+
+function removeItemDS(tipo, idx) {
+  const key = getCaixaKey();
+  if (!saldosCaixa[key]) return;
+  if (tipo === 'receber') saldosCaixa[key].a_receber.splice(idx,1);
+  else saldosCaixa[key].a_pagar.splice(idx,1);
+  localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
+  save();
+  renderCaixa();
+}
+
+function renderDemonstrativo(saldoAnterior, totEntradas, totSaidas) {
+  const key = getCaixaKey();
+  const s   = saldosCaixa[key] || {banco1:0,banco2:0,fisico:0,aplicacoes:0,reserva:0,a_receber:[],a_pagar:[]};
+
+  // Update saldo inputs
+  document.getElementById('caixa-saldo-banco1').value     = s.banco1    || '';
+  document.getElementById('caixa-saldo-banco2').value     = s.banco2    || '';
+  document.getElementById('caixa-saldo-fisico').value     = s.fisico    || '';
+  document.getElementById('caixa-saldo-aplicacoes').value = s.aplicacoes|| '';
+  document.getElementById('caixa-saldo-reserva').value    = s.reserva   || '';
+
+  // DISPONÍVEL
+  const bancos    = (s.banco1||0) + (s.banco2||0);
+  const totDisp   = bancos + (s.fisico||0) + (s.aplicacoes||0) + (s.reserva||0);
+  document.getElementById('caixa-saldo-total').textContent = fmt(totDisp);
+  document.getElementById('ds-caixa').textContent       = fmt(s.fisico||0);
+  document.getElementById('ds-bancos').textContent      = fmt(bancos);
+  document.getElementById('ds-aplicacoes').textContent  = fmt(s.aplicacoes||0);
+  document.getElementById('ds-reserva').textContent     = fmt(s.reserva||0);
+  document.getElementById('ds-total-disp').textContent  = fmt(totDisp);
+
+  // A RECEBER
+  const aRec = s.a_receber || [];
+  const totRec = aRec.reduce((a,i)=>a+(i.valor||0), 0);
+  document.getElementById('ds-receber-list').innerHTML = aRec.length === 0
+    ? '<div style="padding:7px 16px;font-size:12px;color:#999;border-bottom:1px solid #f0f0f0">Nenhum item cadastrado</div>'
+    : aRec.map((item,i) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;border-bottom:1px solid #f0f0f0;font-size:13px">
+        <span>${item.desc}</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <strong style="color:#1565C0">${fmt(item.valor)}</strong>
+          <button onclick="removeItemDS('receber',${i})" style="background:none;border:none;color:#999;cursor:pointer;font-size:14px">✕</button>
+        </span>
+      </div>`).join('');
+  document.getElementById('ds-total-receber').textContent = fmt(totRec);
+
+  // A PAGAR (manual + contas abertas automático)
+  const aPag = s.a_pagar || [];
+  const contasAbertasTotal = contasPagar.filter(c=>c.status!=='Paga').reduce((a,c)=>a+(parseFloat(c.valor)||0),0);
+  const totPag = aPag.reduce((a,i)=>a+(i.valor||0), 0) + contasAbertasTotal;
+  const contasAbertas = contasPagar.filter(c=>c.status!=='Paga').length;
+
+  let pRows = '';
+  if (contasAbertasTotal > 0) {
+    pRows += `<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:1px solid #f0f0f0;font-size:13px">
+      <span style="color:#555">Contas a Pagar em Aberto <span style="font-size:11px;background:#ffebee;color:#c62828;padding:1px 6px;border-radius:10px">${contasAbertas} contas</span></span>
+      <strong style="color:#c62828">${fmt(contasAbertasTotal)}</strong>
+    </div>`;
+  }
+  pRows += aPag.length === 0 && contasAbertasTotal === 0
+    ? '<div style="padding:7px 16px;font-size:12px;color:#999;border-bottom:1px solid #f0f0f0">Nenhum item cadastrado</div>'
+    : aPag.map((item,i) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;border-bottom:1px solid #f0f0f0;font-size:13px">
+        <span>${item.desc}</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <strong style="color:#c62828">${fmt(item.valor)}</strong>
+          <button onclick="removeItemDS('pagar',${i})" style="background:none;border:none;color:#999;cursor:pointer;font-size:14px">✕</button>
+        </span>
+      </div>`).join('');
+  document.getElementById('ds-pagar-list').innerHTML = pRows;
+  document.getElementById('ds-total-pagar').textContent = fmt(totPag);
+
+  // SOMA TOTAL — balanceamento
+  // Esquerda: Saldo Anterior + Total Entradas
+  // Direita:  Total Saídas + Disponível + A Receber + A Pagar
+  const somaEsquerda = saldoAnterior + totEntradas;
+  const somaDireita  = totSaidas + totDisp + totRec + totPag;
+  const diff = somaEsquerda - somaDireita;
+  const balanceado = Math.abs(diff) < 0.05;
+
+  document.getElementById('ds-soma-total').innerHTML =
+    `<span style="font-size:13px;font-weight:400;opacity:.8;margin-right:12px">Entradas: ${fmt(somaEsquerda)}</span>` +
+    `<span style="font-size:13px;font-weight:400;opacity:.8;margin-right:16px">Saídas+Demo: ${fmt(somaDireita)}</span>` +
+    `<span style="${balanceado?'color:#81c784':'color:#ef9a9a'}">${fmt(somaEsquerda)}</span>` +
+    (balanceado ? '' : `<span style="font-size:11px;margin-left:10px;color:#ef9a9a">⚠ Diferença: ${fmt(Math.abs(diff))}</span>`);
+}
+
+</script>
 <style>
 :root {
   --green: #2d6a4f;
@@ -315,6 +770,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <div class="nav-tab" onclick="showTab('gado', this)">🐄 Gado</div>
   <div class="nav-tab" onclick="showTab('eucalipto', this)">🌳 Eucalipto</div>
   <div class="nav-tab" onclick="showTab('inventario', this)">🗂️ Inventário</div>
+  <div class="nav-tab" onclick="showTab('caixa', this)">💵 Mapa de Caixa</div>
 </div>
 
 <div class="content">
@@ -981,6 +1437,131 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
 </div>
 
 </div><!-- end .content -->
+
+
+<!-- ==================== MAPA DE CAIXA ==================== -->
+<div id="tab-caixa" class="tab-panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <span class="section-title" style="margin:0">💵 Mapa de Caixa</span>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="caixa-view" onchange="renderCaixa()" style="font-size:13px;padding:6px 10px">
+        <option value="mensal">Visão Mensal</option>
+        <option value="semanal">Visão Semanal</option>
+      </select>
+      <select id="caixa-ano" onchange="renderCaixa()" style="font-size:13px;padding:6px 10px">
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+      </select>
+      <select id="caixa-mes" onchange="renderCaixa()" style="font-size:13px;padding:6px 10px;display:none">
+        <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+        <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+        <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+        <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Saldos iniciais manuais -->
+  <div id="caixa-saldos-form" style="background:#f0f9f4;border-radius:10px;padding:14px 18px;margin-bottom:18px;border-left:4px solid var(--green)">
+    <div style="font-size:13px;font-weight:600;color:var(--green-dark);margin-bottom:10px">📌 Saldos iniciais do mês <span id="caixa-mes-label"></span> <span style="font-size:11px;font-weight:400;color:#888">(únicos campos manuais)</span></div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <label style="font-size:12px;color:#555">Conta Bancária 1 (R$)</label>
+        <input type="number" id="caixa-saldo-banco1" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <label style="font-size:12px;color:#555">Conta Bancária 2 (R$)</label>
+        <input type="number" id="caixa-saldo-banco2" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <label style="font-size:12px;color:#555">Caixa Físico (R$)</label>
+        <input type="number" id="caixa-saldo-fisico" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;justify-content:flex-end">
+        <label style="font-size:12px;color:#555">Saldo total inicial</label>
+        <div id="caixa-saldo-total" style="font-size:17px;font-weight:700;color:var(--green-dark);padding:6px 0">R$ 0,00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div id="caixa-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px"></div>
+
+  <!-- Visão MACRO -->
+  <div id="caixa-macro-section">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--text)">📊 Visão Macro — Resumo</div>
+    <div style="overflow-x:auto;border-radius:10px;box-shadow:var(--shadow)">
+      <table id="caixa-macro-table" class="data-table" style="min-width:700px"></table>
+    </div>
+  </div>
+
+  <div style="height:24px"></div>
+
+  <!-- Visão MICRO -->
+  <div id="caixa-micro-section">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--text)">🔍 Visão Detalhada por Categoria</div>
+    <div style="overflow-x:auto;border-radius:10px;box-shadow:var(--shadow)">
+      <table id="caixa-micro-table" class="data-table" style="min-width:700px"></table>
+    </div>
+  </div>
+
+  <div style="height:28px"></div>
+
+  <!-- Demonstrativo de Saldo -->
+  <div id="caixa-demo-section">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--text)">📋 Demonstrativo de Saldo — Posição do Período</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+
+      <!-- Disponível -->
+      <div style="background:white;border-radius:10px;box-shadow:var(--shadow);overflow:hidden">
+        <div style="background:#1E4620;color:white;padding:10px 16px;font-weight:600;font-size:13px">DISPONÍVEL</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <tr><td style="padding:7px 16px;border-bottom:1px solid #f0f0f0">Caixa</td><td id="ds-caixa" style="text-align:right;padding:7px 16px;border-bottom:1px solid #f0f0f0">—</td></tr>
+          <tr><td style="padding:7px 16px;border-bottom:1px solid #f0f0f0">Bancos</td><td id="ds-bancos" style="text-align:right;padding:7px 16px;border-bottom:1px solid #f0f0f0">—</td></tr>
+          <tr><td style="padding:7px 16px;border-bottom:1px solid #f0f0f0">Aplicações Financeiras</td><td id="ds-aplicacoes" style="text-align:right;padding:7px 16px;border-bottom:1px solid #f0f0f0">—</td></tr>
+          <tr><td style="padding:7px 16px;border-bottom:1px solid #f0f0f0">Fundo de Reserva</td><td id="ds-reserva" style="text-align:right;padding:7px 16px;border-bottom:1px solid #f0f0f0">—</td></tr>
+          <tr style="background:#f0f9f4;font-weight:700"><td style="padding:8px 16px">Total Disponível</td><td id="ds-total-disp" style="text-align:right;padding:8px 16px;color:#1a6f3c">—</td></tr>
+        </table>
+      </div>
+
+      <!-- A Receber -->
+      <div style="background:white;border-radius:10px;box-shadow:var(--shadow);overflow:hidden">
+        <div style="background:#1565C0;color:white;padding:10px 16px;font-weight:600;font-size:13px;display:flex;justify-content:space-between;align-items:center">
+          A RECEBER
+          <button onclick="addItemAReceber()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer">+ Adicionar</button>
+        </div>
+        <div id="ds-receber-list"></div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <tr style="background:#e3f2fd;font-weight:700"><td style="padding:8px 16px">Total A Receber</td><td id="ds-total-receber" style="text-align:right;padding:8px 16px;color:#1565C0">—</td></tr>
+        </table>
+      </div>
+
+      <!-- A Pagar -->
+      <div style="background:white;border-radius:10px;box-shadow:var(--shadow);overflow:hidden">
+        <div style="background:#B71C1C;color:white;padding:10px 16px;font-weight:600;font-size:13px;display:flex;justify-content:space-between;align-items:center">
+          A PAGAR
+          <button onclick="addItemAPagar()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer">+ Adicionar</button>
+        </div>
+        <div id="ds-pagar-list"></div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <tr style="background:#ffebee;font-weight:700"><td style="padding:8px 16px">Total A Pagar</td><td id="ds-total-pagar" style="text-align:right;padding:8px 16px;color:#B71C1C">—</td></tr>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- Soma Total -->
+    <div style="margin-top:16px;background:white;border-radius:10px;box-shadow:var(--shadow);overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr style="background:#212121;color:white;font-weight:700;font-size:14px">
+          <td style="padding:12px 16px">SOMA TOTAL (Disponível + A Receber − A Pagar)</td>
+          <td id="ds-soma-total" style="text-align:right;padding:12px 16px;font-size:16px">—</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /tab-caixa -->
 
 <!-- ==================== MODALS ==================== -->
 
@@ -1778,6 +2359,7 @@ localStorage.setItem('fazenda_inventario', JSON.stringify(inventario));
 let anoAtivoDespesas = 2026;
 
 function save() {
+  localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
   localStorage.setItem('fazenda_desp2025', JSON.stringify(despesas2025));
   localStorage.setItem('fazenda_desp2026', JSON.stringify(despesas2026));
   localStorage.setItem('fazenda_receitas', JSON.stringify(receitas));
@@ -1828,6 +2410,7 @@ function showTab(name, el) {
   const btn = el || (typeof event !== 'undefined' && event && event.currentTarget) || null;
   if (btn && btn.classList) btn.classList.add('active');
   if (name === 'dashboard') initDashboard();
+  if (name === 'caixa') renderCaixa();
   if (name === 'contas') renderContas();
   if (name === 'despesas') renderDespesasTable();
   if (name === 'receitas') renderReceitas();
@@ -3057,6 +3640,7 @@ async function loadFromSupabase() {
     eucaVendas   = JSON.parse(localStorage.getItem('fazenda_euca_vendas')   || '[]');
     inventario   = JSON.parse(localStorage.getItem('fazenda_inventario')    || '[]');
     contasPagar  = JSON.parse(localStorage.getItem('fazenda_contas')        || '[]');
+    const sc = localStorage.getItem('fazenda_saldos_caixa'); if (sc) saldosCaixa = JSON.parse(sc);
     const d25 = localStorage.getItem('fazenda_desp2025'); if (d25) despesas2025 = JSON.parse(d25);
     const d26 = localStorage.getItem('fazenda_desp2026'); if (d26) despesas2026 = JSON.parse(d26);
     const lu = localStorage.getItem('fazenda_last_update');
