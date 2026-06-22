@@ -1157,20 +1157,9 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
 <div class="modal-overlay" id="modal-despesa">
   <div class="modal">
     <h2>📋 Lançar Despesa</h2>
-    <div class="form-grid">
-      <div class="form-row">
-        <label>Ano</label>
-        <select id="dep-ano"><option>2026</option><option>2025</option></select>
-      </div>
-      <div class="form-row">
-        <label>Mês</label>
-        <select id="dep-mes">
-          <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
-          <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
-          <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
-          <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
-        </select>
-      </div>
+    <div class="form-row">
+      <label>Data</label>
+      <input type="date" id="dep-data">
     </div>
     <div class="form-row">
       <label>Categoria</label>
@@ -1748,7 +1737,13 @@ function fmtN(v) {
 function sumRow(arr) { return arr.reduce((a,v) => a + (v||0), 0); }
 function monthTotal(data, mi) { return data.reduce((a,c) => a + (c.v[mi]||0), 0); }
 
-function openModal(id) { document.getElementById(id).classList.add('open'); }
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'modal-despesa') {
+    const depData = document.getElementById('dep-data');
+    if (depData && !depData.value) depData.value = new Date().toISOString().slice(0,10);
+  }
+}
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
 
@@ -2300,20 +2295,30 @@ function renderDespesasTable() {
     options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => 'R$' + (v/1000).toFixed(0) + 'k' } } } }
   });
 
-  // Populate dropdown de categorias no modal
+  // Populate dropdown de categorias no modal (todas as categorias de ambos os anos)
   const depCat = document.getElementById('dep-cat');
-  depCat.innerHTML = data.map(c => `<option>${c.nome}</option>`).join('');
+  const allCatNames = [...new Set([...despesas2025, ...despesas2026].map(c => c.nome))].sort((a,b) => a.localeCompare(b,'pt'));
+  depCat.innerHTML = allCatNames.map(c => `<option>${c}</option>`).join('');
 }
 
 function saveDespesa() {
-  const ano = parseInt(document.getElementById('dep-ano').value);
-  const mes = parseInt(document.getElementById('dep-mes').value);
+  const dataVal = document.getElementById('dep-data').value;
+  if (!dataVal) { alert('Informe a data.'); return; }
+  const d = new Date(dataVal + 'T12:00:00');
+  const ano = d.getFullYear();
+  const mes = d.getMonth();
   const cat = document.getElementById('dep-cat').value;
   const valor = parseFloat(document.getElementById('dep-valor').value);
   if (!valor || isNaN(valor)) { alert('Informe um valor.'); return; }
   const data = ano === 2025 ? despesas2025 : despesas2026;
   const found = data.find(c => c.nome === cat);
-  if (found) { found.v[mes] = (found.v[mes] || 0) + valor; }
+  if (found) {
+    found.v[mes] = (found.v[mes] || 0) + valor;
+  } else {
+    const novo = {nome: cat, v: Array(12).fill(null)};
+    novo.v[mes] = valor;
+    data.push(novo);
+  }
   save();
   closeModal('modal-despesa');
   renderDespesasTable();
