@@ -1053,6 +1053,10 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
 
   <div style="height:28px"></div>
 
+  <!-- Saldo por Conta -->
+  <div style="margin-bottom:8px;font-size:14px;font-weight:600;color:var(--text)">🏦 Movimentação por Conta</div>
+  <div id="ds-por-conta" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:28px"></div>
+
   <!-- Demonstrativo de Saldo -->
   <div id="caixa-demo-section">
     <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--text)">📋 Demonstrativo de Saldo — Posição do Período</div>
@@ -1322,16 +1326,26 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
         <input type="number" id="pagar-valor" step="0.01">
       </div>
     </div>
-    <div class="form-row">
-      <label>Forma de Pagamento</label>
-      <select id="pagar-forma">
-        <option>Transferência Bancária</option>
-        <option>Boleto</option>
-        <option>PIX</option>
-        <option>Cheque</option>
-        <option>Débito Automático</option>
-        <option>Dinheiro</option>
-      </select>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Pago via (conta)</label>
+        <select id="pagar-conta">
+          <option value="BB">Banco do Brasil</option>
+          <option value="Itau">Itaú</option>
+          <option value="Caixa">Caixa Físico</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Forma de Pagamento</label>
+        <select id="pagar-forma">
+          <option>PIX</option>
+          <option>Transferência</option>
+          <option>Boleto</option>
+          <option>Cheque</option>
+          <option>Débito Automático</option>
+          <option>Dinheiro</option>
+        </select>
+      </div>
     </div>
     <div class="form-row">
       <label>Observação</label>
@@ -1349,9 +1363,19 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
 <div class="modal-overlay" id="modal-despesa">
   <div class="modal">
     <h2>📋 Lançar Despesa</h2>
-    <div class="form-row">
-      <label>Data</label>
-      <input type="date" id="dep-data">
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Data</label>
+        <input type="date" id="dep-data">
+      </div>
+      <div class="form-row">
+        <label>Pago via (conta)</label>
+        <select id="dep-conta">
+          <option value="BB">Banco do Brasil</option>
+          <option value="Itau">Itaú</option>
+          <option value="Caixa">Caixa Físico</option>
+        </select>
+      </div>
     </div>
     <div class="form-row">
       <label>Categoria</label>
@@ -1409,6 +1433,15 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
           <option value="A Receber">A Receber</option>
         </select>
       </div>
+    </div>
+    <div class="form-row">
+      <label>Recebido em (conta)</label>
+      <select id="rec-conta">
+        <option value="BB">Banco do Brasil</option>
+        <option value="Itau">Itaú</option>
+        <option value="Caixa">Caixa Físico</option>
+        <option value="">— Não informado —</option>
+      </select>
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('modal-receita')">Cancelar</button>
@@ -1723,6 +1756,7 @@ const _DESP2026_BASE = [
 // Carrega despesas do localStorage (persistência) ou usa base hardcoded
 let despesas2025 = (function(){ try { const s=localStorage.getItem('fazenda_desp2025'); return s ? JSON.parse(s) : _DESP2025_BASE.map(r=>({...r,v:[...r.v]})); } catch(e){ return _DESP2025_BASE.map(r=>({...r,v:[...r.v]})); } })();
 let despesas2026 = (function(){ try { const s=localStorage.getItem('fazenda_desp2026'); return s ? JSON.parse(s) : _DESP2026_BASE.map(r=>({...r,v:[...r.v]})); } catch(e){ return _DESP2026_BASE.map(r=>({...r,v:[...r.v]})); } })();
+let despesasDetalhes = (function(){ try { return JSON.parse(localStorage.getItem('fazenda_desp_det') || '[]'); } catch(e){ return []; } })();
 
 // ============================================================
 // RECEITAS 2025 — DADOS REAIS (importados da planilha)
@@ -1908,6 +1942,7 @@ function save() {
   localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
   localStorage.setItem('fazenda_desp2025', JSON.stringify(despesas2025));
   localStorage.setItem('fazenda_desp2026', JSON.stringify(despesas2026));
+  localStorage.setItem('fazenda_desp_det', JSON.stringify(despesasDetalhes));
   localStorage.setItem('fazenda_receitas', JSON.stringify(receitas));
   localStorage.setItem('fazenda_gado_mov', JSON.stringify(gadoMov));
   localStorage.setItem('fazenda_gado_estoque', JSON.stringify(gadoEstoque));
@@ -2264,10 +2299,12 @@ function confirmarPagamento() {
   conta.status = 'Paga';
   conta.dataPagamento = dataPag;
   conta.valorPago = valorPago;
+  conta.contaPagamento = document.getElementById('pagar-conta').value;
   conta.formaPagamento = document.getElementById('pagar-forma').value;
   conta.obsPagamento = document.getElementById('pagar-obs').value;
-  // Lança automaticamente na aba de Despesas
+  // Lança automaticamente na aba de Despesas + detalhe com conta
   _lancaDespesaConta(conta.categoria, valorPago, dataPag, +1);
+  despesasDetalhes.push({data: dataPag, categoria: conta.categoria, valor: valorPago, conta: conta.contaPagamento, obs: conta.obsPagamento || ''});
   save();
   saveContas();
   closeModal('modal-pagar-conta');
@@ -2550,16 +2587,21 @@ function saveDespesa() {
   const mes = d.getMonth();
   const cat = document.getElementById('dep-cat').value;
   const valor = parseFloat(document.getElementById('dep-valor').value);
+  const contaDesp = document.getElementById('dep-conta').value;
+  const obs = document.getElementById('dep-obs').value;
   if (!valor || isNaN(valor)) { alert('Informe um valor.'); return; }
-  const data = ano === 2025 ? despesas2025 : despesas2026;
-  const found = data.find(c => c.nome === cat);
+  // Atualiza agregado (DRE)
+  const tabela = ano === 2025 ? despesas2025 : despesas2026;
+  const found = tabela.find(c => c.nome === cat);
   if (found) {
     found.v[mes] = (found.v[mes] || 0) + valor;
   } else {
     const novo = {nome: cat, v: Array(12).fill(null)};
     novo.v[mes] = valor;
-    data.push(novo);
+    tabela.push(novo);
   }
+  // Registra detalhe com conta (Mapa de Caixa)
+  despesasDetalhes.push({data: dataVal, categoria: cat, valor, conta: contaDesp, obs});
   save();
   closeModal('modal-despesa');
   renderDespesasTable();
@@ -2649,8 +2691,9 @@ function saveReceita() {
   const desc = document.getElementById('rec-desc').value;
   const valor = parseFloat(document.getElementById('rec-valor').value);
   const status = document.getElementById('rec-status').value;
+  const conta = document.getElementById('rec-conta').value;
   if (!data || !valor || isNaN(valor)) { alert('Preencha data e valor.'); return; }
-  receitas.push({data, categoria: cat, descricao: desc, valor, status});
+  receitas.push({data, categoria: cat, descricao: desc, valor, status, conta});
   save();
   closeModal('modal-receita');
   document.getElementById('rec-data').value = new Date().toISOString().split('T')[0];
@@ -3190,6 +3233,7 @@ async function loadFromSupabase() {
     const sc = localStorage.getItem('fazenda_saldos_caixa'); if (sc) try { saldosCaixa = JSON.parse(sc); } catch(e){}
     const d25 = localStorage.getItem('fazenda_desp2025'); if (d25) despesas2025 = JSON.parse(d25);
     const d26 = localStorage.getItem('fazenda_desp2026'); if (d26) despesas2026 = JSON.parse(d26);
+    const dd = localStorage.getItem('fazenda_desp_det'); if (dd) try { despesasDetalhes = JSON.parse(dd); } catch(e){};
     const lu = localStorage.getItem('fazenda_last_update');
     if (lu) document.getElementById('last-update').textContent = lu;
   } catch(e) { console.warn('Erro ao carregar dados:', e); }
@@ -3814,6 +3858,59 @@ function semanasDoMes(ano, mes) {
   });
 }
 
+const CONTAS_NOMES = {BB: 'Banco do Brasil', Itau: 'Itaú', Caixa: 'Caixa Físico'};
+const CONTAS_CORES = {BB: '#1565C0', Itau: '#e65100', Caixa: '#2e7d32'};
+
+function getEntradasContaPeriodo(contaKey, dataIni, dataFim) {
+  return receitas.filter(r => {
+    if (!r.data || r.conta !== contaKey) return false;
+    const d = new Date(r.data + 'T12:00:00');
+    return d >= dataIni && d <= dataFim;
+  }).reduce((a, r) => a + (parseFloat(r.valor) || 0), 0);
+}
+
+function getSaidasContaPeriodo(contaKey, dataIni, dataFim) {
+  // Despesas lançadas manualmente
+  const desp = despesasDetalhes.filter(d => {
+    if (!d.data || d.conta !== contaKey) return false;
+    const dt = new Date(d.data + 'T12:00:00');
+    return dt >= dataIni && dt <= dataFim;
+  }).reduce((a, d) => a + (parseFloat(d.valor) || 0), 0);
+  // Contas a pagar pagas por essa conta
+  const conts = contasPagar.filter(c => {
+    if (c.status !== 'Paga' || !c.dataPagamento || c.contaPagamento !== contaKey) return false;
+    const d = new Date(c.dataPagamento + 'T12:00:00');
+    return d >= dataIni && d <= dataFim;
+  }).reduce((a, c) => a + (parseFloat(c.valorPago) || 0), 0);
+  return desp + conts;
+}
+
+function renderSaldoPorConta(ano, mes, view) {
+  const contas = ['BB', 'Itau', 'Caixa'];
+  let dataIni, dataFim;
+  if (view === 'mensal') {
+    dataIni = new Date(ano, 0, 1); dataIni.setHours(0,0,0);
+    dataFim = new Date(ano, 11, 31); dataFim.setHours(23,59,59);
+  } else {
+    dataIni = new Date(ano, mes, 1); dataIni.setHours(0,0,0);
+    dataFim = new Date(ano, mes+1, 0); dataFim.setHours(23,59,59);
+  }
+  const el = document.getElementById('ds-por-conta');
+  if (!el) return;
+  el.innerHTML = contas.map(k => {
+    const ent = getEntradasContaPeriodo(k, dataIni, dataFim);
+    const sai = getSaidasContaPeriodo(k, dataIni, dataFim);
+    const res = ent - sai;
+    const cor = CONTAS_CORES[k];
+    return `<div style="background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:14px 18px;flex:1;min-width:180px;border-top:4px solid ${cor}">
+      <div style="font-weight:700;font-size:13px;color:${cor};margin-bottom:8px">${CONTAS_NOMES[k]}</div>
+      <div style="font-size:12px;color:#555;display:flex;justify-content:space-between;margin-bottom:4px"><span>↑ Entradas</span><span style="color:#2e7d32;font-weight:600">${fmt(ent)}</span></div>
+      <div style="font-size:12px;color:#555;display:flex;justify-content:space-between;margin-bottom:8px"><span>↓ Saídas</span><span style="color:#c62828;font-weight:600">${fmt(sai)}</span></div>
+      <div style="font-size:14px;font-weight:700;display:flex;justify-content:space-between;border-top:1px solid #eee;padding-top:8px"><span>Resultado</span><span style="color:${res>=0?'#2e7d32':'#c62828'}">${fmt(res)}</span></div>
+    </div>`;
+  }).join('');
+}
+
 const GRUPOS_CAIXA = {
   'Pessoal':    ['Salários','Férias','Retiradas Pró Labore','Rescisões Contratuais','13º Salário','Horas Extras de Funcionários','Adiantamentos'],
   'Fiscal':     ['FGTS','INSS','PIS/COFINS','IRRF Rend Trab Assal+Pró Labore','ICMS','Darf','CREA - Anuidade','Contribuição Sindical - Empreg.'],
@@ -3842,6 +3939,7 @@ function renderCaixa() {
     document.getElementById('caixa-mes-label').textContent = 'de ' + MESES_FULL[mesSel] + '/' + ano;
     _renderCaixaSemanal(ano, mesSel, MESES_FULL);
   }
+  renderSaldoPorConta(ano, mesSel, view);
 }
 
 function _tableHeader(cols, firstColLabel) {
