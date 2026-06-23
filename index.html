@@ -4073,9 +4073,10 @@ function carregarSaldosForm() {
   const b1 = document.getElementById('caixa-saldo-banco1');
   const b2 = document.getElementById('caixa-saldo-banco2');
   const bf = document.getElementById('caixa-saldo-fisico');
-  if (b1 && document.activeElement !== b1) b1.value = s.banco1 || '';
-  if (b2 && document.activeElement !== b2) b2.value = s.banco2 || '';
-  if (bf && document.activeElement !== bf) bf.value = s.fisico  || '';
+  const fmtInputBR = v => (v && v > 0) ? Number(v).toFixed(2).replace('.', ',') : '';
+  if (b1 && document.activeElement !== b1) b1.value = fmtInputBR(s.banco1);
+  if (b2 && document.activeElement !== b2) b2.value = fmtInputBR(s.banco2);
+  if (bf && document.activeElement !== bf) bf.value = fmtInputBR(s.fisico);
   const totDisp = (s.banco1||0) + (s.banco2||0) + (s.fisico||0) + (s.aplicacoes||0) + (s.reserva||0);
   const el = document.getElementById('caixa-saldo-total');
   if (el) el.textContent = fmt(totDisp);
