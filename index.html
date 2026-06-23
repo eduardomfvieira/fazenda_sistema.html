@@ -3760,8 +3760,8 @@ function salvarSaldosCaixa() {
     banco1:      parseFloat(document.getElementById('caixa-saldo-banco1').value)      || 0,
     banco2:      parseFloat(document.getElementById('caixa-saldo-banco2').value)      || 0,
     fisico:      parseFloat(document.getElementById('caixa-saldo-fisico').value)      || 0,
-    aplicacoes:  parseFloat(document.getElementById('caixa-saldo-aplicacoes').value)  || 0,
-    reserva:     parseFloat(document.getElementById('caixa-saldo-reserva').value)     || 0,
+    aplicacoes:  parseFloat(document.getElementById('caixa-saldo-aplicacoes')?.value) || 0,
+    reserva:     parseFloat(document.getElementById('caixa-saldo-reserva')?.value)    || 0,
     a_receber:   prev.a_receber  || [],
     a_pagar:     prev.a_pagar    || []
   };
