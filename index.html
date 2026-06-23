@@ -1014,15 +1014,15 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
     <div style="display:flex;gap:16px;flex-wrap:wrap">
       <div style="display:flex;flex-direction:column;gap:4px">
         <label style="font-size:12px;color:#1565C0;font-weight:600">🏦 Banco do Brasil (R$)</label>
-        <input type="number" id="caixa-saldo-banco1" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()" onchange="salvarSaldosCaixa()">
+        <input type="text" inputmode="decimal" id="caixa-saldo-banco1" placeholder="0,00" style="width:160px" oninput="salvarSaldosCaixa()" onblur="salvarSaldosCaixa()">
       </div>
       <div style="display:flex;flex-direction:column;gap:4px">
         <label style="font-size:12px;color:#e65100;font-weight:600">🏦 Itaú (R$)</label>
-        <input type="number" id="caixa-saldo-banco2" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()" onchange="salvarSaldosCaixa()">
+        <input type="text" inputmode="decimal" id="caixa-saldo-banco2" placeholder="0,00" style="width:160px" oninput="salvarSaldosCaixa()" onblur="salvarSaldosCaixa()">
       </div>
       <div style="display:flex;flex-direction:column;gap:4px">
         <label style="font-size:12px;color:#2e7d32;font-weight:600">💵 Caixa Físico (R$)</label>
-        <input type="number" id="caixa-saldo-fisico" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()" onchange="salvarSaldosCaixa()">
+        <input type="text" inputmode="decimal" id="caixa-saldo-fisico" placeholder="0,00" style="width:160px" oninput="salvarSaldosCaixa()" onblur="salvarSaldosCaixa()">
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;justify-content:flex-end">
         <label style="font-size:12px;color:#555">Saldo total inicial</label>
@@ -3753,15 +3753,22 @@ function getCaixaKey() {
   return view === 'mensal' ? ano + '-00' : ano + '-' + String(mes).padStart(2,'0');
 }
 
+function parseBR(v) {
+  if (!v && v !== 0) return 0;
+  // aceita "89.075,59" ou "89075.59" ou "89075,59"
+  const s = String(v).trim().replace(/\./g,'').replace(',','.');
+  return parseFloat(s) || 0;
+}
+
 function salvarSaldosCaixa() {
   const key  = getCaixaKey();
   const prev = saldosCaixa[key] || {};
   saldosCaixa[key] = {
-    banco1:      parseFloat(document.getElementById('caixa-saldo-banco1').value)      || 0,
-    banco2:      parseFloat(document.getElementById('caixa-saldo-banco2').value)      || 0,
-    fisico:      parseFloat(document.getElementById('caixa-saldo-fisico').value)      || 0,
-    aplicacoes:  parseFloat(document.getElementById('caixa-saldo-aplicacoes')?.value) || 0,
-    reserva:     parseFloat(document.getElementById('caixa-saldo-reserva')?.value)    || 0,
+    banco1:      parseBR(document.getElementById('caixa-saldo-banco1')?.value),
+    banco2:      parseBR(document.getElementById('caixa-saldo-banco2')?.value),
+    fisico:      parseBR(document.getElementById('caixa-saldo-fisico')?.value),
+    aplicacoes:  parseBR(document.getElementById('caixa-saldo-aplicacoes')?.value),
+    reserva:     parseBR(document.getElementById('caixa-saldo-reserva')?.value),
     a_receber:   prev.a_receber  || [],
     a_pagar:     prev.a_pagar    || []
   };
@@ -3770,31 +3777,84 @@ function salvarSaldosCaixa() {
   document.getElementById('caixa-saldo-total').textContent = fmt(totDisp);
   localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
   save();
+  renderDemonstrativo();
   renderCaixa();
+}
+
+function renderDemonstrativo() {
+  const key = getCaixaKey();
+  const s   = saldosCaixa[key] || {};
+  const caixa  = s.fisico      || 0;
+  const bancos = (s.banco1||0) + (s.banco2||0);
+  const aplic  = s.aplicacoes  || 0;
+  const reserv = s.reserva     || 0;
+  const totDisp = caixa + bancos + aplic + reserv;
+  const setEl = (id, v) => { const el=document.getElementById(id); if(el) el.textContent = v; };
+  setEl('ds-caixa',      caixa  ? fmt(caixa)  : '—');
+  setEl('ds-bancos',     bancos ? fmt(bancos) : '—');
+  setEl('ds-aplicacoes', aplic  ? fmt(aplic)  : '—');
+  setEl('ds-reserva',    reserv ? fmt(reserv) : '—');
+  setEl('ds-total-disp', totDisp ? fmt(totDisp) : '—');
+  // A Receber
+  const receber = s.a_receber || [];
+  const elRec = document.getElementById('ds-receber-list');
+  if (elRec) {
+    elRec.innerHTML = receber.map((r,i)=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 16px;border-bottom:1px solid #f0f0f0;font-size:12px">
+        <span>${r.desc}</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span style="color:#1565C0;font-weight:600">${fmt(r.valor)}</span>
+          <button onclick="removeItemDS('receber',${i})" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:14px;line-height:1">×</button>
+        </span>
+      </div>`).join('');
+  }
+  const totRec = receber.reduce((a,r)=>a+r.valor,0);
+  setEl('ds-total-receber', totRec ? fmt(totRec) : '—');
+  // A Pagar
+  const pagar = s.a_pagar || [];
+  const elPag = document.getElementById('ds-pagar-list');
+  if (elPag) {
+    elPag.innerHTML = pagar.map((p,i)=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 16px;border-bottom:1px solid #f0f0f0;font-size:12px">
+        <span>${p.desc}</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span style="color:#B71C1C;font-weight:600">${fmt(p.valor)}</span>
+          <button onclick="removeItemDS('pagar',${i})" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:14px;line-height:1">×</button>
+        </span>
+      </div>`).join('');
+  }
+  const totPag = pagar.reduce((a,p)=>a+p.valor,0);
+  setEl('ds-total-pagar', totPag ? fmt(totPag) : '—');
+  const soma = totDisp + totRec - totPag;
+  const somaEl = document.getElementById('ds-soma-total');
+  if (somaEl) {
+    somaEl.textContent = (totDisp || totRec || totPag) ? fmt(soma) : '—';
+    somaEl.style.color = soma < 0 ? '#ef9a9a' : 'white';
+  }
 }
 
 function addItemAReceber() {
   const desc  = prompt('Descrição do item a receber:');
   if (!desc) return;
-  const valor = parseFloat(prompt('Valor (R$):') || '0') || 0;
+  const valor = parseBR(prompt('Valor (R$):') || '0');
   const key   = getCaixaKey();
   if (!saldosCaixa[key]) saldosCaixa[key] = {banco1:0,banco2:0,fisico:0,aplicacoes:0,reserva:0,a_receber:[],a_pagar:[]};
   if (!saldosCaixa[key].a_receber) saldosCaixa[key].a_receber = [];
   saldosCaixa[key].a_receber.push({desc, valor});
   localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
-  save(); renderCaixa();
+  save(); renderDemonstrativo(); renderCaixa();
 }
 
 function addItemAPagar() {
   const desc  = prompt('Descrição do item a pagar:');
   if (!desc) return;
-  const valor = parseFloat(prompt('Valor (R$):') || '0') || 0;
+  const valor = parseBR(prompt('Valor (R$):') || '0');
   const key   = getCaixaKey();
   if (!saldosCaixa[key]) saldosCaixa[key] = {banco1:0,banco2:0,fisico:0,aplicacoes:0,reserva:0,a_receber:[],a_pagar:[]};
   if (!saldosCaixa[key].a_pagar) saldosCaixa[key].a_pagar = [];
   saldosCaixa[key].a_pagar.push({desc, valor});
   localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
-  save(); renderCaixa();
+  save(); renderDemonstrativo(); renderCaixa();
 }
 
 function removeItemDS(tipo, idx) {
@@ -3803,7 +3863,7 @@ function removeItemDS(tipo, idx) {
   if (tipo === 'receber') saldosCaixa[key].a_receber.splice(idx,1);
   else saldosCaixa[key].a_pagar.splice(idx,1);
   localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
-  save(); renderCaixa();
+  save(); renderDemonstrativo(); renderCaixa();
 }
 
 function getSaldoInicial(ano, mes) {
@@ -4037,6 +4097,7 @@ function renderCaixa() {
     _renderCaixaSemanal(ano, mesSel, MESES_FULL);
   }
   carregarSaldosForm();
+  renderDemonstrativo();
   renderSaldoPorConta(ano, mesSel, view);
 }
 
