@@ -590,6 +590,11 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <select id="filtro-ano-despesa" onchange="renderDespesasTable()">
         <option value="2026">2026</option>
         <option value="2025">2025</option>
+        <option value="2024">2024</option>
+        <option value="2023">2023</option>
+        <option value="2022">2022</option>
+        <option value="2021">2021</option>
+        <option value="2020">2020</option>
       </select>
     </div>
     <div class="filter-group">
@@ -998,6 +1003,11 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <select id="caixa-ano" onchange="renderCaixa()" style="font-size:13px;padding:6px 10px">
         <option value="2026">2026</option>
         <option value="2025">2025</option>
+        <option value="2024">2024</option>
+        <option value="2023">2023</option>
+        <option value="2022">2022</option>
+        <option value="2021">2021</option>
+        <option value="2020">2020</option>
       </select>
       <select id="caixa-mes" onchange="renderCaixa()" style="font-size:13px;padding:6px 10px;display:none">
         <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
@@ -1683,6 +1693,150 @@ function getGrupo(nome) {
   return 'Outros';
 }
 
+const _DESP2020_BASE = [
+  {nome:'Matéria Prima / Carvão', v:[null,null,null,null,null,25810,null,null,15728,29889,4923,22095]},
+  {nome:'Salários', v:[9677,10460,9309,7485,7577,8369,8371,7028,6737,6050,10063,9600]},
+  {nome:'Serviços de Terceiros', v:[9195.37,6685.08,7791.55,4587.55,21849.55,8011.55,8754.55,8247.11,6713.49,7752.91,10025.55,13759.05]},
+  {nome:'Férias', v:[1372,1777,4882,16143,null,null,1785,2241,null,null,null,null]},
+  {nome:'Rescisões Contratuais', v:[null,4031.24,null,5908.02,null,4362.97,null,null,18369,2661.89,5066.37,null]},
+  {nome:'FGTS', v:[2986.04,2867.97,2118.5,5140.05,2476.45,4303.24,2018.72,2054.7,8708.94,1898.43,3597.35,2667.47]},
+  {nome:'INSS', v:[23134.04,19189.32,19128.7,18699.29,20709.2,26803.79,28361.36,29050.86,33650.9,33039.25,32843.66,29028.11]},
+  {nome:'IRRF Rend Trab Assal+Pró Labore', v:[16922.44,15257.96,13375.05,19385.6,13367.39,13224.87,23563.64,23589.46,23578.8,43958.67,28850.83,29052.32]},
+  {nome:'Fretes', v:[218.37,125.72,null,185.72,null,2875.77,5238.99,3799.7,2940,1887.75,1400,149.36]},
+  {nome:'Telefone', v:[151.68,151.68,157.51,157.51,157.9,161.13,182.14,119.92,119.92,119.92,119.92,119.92]},
+  {nome:'Energia Elétrica', v:[1909.09,839.46,1380.91,892.07,542.67,1069.37,1805.9,540.05,1209.27,1763.78,638.16,1172.58]},
+  {nome:'Comissões Bancárias', v:[688.9,558.85,437.7,699.95,560.65,821.2,646.8,619.85,695.35,626.2,569.5,780.65]},
+  {nome:'Combustível', v:[3988.69,1014.9,727.35,1197.27,964.38,1161.97,1279.01,1532.32,1433.64,1968.07,2014.29,2088.44]},
+  {nome:'Remédios - Outros', v:[1481.3,null,2084.2,1996.8,1213.25,809.36,366.3,566.2,799.8,null,71.35,540]},
+  {nome:'Ração', v:[1832.92,1448,1615.8,1025,1560.8,3436.47,1714,3254,2471,2591.6,1235.7,1819.8]},
+  {nome:'Refeitório', v:[1667.67,1049.76,1297.57,1185.74,1049.76,1049.76,1049.76,1127.52,1496.3,1381.56,1393.32,1412.4]},
+  {nome:'Despesas Diversas', v:[7134.22,4706.51,7584.36,7144.34,3683.71,10399.08,8625.86,19085.01,26239.38,29425.11,33253.25,24552.26]},
+  {nome:'Manutenção de Veículos', v:[3386.26,3675.62,2289.35,5759.71,7065.43,887.04,14206.79,4490,4737.61,6137.22,3684.36,1400]},
+  {nome:'Manutenção de Maq. e Equip.', v:[3374.29,6411.46,6328.44,6612.55,5800.34,7245.23,9555.1,5184.88,6940.15,3879.59,3953.5,3608.71]},
+  {nome:'Taxas Diversas - IEF', v:[19583.2,2592.74,null,46.39,null,33.4,16568.73,681.44,343.33,44.54,20.41,1939.91]},
+  {nome:'Diária de Viagens', v:[601,615.99,361.25,915.1,826.95,1231.49,1246.22,1146.32,1357.42,1393.83,1437.73,2069.26]},
+  {nome:'Despesas Escritório', v:[853.31,779.11,589.77,667.55,566.52,580.35,588.42,596.31,457.55,519.55,457.55,571.44]},
+  {nome:'Despesas com o Carvão', v:[83758.23,79067.92,95498.59,62659.66,77150.96,125232.47,148573.48,153052.56,105280.51,127063.3,195782.58,108797.91]}
+];
+const _DESP2021_BASE = [
+  {nome:'Matéria Prima / Carvão', v:[null,null,null,null,null,null,null,null,null,null,7766.1,12299.25]},
+  {nome:'Salários', v:[8194,8287,8288,8287,7050,8098,6772,6500,8286,8480,21061,23196]},
+  {nome:'Serviços de Terceiros', v:[4587.55,7656.5,14579,8512,6399,4829,4829,5632,8416,4829,12759.36,20338.31]},
+  {nome:'Comissões (Venda de Carvão)', v:[null,null,null,null,null,null,null,null,null,null,3453.12,1100.4]},
+  {nome:'Férias', v:[null,null,2307,4432,2357,2371,3250,1361,1230,2608,1353,null]},
+  {nome:'Rescisões Contratuais', v:[null,1832.37,null,null,null,null,5832.13,null,null,11849.44,5170.35,null]},
+  {nome:'13º Salário', v:[null,null,null,null,null,null,null,null,null,null,10995,8954]},
+  {nome:'FGTS', v:[3012.22,3146.6,2217.18,2196.9,2310.57,2321.85,3252.14,2184.72,2139.59,7393.58,3599.69,3040.38]},
+  {nome:'INSS', v:[36064.94,25366.76,26457.93,23281.7,25934.13,22591.78,22537.6,16953.88,16504.46,20944.23,21849.29,26723.13]},
+  {nome:'PIS/COFINS', v:[null,null,null,null,null,null,null,null,null,null,3085.35,2720.49]},
+  {nome:'IRRF Rend Trab Assal+Pró Labore', v:[36965.76,32019.88,20804.32,32252.62,16046.98,16015.84,30448.45,16020.25,9916.27,16704.06,10063.05,9278.02]},
+  {nome:'Fretes', v:[null,201.32,3300,439.29,217.76,null,null,null,null,null,null,null]},
+  {nome:'ICMS', v:[null,null,null,null,null,null,null,null,null,null,12344.35,3786.12]},
+  {nome:'Telefone', v:[119.92,119.92,125.2,125.2,125.2,125.2,125.2,125.2,128.8,126.23,125.2,127.22]},
+  {nome:'Energia Elétrica', v:[1949.39,1318.33,887.19,2106.87,487.93,1496.86,1898.68,766.66,1867.23,2104.13,465.28,1297.87]},
+  {nome:'IPVA + TX. Licenc.', v:[6724.19,6049.79,6049.79,null,null,null,null,null,null,null,null,null]},
+  {nome:'Comissões Bancárias', v:[572.4,426.15,328.25,411.95,494.3,370.05,370.05,332.6,259.3,300.4,224.75,169.45]},
+  {nome:'Combustível', v:[1819.88,1758.46,1792.75,2874.7,2278.8,2085.39,2652.77,5705.32,4088.98,2391.3,16879.4,5952.47]},
+  {nome:'Remédios - Outros', v:[2388.6,156.8,null,1009.3,400,434.55,2711.54,35,2852,35,610,null]},
+  {nome:'Ração', v:[1050,3619.93,2440,2688.5,1221.98,4446.69,2581,4982.8,1628,22717.3,17804,7808.2]},
+  {nome:'Refeitório', v:[1444.44,1431.24,1289.53,1374.53,1445.88,1483.52,1520.88,1271,1442.05,1342.96,1239.15,1541.28]},
+  {nome:'Despesas Diversas', v:[20080.52,16576.35,14195.08,30495.53,18276.51,22947.78,14861.59,16709.94,16114.48,13874.59,8516.13,5310.38]},
+  {nome:'Manutenção de Veículos', v:[2938.21,234.55,2537.8,2906.38,6842.69,1469.54,6211.14,1180,5685.39,5322.06,7980.96,2148.44]},
+  {nome:'Manutenção de Maq. e Equip.', v:[7176.48,5221.67,5689.01,8469.75,9934.4,6934.43,5697.31,4645.52,7228.55,5892.84,2973.69,3065.55]},
+  {nome:'Taxas Diversas - IEF', v:[2289.54,767.09,null,94.66,312.36,926.19,null,83.66,1278.31,7888,49.3,801.56]},
+  {nome:'Diária de Viagens', v:[1283.77,1420.98,1500.4,1321.47,1230.07,1124.86,787.83,637.46,924.19,766.6,418.3,829.6]},
+  {nome:'Despesas Escritório', v:[457.55,457.55,477.34,783.26,493.12,472.34,472.34,472.34,472.34,472.34,472.34,472.34]},
+  {nome:'Despesas com o Carvão', v:[136377.04,133804.87,86129.73,117449.82,140797.09,93816.45,88098.48,62426.03,61501.9,55954.21,null,null]}
+];
+const _DESP2022_BASE = [
+  {nome:'Matéria Prima / Carvão', v:[7332.6,10500,10590,12295.36,11020,42371.16,45199.6,37964,30257.65,8544,8160,27992.86]},
+  {nome:'Salários', v:[24976,23377,20210,24614,27196,27962,28064,28505,30028,23819,25237,25728]},
+  {nome:'Serviços de Terceiros', v:[7229,6824.68,12254.68,11226.68,9994.68,14149.68,13752.24,17793.68,12023.22,10299.68,9773.68,19330.68]},
+  {nome:'Carbonização', v:[null,null,null,null,null,null,null,null,21962.1,24536.4,25000,14071.7]},
+  {nome:'Férias', v:[null,5112,1489,2648,2078,2579,2059,2598,1552,null,null,null]},
+  {nome:'Rescisões Contratuais', v:[4030.93,null,null,null,null,2489.35,null,null,8004.17,8609.28,1445.62,null]},
+  {nome:'13º Salário', v:[null,null,null,null,null,null,null,null,null,null,12517,9712]},
+  {nome:'FGTS', v:[5325.17,2081.91,2261.02,2353.32,2652.15,3229.03,2754.48,2725.06,13781.3,6859.15,2328.7,3318.68]},
+  {nome:'INSS', v:[18904.55,18624.06,19368.04,19687.41,24655.38,23924.33,24568.53,24035.52,18938.56,18680.09,16587.86,24811.12]},
+  {nome:'PIS/COFINS', v:[2099.33,1483.94,6580.9,12982.51,7860.81,12932.08,8874.46,7217.6,8633.11,6785.24,9935.46,7445.88]},
+  {nome:'IRRF Rend Trab Assal+Pró Labore', v:[14467.24,10053.32,9373.41,22180.29,9466.64,13451.59,32450.33,13554.07,13489.18,21336.79,7040.21,7030.86]},
+  {nome:'Fretes', v:[1100,8393.22,24607.1,16133.6,5795.95,null,null,null,null,null,null,null]},
+  {nome:'ICMS', v:[2851.92,null,270,3777.48,84,null,null,8.64,87.07,133,133,168.33]},
+  {nome:'Telefone', v:[129.96,129.96,129.96,129.96,129.96,129.96,129.96,129.96,121.67,107.3,115.59,115.59]},
+  {nome:'Energia Elétrica', v:[1816.66,423.97,1156.2,2206.87,965.13,1201.88,1309.4,1315.61,1450.85,1493.8,1109.64,820.91]},
+  {nome:'IPVA + TX. Licenc.', v:[null,null,6854,6038.3,6038.3,null,null,null,null,null,null,null]},
+  {nome:'Comissões Bancárias', v:[156,166.45,222,269,244,178,173.04,200,178,236,156,233]},
+  {nome:'Combustível', v:[6057.03,11490,12331.33,15443.34,22601.91,34940,23749,30068.07,29698.35,27270.01,28273.03,20022.82]},
+  {nome:'Remédios - Outros', v:[1590.25,366.25,167.6,983.71,2791.05,592.29,106.3,949.1,881.79,983.15,1405.45,7974.46]},
+  {nome:'Ração', v:[3942.5,5420.25,10725.1,2661.25,3077.5,3268.5,3363,4778,5926.5,3321,7072,2718.5]},
+  {nome:'Refeitório', v:[1426.87,1389.5,1485.16,1559.95,1587.69,1951.12,1865.77,1882.53,1520.85,1375.93,1510.96,1516]},
+  {nome:'Despesas Diversas', v:[5054.64,3661.64,12414.16,8867.28,12446.25,15120.7,12088.43,13632.6,5522.42,8983.51,3645.13,6438.18]},
+  {nome:'Manutenção de Veículos', v:[200,3362.18,4784.3,5069.78,9920.04,3587.08,null,5340,7054.45,4879.28,5565.28,6426.3]},
+  {nome:'Manutenção de Maq. e Equip.', v:[1344.61,2011.72,6072.33,8280.39,8355.62,11473.14,6139.85,16900.93,6206.77,9560.9,13927.04,12259.95]},
+  {nome:'Taxas Diversas - IEF', v:[3611.28,38.16,3770.03,null,24586.89,16.71,2.39,31.01,2387.87,1671.2,565,565]},
+  {nome:'Diária de Viagens', v:[52,55,562,499.7,192.5,244,79,263.2,314,524.06,542.2,394.2]},
+  {nome:'Despesas Escritório', v:[518.61,479.81,484.58,484.58,484.58,484.58,484.58,484.58,817.58,484.58,484.58,484.58]}
+];
+const _DESP2023_BASE = [
+  {nome:'Matéria Prima / Carvão', v:[16622,7938,17880,23392,20000,20000,null,13500,13150.6,3350,null,null]},
+  {nome:'Salários', v:[24569,24837,22856,26492,24847,25526,23184,22905,25663,21098,20786,20826]},
+  {nome:'Serviços de Terceiros', v:[10388.91,13698,13115.68,15607.78,16680.85,12729.7,13984.53,8246.8,8896.8,9396.8,5946.8,10468.8]},
+  {nome:'Carbonização', v:[14885.1,14085,21383.1,16952.7,16783.8,21685.2,null,11094.62,16026.06,4711.85,null,null]},
+  {nome:'Férias', v:[1931,5989,null,3581,2216,3529,2239,null,1797,1749,null,2933]},
+  {nome:'Rescisões Contratuais', v:[null,null,null,null,null,null,null,4110.75,8669.2,3341.64,null,6515.95]},
+  {nome:'13º Salário', v:[null,null,null,null,null,null,null,null,null,null,11763,7774]},
+  {nome:'FGTS', v:[3219.49,2415.86,2617.7,2427.39,2559.49,2523.35,2415.42,3372.05,4339.19,3513.87,1985.28,5952.42]},
+  {nome:'INSS', v:[16130.78,17041.74,17964.86,17109.06,17687.62,27846.23,26636.05,23483.83,24203.83,29941.81,35042.76,38474.21]},
+  {nome:'PIS/COFINS', v:[6032.26,4194.68,6799.76,7036.92,10480.01,6352.42,7787.15,5003.38,7864.24,7125.65,null,null]},
+  {nome:'IRRF Rend Trab Assal+Pró Labore', v:[22275.59,8086.02,7148.58,18163.13,7093.07,null,15378.81,null,null,12489.7,1245.13,1257.58]},
+  {nome:'Fretes', v:[93.69,null,null,null,null,null,null,null,null,null,null,null]},
+  {nome:'ICMS', v:[53.06,95.59,null,null,null,null,null,null,266.66,745.9,null,null]},
+  {nome:'Telefone', v:[115.59,115.59,126.95,126.95,126.95,126.95,126.95,126.95,127.74,129.96,129.96,129.96]},
+  {nome:'Energia Elétrica', v:[1567.53,1186.07,1834.19,1792.88,761.37,1658.15,1979.55,1122.54,1843.04,1593.65,1640.23,1587.24]},
+  {nome:'IPVA + TX. Licenc.', v:[null,null,10934.45,7193.18,7193.18,null,null,null,null,null,null,null]},
+  {nome:'Comissões Bancárias', v:[208.53,173,173,233.5,184.5,184.5,173,184.5,173,242.28,175.47,204.5]},
+  {nome:'Combustível', v:[25420,12560,30582.7,24139.15,17220,21625.5,20266.9,15624.29,19290,13607.63,6775.73,6231.85]},
+  {nome:'Remédios - Outros', v:[169,null,null,null,1269,1124.02,null,1909.9,null,null,686,188.8]},
+  {nome:'Ração', v:[4496,1722,4408.17,3734.8,1295,3847,3881.5,4591.2,3378,11487.25,8995.25,2773.98]},
+  {nome:'Refeitório', v:[1500,1613.59,1410.47,1587.5,1567.3,1551.9,1521.54,1326.87,1165.08,1430.63,1048.65,899.42]},
+  {nome:'Despesas Diversas', v:[11819.04,6731.08,6135.73,16743.09,6168.98,8011.19,12134.17,9406.79,6006.51,5686.66,5117.2,3235.02]},
+  {nome:'Manutenção de Veículos', v:[3132.78,1894.14,6188,5922.57,7604.24,9528.42,8961.7,12317.64,3606.13,5455.88,5199.83,5006.15]},
+  {nome:'Manutenção de Maq. e Equip.', v:[13720.01,6616.58,5304.56,8554.23,13255.92,7191.58,10944.55,9635.98,9589.57,11674.14,10703.19,8241.47]},
+  {nome:'Taxas Diversas - IEF', v:[2673.06,null,3930.4,171.25,8435.65,30,null,null,669.25,40,622.58,5633.58]},
+  {nome:'Diária de Viagens', v:[228.8,420.45,362.9,279,252.25,370.5,777.96,506.66,54.5,882.2,35.5,59]},
+  {nome:'Despesas Escritório', v:[334.58,334.58,362.15,494.05,336.15,336.15,336.15,421.15,336.15,336.15,364.15,426.15]}
+];
+const _DESP2024_BASE = [
+  {nome:'Manutenção e Conservação', v:[null,null,423.81,1628,350,464.62,1389.27,1646.55,4478.92,5724.33,1708.9,1423.1]},
+  {nome:'Salários', v:[15385,17084,13167,16578,17245,15452,15274,15809,14329,15452,15448,16218]},
+  {nome:'Serviços de Terceiros', v:[8656.8,9720.68,8385.68,8255.68,6860.68,15638.8,8525.68,10173.36,9972.35,8260.68,8145.68,14844.68]},
+  {nome:'Férias', v:[null,6341,null,null,2822,2912,1991,3731,null,null,null,null]},
+  {nome:'Retiradas Pró Labore', v:[15000,15000,15000,15000,15000,15000,15000,15000,15000,15000,15000,15000]},
+  {nome:'Rescisões Contratuais', v:[1890.77,null,null,null,null,null,null,null,6973.44,null,null,null]},
+  {nome:'13º Salário', v:[null,null,null,null,null,null,null,null,null,null,8833,6597]},
+  {nome:'FGTS', v:[4612.6,1583.28,1717.2,1607.88,1577.59,1673.49,1650.31,1643.75,1663.26,1649.53,1421.36,2210.67]},
+  {nome:'INSS', v:[28683.72,25021.01,24816.74,22452.17,19988.63,16887.42,16731.65,16827.22,16803.62,16756.35,15782.85,22100.69]},
+  {nome:'PIS/COFINS', v:[85.41,40.59,1229.22,4273.47,1995.82,1894.56,3663.19,2768.9,3990.12,2346.96,3224.18,2610.6]},
+  {nome:'IRRF Rend Trab Assal+Pró Labore', v:[1325.5,1280.74,1290.7,4945.43,1312.11,1322.45,6685.4,1343.61,1354.45,8186.77,1376.49,1386.32]},
+  {nome:'Fretes', v:[null,null,null,null,100,null,null,null,null,null,600,null]},
+  {nome:'ICMS', v:[10800,297,2801.92,7229.32,5392.38,10318.32,11275.38,15855.09,19511.72,14114.73,16933.8,15700.26]},
+  {nome:'Telefone', v:[129.96,129.96,138.93,138.93,138.93,138.93,138.93,138.93,138.93,138.93,138.93,138.93]},
+  {nome:'Energia Elétrica', v:[1528.14,1139.94,2117.82,1917.23,1490.6,1621.36,1825.12,1572.26,1862.02,1591.63,1496.3,1787.22]},
+  {nome:'IPVA + TX. Licenc.', v:[5271.85,3038.8,3117.52,null,null,null,null,null,null,null,null,null]},
+  {nome:'Comissões Bancárias', v:[208.93,204.27,null,null,null,null,null,null,null,null,null,null]},
+  {nome:'Combustível', v:[null,6756.68,1925.14,6200.03,1087.6,6455.09,6886.14,7335.92,6220,13142.2,6280.01,8088.38]},
+  {nome:'Remédios/Inseminação (Vacas)', v:[null,null,5610.25,null,null,null,null,null,null,null,4661.9,1032.5]},
+  {nome:'Remédios - Outros', v:[368.8,1683.8,24,528.14,1370.58,1054.58,727.69,661.05,27,2004.92,1107.2,1002.74]},
+  {nome:'Ração', v:[3257.97,4391.12,2973.15,4806.62,3170.67,3028.16,3147.33,2891.33,2838.34,2735.13,2951.13,3210.83]},
+  {nome:'Refeitório', v:[937.36,810.53,827.6,808.88,806.5,798.69,776,805.97,793.45,798.45,684.23,699.95]},
+  {nome:'Despesas Diversas', v:[1186.78,3215.96,6555.28,6240.12,3819.88,9251.41,4574.29,4416.66,6231.01,4822.32,3628.58,4573.92]},
+  {nome:'Manutenção de Veículos', v:[700,700,76.6,1653.5,1884.22,1935.92,5449.92,2690.81,150,1437.48,1037.46,1798.06]},
+  {nome:'Manutenção de Maq. e Equip.', v:[5781.62,3293.33,1238.7,2192.54,2937.57,5633.02,5433.97,3842.17,7499.11,4819.42,4271.41,1200.34]},
+  {nome:'Taxas Diversas - IEF', v:[2603.51,null,132,null,null,76.56,null,null,4752.45,3499,null,3846.29]},
+  {nome:'Silagem', v:[null,null,null,null,null,null,null,null,6180,6150,5535.5,1756]},
+  {nome:'Diária de Viagens', v:[null,null,81,null,null,null,104.5,54.98,null,null,null,81.75]},
+  {nome:'Despesas Escritório', v:[336.15,336.15,945.15,1360.05,396.15,336.15,336.15,336.15,336.15,336.15,336.15,336.15]}
+];
 const _DESP2025_BASE = [
   {nome:'Manutenção e Conservação', v:[4329.34,3314.39,1344.16,2114.25,1219.9,940,1682.43,2300.3,2574.9,4641.92,8933.33,9892.33]},
   {nome:'Salários', v:[16509,16750,14750,13812,14438,17389,15996,17162,17518,17672,17658,null]},
@@ -1755,8 +1909,22 @@ const _DESP2026_BASE = [
   {nome:'Horas Extras de Funcionários', v:[550,1200,600,700,1807.3,null,null,null,null,null,null,null]},
 ];
 // Carrega despesas do localStorage (persistência) ou usa base hardcoded
+let despesas2020 = (function(){ try { const s=localStorage.getItem('fazenda_desp2020'); return s ? JSON.parse(s) : _DESP2020_BASE.map(r=>({...r,v:[...r.v]})); } catch(e){ return _DESP2020_BASE.map(r=>({...r,v:[...r.v]})); } })();
+let despesas2021 = (function(){ try { const s=localStorage.getItem('fazenda_desp2021'); return s ? JSON.parse(s) : _DESP2021_BASE.map(r=>({...r,v:[...r.v]})); } catch(e){ return _DESP2021_BASE.map(r=>({...r,v:[...r.v]})); } })();
+let despesas2022 = (function(){ try { const s=localStorage.getItem('fazenda_desp2022'); return s ? JSON.parse(s) : _DESP2022_BASE.map(r=>({...r,v:[...r.v]})); } catch(e){ return _DESP2022_BASE.map(r=>({...r,v:[...r.v]})); } })();
+let despesas2023 = (function(){ try { const s=localStorage.getItem('fazenda_desp2023'); return s ? JSON.parse(s) : _DESP2023_BASE.map(r=>({...r,v:[...r.v]})); } catch(e){ return _DESP2023_BASE.map(r=>({...r,v:[...r.v]})); } })();
+let despesas2024 = (function(){ try { const s=localStorage.getItem('fazenda_desp2024'); return s ? JSON.parse(s) : _DESP2024_BASE.map(r=>({...r,v:[...r.v]})); } catch(e){ return _DESP2024_BASE.map(r=>({...r,v:[...r.v]})); } })();
 let despesas2025 = (function(){ try { const s=localStorage.getItem('fazenda_desp2025'); return s ? JSON.parse(s) : _DESP2025_BASE.map(r=>({...r,v:[...r.v]})); } catch(e){ return _DESP2025_BASE.map(r=>({...r,v:[...r.v]})); } })();
 let despesas2026 = (function(){ try { const s=localStorage.getItem('fazenda_desp2026'); return s ? JSON.parse(s) : _DESP2026_BASE.map(r=>({...r,v:[...r.v]})); } catch(e){ return _DESP2026_BASE.map(r=>({...r,v:[...r.v]})); } })();
+function getDesp(ano) {
+  if (ano === 2020) return despesas2020;
+  if (ano === 2021) return despesas2021;
+  if (ano === 2022) return despesas2022;
+  if (ano === 2023) return despesas2023;
+  if (ano === 2024) return despesas2024;
+  if (ano === 2025) return despesas2025;
+  return despesas2026;
+}
 let despesasDetalhes = (function(){ try { return JSON.parse(localStorage.getItem('fazenda_desp_det') || '[]'); } catch(e){ return []; } })();
 
 // ============================================================
@@ -1941,6 +2109,11 @@ let anoAtivoDespesas = 2026;
 
 function save() {
   localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
+  localStorage.setItem('fazenda_desp2020', JSON.stringify(despesas2020));
+  localStorage.setItem('fazenda_desp2021', JSON.stringify(despesas2021));
+  localStorage.setItem('fazenda_desp2022', JSON.stringify(despesas2022));
+  localStorage.setItem('fazenda_desp2023', JSON.stringify(despesas2023));
+  localStorage.setItem('fazenda_desp2024', JSON.stringify(despesas2024));
   localStorage.setItem('fazenda_desp2025', JSON.stringify(despesas2025));
   localStorage.setItem('fazenda_desp2026', JSON.stringify(despesas2026));
   localStorage.setItem('fazenda_desp_det', JSON.stringify(despesasDetalhes));
@@ -2290,7 +2463,7 @@ function _lancaDespesaConta(cat, valorPago, dataPag, sinal) {
   const d = new Date(dataPag + 'T12:00:00');
   const ano = d.getFullYear();
   const mes = d.getMonth();
-  const tabela = ano === 2025 ? despesas2025 : despesas2026;
+  const tabela = getDesp(ano);
   let linha = tabela.find(c => c.nome === cat);
   if (!linha) {
     linha = {nome: cat, v: Array(12).fill(null)};
@@ -2519,7 +2692,7 @@ function renderDespesasTable() {
   anoAtivoDespesas = parseInt(document.getElementById('filtro-ano-despesa').value);
   const grupFiltro = document.getElementById('filtro-grupo-despesa').value;
   const busca = document.getElementById('filtro-busca-despesa').value.toLowerCase();
-  const data = anoAtivoDespesas === 2025 ? despesas2025 : despesas2026;
+  const data = getDesp(anoAtivoDespesas);
   document.getElementById('titulo-tabela-despesas').textContent = `Despesas ${anoAtivoDespesas} — Detalhamento Mensal`;
   document.getElementById('chart-grupo-title').textContent = anoAtivoDespesas;
 
@@ -2586,7 +2759,7 @@ function renderDespesasTable() {
 
   // Populate dropdown de categorias no modal (todas as categorias de ambos os anos)
   const depCat = document.getElementById('dep-cat');
-  const allCatNames = [...new Set([...despesas2025, ...despesas2026].map(c => c.nome))].sort((a,b) => a.localeCompare(b,'pt'));
+  const allCatNames = [...new Set([...despesas2020,...despesas2021,...despesas2022,...despesas2023,...despesas2024,...despesas2025,...despesas2026].map(c => c.nome))].sort((a,b) => a.localeCompare(b,'pt'));
   depCat.innerHTML = allCatNames.map(c => `<option>${c}</option>`).join('');
 }
 
@@ -2602,7 +2775,7 @@ function saveDespesa() {
   const obs = document.getElementById('dep-obs').value;
   if (!valor || isNaN(valor)) { alert('Informe um valor.'); return; }
   // Atualiza agregado (DRE)
-  const tabela = ano === 2025 ? despesas2025 : despesas2026;
+  const tabela = getDesp(ano);
   const found = tabela.find(c => c.nome === cat);
   if (found) {
     found.v[mes] = (found.v[mes] || 0) + valor;
@@ -3244,6 +3417,11 @@ async function loadFromSupabase() {
     inventario   = JSON.parse(localStorage.getItem('fazenda_inventario')    || '[]');
     contasPagar  = JSON.parse(localStorage.getItem('fazenda_contas')        || '[]');
     const sc = localStorage.getItem('fazenda_saldos_caixa'); if (sc) try { saldosCaixa = JSON.parse(sc); } catch(e){}
+    const d20 = localStorage.getItem('fazenda_desp2020'); if (d20) despesas2020 = JSON.parse(d20);
+    const d21 = localStorage.getItem('fazenda_desp2021'); if (d21) despesas2021 = JSON.parse(d21);
+    const d22 = localStorage.getItem('fazenda_desp2022'); if (d22) despesas2022 = JSON.parse(d22);
+    const d23 = localStorage.getItem('fazenda_desp2023'); if (d23) despesas2023 = JSON.parse(d23);
+    const d24 = localStorage.getItem('fazenda_desp2024'); if (d24) despesas2024 = JSON.parse(d24);
     const d25 = localStorage.getItem('fazenda_desp2025'); if (d25) despesas2025 = JSON.parse(d25);
     const d26 = localStorage.getItem('fazenda_desp2026'); if (d26) despesas2026 = JSON.parse(d26);
     const dd = localStorage.getItem('fazenda_desp_det'); if (dd) try { despesasDetalhes = JSON.parse(dd); } catch(e){};
@@ -3259,7 +3437,7 @@ async function syncToSupabase() {
     receitas, gado_mov: gadoMov, gado_estoque: gadoEstoque,
     euca_areas: eucaAreas, euca_vendas: eucaVendas,
     inventario, contas: contasPagar,
-    desp2025: despesas2025, desp2026: despesas2026
+    desp2020: despesas2020, desp2021: despesas2021, desp2022: despesas2022, desp2023: despesas2023, desp2024: despesas2024, desp2025: despesas2025, desp2026: despesas2026
   };
   try {
     const rows = Object.entries(dataMap).map(([k,v]) => ({
@@ -3321,7 +3499,7 @@ function getMesesDRE(periodo, mes) {
 }
 
 function getDREItemVal(ano, nomeItem, meses) {
-  const data = (ano === 2025) ? despesas2025 : despesas2026;
+  const data = getDesp(ano);
   const cat = data.find(c => c.nome === nomeItem);
   if (!cat) return 0;
   return meses.reduce((a, i) => a + (cat.v[i] || 0), 0);
@@ -3572,7 +3750,7 @@ function renderDREMensalCompleto(ano) {
   };
 
   const getItemMes = (nome, m) => {
-    const data = (ano === 2025) ? despesas2025 : despesas2026;
+    const data = getDesp(ano);
     const cat = data.find(c => c.nome === nome);
     return cat ? (cat.v[m] || 0) : 0;
   };
@@ -3883,7 +4061,7 @@ function getEntradasMes(ano, mes) {
 }
 
 function getSaidasMes(ano, mes) {
-  const tabela = ano === 2025 ? despesas2025 : despesas2026;
+  const tabela = getDesp(ano);
   const cats = {};
   tabela.forEach(row => {
     const v = row.v[mes];
@@ -3939,7 +4117,7 @@ function getSaidasSemana(ano, mes, semIdx) {
       return d.getFullYear()===ano && d.getMonth()===mes;
     });
     if (cpMes.length === 0) {
-      const tabela = ano === 2025 ? despesas2025 : despesas2026;
+      const tabela = getDesp(ano);
       tabela.forEach(row => {
         const v = row.v[mes];
         if (v && v > 0) cats[row.nome] = (cats[row.nome]||0) + v;
