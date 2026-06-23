@@ -1014,15 +1014,15 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
     <div style="display:flex;gap:16px;flex-wrap:wrap">
       <div style="display:flex;flex-direction:column;gap:4px">
         <label style="font-size:12px;color:#1565C0;font-weight:600">🏦 Banco do Brasil (R$)</label>
-        <input type="number" id="caixa-saldo-banco1" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()">
+        <input type="number" id="caixa-saldo-banco1" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()" onchange="salvarSaldosCaixa()">
       </div>
       <div style="display:flex;flex-direction:column;gap:4px">
         <label style="font-size:12px;color:#e65100;font-weight:600">🏦 Itaú (R$)</label>
-        <input type="number" id="caixa-saldo-banco2" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()">
+        <input type="number" id="caixa-saldo-banco2" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()" onchange="salvarSaldosCaixa()">
       </div>
       <div style="display:flex;flex-direction:column;gap:4px">
         <label style="font-size:12px;color:#2e7d32;font-weight:600">💵 Caixa Físico (R$)</label>
-        <input type="number" id="caixa-saldo-fisico" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()">
+        <input type="number" id="caixa-saldo-fisico" placeholder="0,00" step="0.01" min="0" style="width:160px" oninput="salvarSaldosCaixa()" onchange="salvarSaldosCaixa()">
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;justify-content:flex-end">
         <label style="font-size:12px;color:#555">Saldo total inicial</label>
@@ -4007,6 +4007,20 @@ function getGrupoCaixa(nome) {
   return 'Outros';
 }
 
+function carregarSaldosForm() {
+  const key = getCaixaKey();
+  const s = saldosCaixa[key] || {};
+  const b1 = document.getElementById('caixa-saldo-banco1');
+  const b2 = document.getElementById('caixa-saldo-banco2');
+  const bf = document.getElementById('caixa-saldo-fisico');
+  if (b1) b1.value = s.banco1 || '';
+  if (b2) b2.value = s.banco2 || '';
+  if (bf) bf.value = s.fisico  || '';
+  const totDisp = (s.banco1||0) + (s.banco2||0) + (s.fisico||0) + (s.aplicacoes||0) + (s.reserva||0);
+  const el = document.getElementById('caixa-saldo-total');
+  if (el) el.textContent = fmt(totDisp);
+}
+
 function renderCaixa() {
   const view   = document.getElementById('caixa-view')?.value || 'mensal';
   const ano    = parseInt(document.getElementById('caixa-ano').value);
@@ -4022,6 +4036,7 @@ function renderCaixa() {
     document.getElementById('caixa-mes-label').textContent = 'de ' + MESES_FULL[mesSel] + '/' + ano;
     _renderCaixaSemanal(ano, mesSel, MESES_FULL);
   }
+  carregarSaldosForm();
   renderSaldoPorConta(ano, mesSel, view);
 }
 
