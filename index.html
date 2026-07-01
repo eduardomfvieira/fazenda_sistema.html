@@ -2390,7 +2390,7 @@ const CONTAS_2026_JUNHO_PRELOAD = [
   {id:1751000000028,descricao:"Pagamento boleto Prevtrato",categoria:"Despesas Diversas",valor:150.0,vencimento:"2026-06-19",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-19",valorPago:150.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
   {id:1751000000029,descricao:"Pagamento boleto Bartofil Distribuidora",categoria:"Despesas Diversas",valor:496.53,vencimento:"2026-06-19",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-19",valorPago:496.53,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
   {id:1751000000030,descricao:"Pagamento boleto Jacar Comércio de Pneus",categoria:"Manutenção de Veículos",valor:920.0,vencimento:"2026-06-20",recorrencia:"Única",obs:"Pneus",status:"Paga",dataPagamento:"2026-03-20",valorPago:920.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
-  {id:1751000000031,descricao:"Pagamento ICMS, INSS",categoria:"ICMS",valor:6237.53,vencimento:"2026-06-19",recorrencia:"Única",obs:"Competência junho/2026",status:"Paga",dataPagamento:"2026-06-19",valorPago:6237.53,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000031,descricao:"Pagamento ICMS, INSS",categoria:"INSS",valor:6237.53,vencimento:"2026-06-19",recorrencia:"Única",obs:"Competência junho/2026",status:"Paga",dataPagamento:"2026-06-19",valorPago:6237.53,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
   {id:1751000000032,descricao:"Pagamento FGTS",categoria:"FGTS",valor:1217.11,vencimento:"2026-06-19",recorrencia:"Única",obs:"Competência junho/2026",status:"Paga",dataPagamento:"2026-06-19",valorPago:1217.11,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
   {id:1751000000033,descricao:"Pagamento boleto Etelecom",categoria:"Telefone",valor:250.0,vencimento:"2026-06-19",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-19",valorPago:250.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
   {id:1751000000034,descricao:"Tarifa pacote de serviço bancário",categoria:"Despesas Bancárias",valor:265.6,vencimento:"2026-06-22",recorrencia:"Única",obs:"Tarifa BB 22/06/2026",status:"Paga",dataPagamento:"2026-06-22",valorPago:265.6,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
@@ -2636,6 +2636,22 @@ function migrarJunhoV5() {
   localStorage.setItem('fazenda_migr_junho2026_v4','1');
   localStorage.setItem(FLAG,'1');
   console.log('Migração v5: junho/2026 substituído — 71 contas + 31 receitas. Dinâmico.');
+}
+
+// Migração v6: corrige entrada ICMS→INSS em junho/2026 no localStorage
+function migrarCorrigeICMSJunho() {
+  const FLAG = 'fazenda_migr_icms_inss_v6';
+  if (localStorage.getItem(FLAG)) return;
+  var corrigiu = false;
+  contasPagar.forEach(function(c) {
+    if (c.categoria === 'ICMS' && c.dataPagamento && c.dataPagamento.startsWith('2026-06') && c.valorPago === 6237.53) {
+      c.categoria = 'INSS';
+      corrigiu = true;
+    }
+  });
+  if (corrigiu) { reconstruirDespesas2026(); save(); saveContas(); }
+  localStorage.setItem(FLAG, '1');
+  console.log('Migração v6: ICMS→INSS corrigido em junho/2026.');
 }
 
 function _lancaDespesaConta(cat, valorPago, dataPag, sinal) {
@@ -3564,7 +3580,7 @@ async function onLogin(user) {
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
     ]);
     setSyncStatus('✓ Sincronizado');
-    try { migrarJunhoV5(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); } catch(e) {}
+    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); } catch(e) {}
   } catch(e) {
     setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexao');
   }
