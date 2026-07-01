@@ -356,30 +356,30 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   </div>
 
   <!-- KPIs 2026 -->
-  <div style="margin-bottom:8px; margin-top:4px"><span class="section-title">📅 Ano 2026 — Parcial (Jan–Mai)</span></div>
+  <div style="margin-bottom:8px; margin-top:4px"><span class="section-title" id="dash-periodo-titulo">📅 Ano 2026</span></div>
   <div class="cards-row cards-4">
     <div class="card card-kpi red">
-      <div class="kpi-label">Despesas 2026 (Jan–Mai)</div>
-      <div class="kpi-value">R$ 520.569</div>
-      <div class="kpi-sub">5 meses — Jan a Mai/2026</div>
-      <div class="kpi-change">Média: R$ 104.114/mês</div>
+      <div class="kpi-label" id="dash-desp-label">Despesas 2026</div>
+      <div class="kpi-value" id="kpi-desp-total">—</div>
+      <div class="kpi-sub" id="dash-desp-sub">Acumulado 2026</div>
+      <div class="kpi-change" id="dash-desp-media">—</div>
     </div>
     <div class="card card-kpi green">
-      <div class="kpi-label">Receitas 2026 (Jan–Mai)</div>
-      <div class="kpi-value" id="kpi-receita-total">R$ 0</div>
-      <div class="kpi-sub">Atualizado pela assistente</div>
+      <div class="kpi-label" id="dash-rec-label">Receitas 2026</div>
+      <div class="kpi-value" id="kpi-receita-total">—</div>
+      <div class="kpi-sub">Atualizado automaticamente</div>
       <div class="kpi-change up" id="kpi-receita-sub">—</div>
     </div>
     <div class="card card-kpi gold">
       <div class="kpi-label">Resultado 2026</div>
       <div class="kpi-value" id="kpi-resultado">—</div>
-      <div class="kpi-sub">Receitas − Despesas (Jan–Mai)</div>
+      <div class="kpi-sub" id="dash-resultado-periodo">Receitas − Despesas 2026</div>
       <div class="kpi-change" id="kpi-resultado-sub">—</div>
     </div>
     <div class="card card-kpi blue">
       <div class="kpi-label">Projeção Anual 2026</div>
-      <div class="kpi-value" id="kpi-projecao">R$ 1.249.366</div>
-      <div class="kpi-sub">Base na média mensal de despesas</div>
+      <div class="kpi-value" id="kpi-projecao">—</div>
+      <div class="kpi-sub" id="dash-projecao-sub">Base na média mensal de despesas</div>
       <div class="kpi-change">Estimativa</div>
     </div>
   </div>
@@ -403,7 +403,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       <canvas id="chart-grupo-2026" height="220"></canvas>
     </div>
     <div class="chart-card">
-      <h3>💹 Despesas por Grupo — 2026 (Jan–Mai)</h3>
+      <h3 id="dash-grupo-titulo">💹 Despesas por Grupo — 2026</h3>
       <canvas id="chart-resultado" height="220"></canvas>
     </div>
   </div>
@@ -411,13 +411,13 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <!-- Maiores despesas 2026 -->
   <div class="table-wrapper">
     <div class="table-header">
-      <h3>🔍 Maiores Despesas — 2026 (Jan–Mai)</h3>
+      <h3 id="dash-top-titulo">🔍 Maiores Despesas — 2026</h3>
       <button class="btn btn-outline btn-sm" onclick="exportTableCSV('tbl-top-despesas','top_despesas_2026')">⬇️ CSV</button>
     </div>
     <table id="tbl-top-despesas">
       <thead><tr>
         <th>#</th><th>Categoria</th>
-        <th class="num">JAN</th><th class="num">FEV</th><th class="num">MAR</th><th class="num">ABR</th><th class="num">MAI</th>
+        <th class="num">JAN</th><th class="num">FEV</th><th class="num">MAR</th><th class="num">ABR</th><th class="num">MAI</th><th class="num">JUN</th><th class="num">JUL</th><th class="num">AGO</th><th class="num">SET</th><th class="num">OUT</th><th class="num">NOV</th><th class="num">DEZ</th>
         <th class="num">TOTAL</th><th class="num">% do Total</th>
       </tr></thead>
       <tbody id="tbody-top-despesas"></tbody>
@@ -2290,9 +2290,27 @@ function initDashboard() {
     options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: v => 'R$' + (v/1000).toFixed(0) + 'k' } } } }
   });
 
-  // Chart 4: Despesas por grupo 2026 (barras horizontais)
+  // Período dinâmico: detecta último mês com dados em 2026
+  const lastMes26 = tot26desp.reduce((last, v, i) => v > 0 ? i : last, -1);
+  const nMeses26 = lastMes26 >= 0 ? lastMes26 + 1 : 1;
+  const periodoLabel = lastMes26 >= 0
+    ? 'Jan–' + MESES[lastMes26].charAt(0) + MESES[lastMes26].slice(1).toLowerCase()
+    : 'Jan–Dez';
+  const periodoFull = lastMes26 >= 0
+    ? 'Janeiro a ' + MESES_FULL[lastMes26] + '/2026'
+    : 'Janeiro a Dezembro/2026';
+
+  // Atualiza labels do dashboard
+  document.getElementById('dash-periodo-titulo').textContent = '📅 Ano 2026 — ' + periodoFull;
+  document.getElementById('dash-desp-label').textContent = 'Despesas 2026 (' + periodoLabel + ')';
+  document.getElementById('dash-rec-label').textContent = 'Receitas 2026 (' + periodoLabel + ')';
+  document.getElementById('dash-resultado-periodo').textContent = 'Receitas − Despesas (' + periodoLabel + ')';
+  document.getElementById('dash-grupo-titulo').textContent = '💹 Despesas por Grupo — 2026 (' + periodoLabel + ')';
+  document.getElementById('dash-top-titulo').textContent = '🔍 Maiores Despesas — 2026 (' + periodoLabel + ')';
+
+  // Chart 4: Despesas por grupo 2026 (barras horizontais) — todos os meses com dados
   const grupos26 = {};
-  despesas2026.forEach(c => { const g = getGrupo(c.nome); grupos26[g] = (grupos26[g]||0) + sumRow(c.v.slice(0,5)); });
+  despesas2026.forEach(c => { const g = getGrupo(c.nome); grupos26[g] = (grupos26[g]||0) + sumRow(c.v); });
   createChart('chart-resultado', {
     type: 'bar',
     data: {
@@ -2302,13 +2320,20 @@ function initDashboard() {
     options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { callback: v => 'R$' + (v/1000).toFixed(0) + 'k' } } } }
   });
 
-  // KPIs 2026
+  // KPIs 2026 — calculados sobre todos os meses com dados
   const rec26 = receitas.filter(r => r.status === 'Recebido' && new Date(r.data).getFullYear()===2026);
   const totalRec26 = rec26.reduce((a,r) => a + (parseFloat(r.valor)||0), 0);
   const totalDesp26 = tot26desp.reduce((a,v) => a+v, 0);
+  const mediaDesp26 = nMeses26 > 0 ? totalDesp26 / nMeses26 : 0;
+  const projecao26 = mediaDesp26 * 12;
+
+  document.getElementById('kpi-desp-total').textContent = fmt(totalDesp26);
+  document.getElementById('dash-desp-sub').textContent = nMeses26 + ' mês(es) — ' + periodoFull;
+  document.getElementById('dash-desp-media').textContent = 'Média: ' + fmt(mediaDesp26) + '/mês';
   document.getElementById('kpi-receita-total').textContent = fmt(totalRec26);
   document.getElementById('kpi-receita-sub').textContent = rec26.length + ' lançamentos';
-
+  document.getElementById('kpi-projecao').textContent = fmt(projecao26);
+  document.getElementById('dash-projecao-sub').textContent = 'Base nos ' + nMeses26 + ' mês(es) com dados';
 
   const resultado26 = totalRec26 - totalDesp26;
   document.getElementById('kpi-resultado').textContent = fmt(Math.abs(resultado26));
@@ -2316,7 +2341,7 @@ function initDashboard() {
   resEl.textContent = resultado26 >= 0 ? '✅ Superávit' : '⚠️ Déficit';
   resEl.className = 'kpi-change ' + (resultado26 >= 0 ? 'up' : 'down');
 
-  // Table top despesas 2026
+  // Table top despesas 2026 — 12 meses (colunas vazias para meses sem dados)
   const sorted26 = [...despesas2026].sort((a,b) => sumRow(b.v) - sumRow(a.v)).slice(0,15);
   const totalGeral26 = despesas2026.reduce((a,c) => a + sumRow(c.v), 0);
   const tbody = document.getElementById('tbody-top-despesas');
@@ -2325,9 +2350,9 @@ function initDashboard() {
     return `<tr>
       <td>${i+1}</td>
       <td><strong>${c.nome}</strong><br><span class="tag-cat">${getGrupo(c.nome)}</span></td>
-      ${c.v.slice(0,5).map(v => `<td class="num">${v ? fmtN(v) : '—'}</td>`).join('')}
+      ${c.v.map(v => `<td class="num">${v ? fmtN(v) : '—'}</td>`).join('')}
       <td class="num"><strong>${fmtN(tot)}</strong></td>
-      <td class="num">${(tot/totalGeral26*100).toFixed(1)}%</td>
+      <td class="num">${totalGeral26 > 0 ? (tot/totalGeral26*100).toFixed(1) : '0.0'}%</td>
     </tr>`;
   }).join('');
 }
