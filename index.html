@@ -1977,12 +1977,12 @@ const totaisReceitas2025 = {
   mensal: [161989.45, 96929.38, 98911.20, 177412.66, 200639.75, 148837.18, 114820.41, 210991.07, 99185.92, 115657.25, 78679.01, 24065.44]
 };
 const totaisReceitas2026 = {
-  mensal: [7801.30, 22169.60, 306822.80, 5215.60, 38425.20, 0, 0, 0, 0, 0, 0, 0],
-  madeira:  [4044.60, 4169.60, 3822.80, 2215.60, 35425.20, 0, 0, 0, 0, 0, 0, 0],
-  aluguel:  [3456.70, 3000.00, 3000.00, 3000.00, 3000.00, 0, 0, 0, 0, 0, 0, 0],
-  semoventes:[300.00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  equipamentos:[0, 15000.00, 300000.00, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  outras:   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  mensal:       [7801.30, 22169.60, 306822.80, 5215.60, 38425.20, 203292.18, 0, 0, 0, 0, 0, 0],
+  madeira:      [4044.60, 4169.60, 3822.80, 2215.60, 35425.20, 31020.60, 0, 0, 0, 0, 0, 0],
+  aluguel:      [3456.70, 3000.00, 3000.00, 3000.00, 3000.00, 3000.00, 0, 0, 0, 0, 0, 0],
+  semoventes:   [300.00, 0, 0, 0, 0, 169106.58, 0, 0, 0, 0, 0, 0],
+  equipamentos: [0, 15000.00, 300000.00, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  outras:       [0, 0, 0, 0, 0, 165.00, 0, 0, 0, 0, 0, 0]
 };
 const RECEITAS_2026_PRELOAD = [
   {data:'2026-01-15',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES",valor:1866.8,status:'Recebido'},
@@ -2034,20 +2034,52 @@ const RECEITAS_2026_PRELOAD = [
   {data:'2026-05-28',categoria:'Eucalipto / Madeira',descricao:"PAULO SERGIO GOMES LTDA",valor:2158.4,status:'Recebido'},
   {data:'2026-05-29',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:1165.6,status:'Recebido'},
   {data:'2026-05-29',categoria:'Eucalipto / Madeira',descricao:"ALBERTO DE JESUS SANTOS( area 07)",valor:1063.6,status:'Recebido'},
-  {data:'2026-05-31',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Galpão",valor:3000.0,status:'Recebido'}
+  {data:'2026-05-31',categoria:'Arrendamento / Aluguel',descricao:"Aluguel Galpão",valor:3000.0,status:'Recebido'},
+  // Junho 2026
+  {data:"2026-06-15",categoria:"Arrendamento / Aluguel",descricao:"Aluguel do galpão — junho/2026",valor:3000.0,status:"Recebido",tipo:"aluguel"},
+  {data:"2026-06-02",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira",valor:5713.0,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-03",categoria:"Outras Receitas",descricao:"Venda de 23 dúzias de ovos",valor:165.0,status:"Recebido",tipo:"outras"},
+  {data:"2026-06-09",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4502 — 29.14m³ — Alberto de Jesus Santos",valor:1165.6,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-09",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4503 — 26.21m³ — Alberto de Jesus Santos",valor:1048.4,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-09",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4504 — 25.93m³ — Alberto de Jesus Santos",valor:1037.2,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-09",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4505 — 28.69m³ — Alberto de Jesus Santos",valor:1147.6,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-09",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4506 — 28.66m³ — Alberto de Jesus Santos",valor:1146.4,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-09",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4507 — 27.77m³ — Alberto de Jesus Santos",valor:1110.8,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-09",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4508 — 26.41m³ — Alberto de Jesus Santos",valor:1056.4,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-09",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4509 — 27.62m³ — Alberto de Jesus Santos",valor:1104.8,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-09",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4510 — 28.69m³ — Alberto de Jesus Santos",valor:1147.6,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-09",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4511 — 28.48m³ — Alberto de Jesus Santos",valor:1139.2,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-16",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4514 — 27.97m³ — Paulo Sergio Gomes",valor:559.4,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-16",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4515 — 27.97m³ — Paulo Sergio Gomes",valor:559.4,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-23",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4516 — 28.53m³ — Alberto de Jesus Santos",valor:1141.2,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-23",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4517 — 27.87m³ — Alberto de Jesus Santos",valor:1114.8,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-23",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4518 — 28.38m³ — Alberto de Jesus Santos",valor:1135.2,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-23",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4519 — 27.32m³ — Alberto de Jesus Santos",valor:1092.8,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-23",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4520 — 26.66m³ — Alberto de Jesus Santos",valor:1066.4,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-23",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4521 — 28.48m³ — Alberto de Jesus Santos",valor:1139.2,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-23",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4522 — 24.65m³ — Alberto de Jesus Santos",valor:986.0,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-16",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4523 — 28.31m³ — Paulo Sergio Gomes",valor:566.2,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-16",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4524 — 26.94m³ — Paulo Sergio Gomes",valor:538.8,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-30",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4525 — 27.38m³ — Alberto de Jesus Santos",valor:1095.2,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-30",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4526 — 28.22m³ — Alberto de Jesus Santos",valor:1128.2,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-30",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4529 — 28.38m³ — Alberto de Jesus Santos",valor:1135.2,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-16",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4531 — 27.28m³ — Paulo Sergio Gomes",valor:545.6,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-16",categoria:"Eucalipto / Madeira",descricao:"Venda de madeira — NF 4532 — 20.0m³ — Paulo Sergio Gomes",valor:400.0,status:"Recebido",tipo:"madeira"},
+  {data:"2026-06-25",categoria:"Venda de Gado",descricao:"Bezerros — 43 cabeças — NF 4527 — José Leandro de Oliveira",valor:107898.18,status:"Recebido",tipo:"semoventes"},
+  {data:"2026-06-26",categoria:"Venda de Gado",descricao:"Bezerras — 30 cabeças — NF 4528 — José Leandro de Oliveira",valor:61208.4,status:"Recebido",tipo:"semoventes"}
 ];
 
 
 // State
 let receitas = JSON.parse(localStorage.getItem('fazenda_receitas') || '[]');
 // Pre-carregar receitas 2026 na primeira execução
-if (!localStorage.getItem('fazenda_rec2026_v3')) {
-  // Remove any 2026 entries added manually to avoid duplicates
+if (!localStorage.getItem('fazenda_rec2026_v4')) {
+  // Remove any 2026 entries added manually to avoid duplicates, then reload all
   receitas = receitas.filter(r => !r.data || !r.data.startsWith('2026'));
-  // Add all 50 pre-loaded 2026 transactions
   RECEITAS_2026_PRELOAD.forEach(function(r) { receitas.push(r); });
   localStorage.setItem('fazenda_receitas', JSON.stringify(receitas));
   localStorage.setItem('fazenda_rec2026_v3', '1');
+  localStorage.setItem('fazenda_rec2026_v4', '1');
 }
 let gadoMov = JSON.parse(localStorage.getItem('fazenda_gado_mov') || '[]');
 let gadoEstoque = JSON.parse(localStorage.getItem('fazenda_gado_estoque') || '{"touro":0,"vacaLeite":0,"bezerroMamando":0,"bezerraMamando":0,"novilhas":0,"bezerroDesmame":0,"matrizes":0,"bezerraDesmame":0}');
@@ -2303,6 +2335,79 @@ function initDashboard() {
 // ============================================================
 // CONTAS A PAGAR
 // ============================================================
+const CONTAS_2026_JUNHO_PRELOAD = [
+  {id:1751000000004,descricao:"Pagamento NF Primos Contabilidade",categoria:"Serviços de Terceiros",valor:5695.0,vencimento:"2026-06-01",recorrencia:"Única",obs:"Honorários junho/2026",status:"Paga",dataPagamento:"2026-06-01",valorPago:5695.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000005,descricao:"Pagamento salário Geraldo Candido",categoria:"Salários",valor:2567.0,vencimento:"2026-06-01",recorrencia:"Única",obs:"Salário junho/2026",status:"Paga",dataPagamento:"2026-06-01",valorPago:2567.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000006,descricao:"Pagamento salário João de Jesus Delfino",categoria:"Salários",valor:3972.0,vencimento:"2026-06-01",recorrencia:"Única",obs:"Salário junho/2026",status:"Paga",dataPagamento:"2026-06-01",valorPago:3972.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000007,descricao:"Pagamento salário Giselle Aparecida Rodrigues",categoria:"Salários",valor:2163.0,vencimento:"2026-06-01",recorrencia:"Única",obs:"Salário junho/2026",status:"Paga",dataPagamento:"2026-06-01",valorPago:2163.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000008,descricao:"Pagamento salário Osvaldo Sebastião Alves",categoria:"Salários",valor:619.0,vencimento:"2026-06-01",recorrencia:"Única",obs:"Salário junho/2026",status:"Paga",dataPagamento:"2026-06-01",valorPago:619.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000009,descricao:"Pagamento salário Antonio Gabriel da Costa",categoria:"Salários",valor:1499.0,vencimento:"2026-06-01",recorrencia:"Única",obs:"Salário junho/2026",status:"Paga",dataPagamento:"2026-06-01",valorPago:1499.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000010,descricao:"Pagamento RPA Alan Pereira Barros",categoria:"Salários",valor:1442.69,vencimento:"2026-06-01",recorrencia:"Única",obs:"RPA junho/2026",status:"Paga",dataPagamento:"2026-06-01",valorPago:1442.69,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000011,descricao:"Pagamento NF Agropecuária Agrocutura (ração)",categoria:"Ração",valor:661.0,vencimento:"2026-06-02",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-02",valorPago:661.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000012,descricao:"Pagamento NF Paulo Sergio (compra do mês)",categoria:"Despesas Escritório",valor:392.12,vencimento:"2026-06-03",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-03",valorPago:392.12,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000013,descricao:"Pagamento NF Unidos Auto Peças (óleo diesel)",categoria:"Combustível",valor:237.01,vencimento:"2026-06-05",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-05",valorPago:237.01,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000014,descricao:"Pagamento boleto Tokio Marine (seguro Hilux)",categoria:"Seguros-Veículos e Máquinas",valor:997.22,vencimento:"2026-06-05",recorrencia:"Única",obs:"2ª parcela seguro Hilux",status:"Paga",dataPagamento:"2026-06-05",valorPago:997.22,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000015,descricao:"Pagamento NF Cerealista São Lourenço (sal)",categoria:"Ração",valor:1280.0,vencimento:"2026-06-09",recorrencia:"Única",obs:"Sal mineral bovinos",status:"Paga",dataPagamento:"2026-06-09",valorPago:1280.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000016,descricao:"Pagamento boleto Ledware",categoria:"Despesas Diversas",valor:91.97,vencimento:"2026-06-10",recorrencia:"Única",obs:"Sistema/software",status:"Paga",dataPagamento:"2026-06-10",valorPago:91.97,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000017,descricao:"Pagamento boleto Etelecom (internet curral)",categoria:"Telefone",valor:79.0,vencimento:"2026-06-10",recorrencia:"Única",obs:"Internet curral",status:"Paga",dataPagamento:"2026-06-10",valorPago:79.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000018,descricao:"Pagamento NF Hélio Henrique (manutenção)",categoria:"Manutenção de Maq. e Equip.",valor:95.5,vencimento:"2026-06-10",recorrencia:"Única",obs:"Manutenção e conservação",status:"Paga",dataPagamento:"2026-06-10",valorPago:95.5,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000019,descricao:"Pagamento NF Unidos Auto Peças (óleo diesel)",categoria:"Combustível",valor:408.03,vencimento:"2026-06-11",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-11",valorPago:408.03,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000020,descricao:"Pagamento boleto Tramac (peças tratores)",categoria:"Manutenção de Maq. e Equip.",valor:149.6,vencimento:"2026-06-11",recorrencia:"Única",obs:"Peças para tratores",status:"Paga",dataPagamento:"2026-06-11",valorPago:149.6,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000021,descricao:"Pagamento Energia Elétrica",categoria:"Energia Elétrica",valor:194.67,vencimento:"2026-06-11",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-11",valorPago:194.67,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000022,descricao:"Pagamento Energia Elétrica",categoria:"Energia Elétrica",valor:503.9,vencimento:"2026-06-11",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-11",valorPago:503.9,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000023,descricao:"Pagamento NF Paulo Sergio (cestas básicas)",categoria:"Despesas Diversas",valor:694.68,vencimento:"2026-06-15",recorrencia:"Única",obs:"Cestas básicas funcionários",status:"Paga",dataPagamento:"2026-06-15",valorPago:694.68,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000024,descricao:"Pagamento NF Cerealista São Lourenço (ração)",categoria:"Ração",valor:620.0,vencimento:"2026-06-15",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-15",valorPago:620.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000025,descricao:"Pagamento Sky (TV por assinatura)",categoria:"Telefone",valor:599.99,vencimento:"2026-06-15",recorrencia:"Única",obs:"TV por assinatura",status:"Paga",dataPagamento:"2026-06-15",valorPago:599.99,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000026,descricao:"Pagamento NF Unidos Auto Peças (óleo diesel)",categoria:"Combustível",valor:400.03,vencimento:"2026-06-18",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-18",valorPago:400.03,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000027,descricao:"Pagamento Lar Divino Espírito Santo",categoria:"Despesas Diversas",valor:150.0,vencimento:"2026-06-19",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-19",valorPago:150.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000028,descricao:"Pagamento boleto Prevtrato",categoria:"Despesas Diversas",valor:150.0,vencimento:"2026-06-19",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-19",valorPago:150.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000029,descricao:"Pagamento boleto Bartofil Distribuidora",categoria:"Despesas Diversas",valor:496.53,vencimento:"2026-06-19",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-19",valorPago:496.53,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000030,descricao:"Pagamento boleto Jacar Comércio de Pneus",categoria:"Manutenção de Veículos",valor:920.0,vencimento:"2026-06-20",recorrencia:"Única",obs:"Pneus",status:"Paga",dataPagamento:"2026-03-20",valorPago:920.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000031,descricao:"Pagamento ICMS, INSS",categoria:"ICMS",valor:6237.53,vencimento:"2026-06-19",recorrencia:"Única",obs:"Competência junho/2026",status:"Paga",dataPagamento:"2026-06-19",valorPago:6237.53,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000032,descricao:"Pagamento FGTS",categoria:"FGTS",valor:1217.11,vencimento:"2026-06-19",recorrencia:"Única",obs:"Competência junho/2026",status:"Paga",dataPagamento:"2026-06-19",valorPago:1217.11,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000033,descricao:"Pagamento boleto Etelecom",categoria:"Telefone",valor:250.0,vencimento:"2026-06-19",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-19",valorPago:250.0,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000034,descricao:"Tarifa pacote de serviço bancário",categoria:"Despesas Bancárias",valor:265.6,vencimento:"2026-06-22",recorrencia:"Única",obs:"Tarifa BB 22/06/2026",status:"Paga",dataPagamento:"2026-06-22",valorPago:265.6,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000035,descricao:"Pagamento de Telefone",categoria:"Telefone",valor:79.98,vencimento:"2026-06-22",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-22",valorPago:79.98,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000036,descricao:"Serviço prestado na Fazenda (final de semana)",categoria:"Serviços de Terceiros",valor:200.0,vencimento:"2026-06-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-01",valorPago:200.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000037,descricao:"Serviço prestado na Fazenda (7 dias)",categoria:"Serviços de Terceiros",valor:700.0,vencimento:"2026-06-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-01",valorPago:700.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000038,descricao:"Serviço prestado na Fazenda (3 dias)",categoria:"Serviços de Terceiros",valor:300.0,vencimento:"2026-06-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-01",valorPago:300.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000039,descricao:"Serviço prestado na Fazenda (vigia sexta-feira)",categoria:"Serviços de Terceiros",valor:100.0,vencimento:"2026-06-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-01",valorPago:100.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000040,descricao:"Limpeza da sede (3 quartas-feiras)",categoria:"Serviços de Terceiros",valor:450.0,vencimento:"2026-06-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-01",valorPago:450.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000041,descricao:"Manutenção câmeras da sede e instalação fonte",categoria:"Manutenção de Maq. e Equip.",valor:165.0,vencimento:"2026-06-03",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-03",valorPago:165.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000042,descricao:"Santo Antônio Presentes (foguete)",categoria:"Despesas Diversas",valor:40.0,vencimento:"2026-06-03",recorrencia:"Única",obs:"Santo Antônio / festa",status:"Paga",dataPagamento:"2026-06-03",valorPago:40.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000043,descricao:"Casa do Fazendeiro (cravo)",categoria:"Despesas Diversas",valor:25.0,vencimento:"2026-06-08",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-08",valorPago:25.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000044,descricao:"Papelaria Karina (pasta com elástico, pincel)",categoria:"Despesas Escritório",valor:26.0,vencimento:"2026-06-08",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-08",valorPago:26.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000045,descricao:"Organização Marques (chicote para caixa de ovos)",categoria:"Despesas Diversas",valor:36.0,vencimento:"2026-06-08",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-08",valorPago:36.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000046,descricao:"Unidos Auto Peças (silicone manutenção veículos)",categoria:"Manutenção de Veículos",valor:11.0,vencimento:"2026-06-08",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-08",valorPago:11.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000047,descricao:"Manutenção câmeras ponte e rio, troca de cabo",categoria:"Manutenção e Conservação",valor:245.0,vencimento:"2026-06-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-09",valorPago:245.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000048,descricao:"Compra de câmera (Mercado Livre)",categoria:"Manutenção de Maq. e Equip.",valor:109.0,vencimento:"2026-06-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-09",valorPago:109.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000049,descricao:"Cópia de chaves BJ",categoria:"Despesas Diversas",valor:10.0,vencimento:"2026-06-10",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-10",valorPago:10.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000050,descricao:"Organização Marques (suporte para isqueiro)",categoria:"Despesas Diversas",valor:22.0,vencimento:"2026-06-10",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-10",valorPago:22.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000051,descricao:"Limpeza dos corredores da sede",categoria:"Serviços de Terceiros",valor:150.0,vencimento:"2026-06-10",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-10",valorPago:150.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000052,descricao:"Mercearia Cravo e Canela (alho e cebola)",categoria:"Despesas Escritório",valor:31.44,vencimento:"2026-06-10",recorrencia:"Única",obs:"Mantimentos para a sede",status:"Paga",dataPagamento:"2026-06-10",valorPago:31.44,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000053,descricao:"Manutenção parte elétrica da sede e combustível",categoria:"Manutenção de Maq. e Equip.",valor:90.0,vencimento:"2026-06-11",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-11",valorPago:90.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000054,descricao:"Limpeza dos galpões",categoria:"Despesas Diversas",valor:150.0,vencimento:"2026-06-11",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-11",valorPago:150.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000055,descricao:"Varão",categoria:"Despesas Diversas",valor:56.0,vencimento:"2026-06-12",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-12",valorPago:56.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000056,descricao:"Supermercado Ibralandia (manteiga)",categoria:"Despesas Escritório",valor:114.9,vencimento:"2026-06-12",recorrencia:"Única",obs:"Mantimentos sede",status:"Paga",dataPagamento:"2026-06-12",valorPago:114.9,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000057,descricao:"Supermercado Ibralandia (açúcar)",categoria:"Despesas Escritório",valor:7.99,vencimento:"2026-06-12",recorrencia:"Única",obs:"Mantimentos sede",status:"Paga",dataPagamento:"2026-06-12",valorPago:7.99,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000058,descricao:"Organização Marques (toalha para mesa)",categoria:"Despesas Diversas",valor:76.5,vencimento:"2026-06-13",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-13",valorPago:76.5,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000059,descricao:"Papelaria Karina (fita dupla face)",categoria:"Despesas Escritório",valor:16.9,vencimento:"2026-06-13",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-13",valorPago:16.9,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000060,descricao:"Serviço cozinheira e limpeza sede (2,5 dias)",categoria:"Serviços de Terceiros",valor:300.0,vencimento:"2026-06-15",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-15",valorPago:300.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000061,descricao:"Papelaria Karina (pasta elástico e envelope)",categoria:"Despesas Escritório",valor:16.0,vencimento:"2026-06-16",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-16",valorPago:16.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000062,descricao:"Substituição câmera escritório, config roteadores",categoria:"Manutenção de Maq. e Equip.",valor:240.0,vencimento:"2026-06-17",recorrencia:"Única",obs:"Câmera escritório + roteadores galpão e sede",status:"Paga",dataPagamento:"2026-06-17",valorPago:240.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000063,descricao:"Drogaria Santa Rita (luvas de procedimento)",categoria:"Despesas Diversas",valor:35.0,vencimento:"2026-06-18",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-18",valorPago:35.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000064,descricao:"Organização Marques (puxador de armário)",categoria:"Despesas Diversas",valor:4.0,vencimento:"2026-06-18",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-18",valorPago:4.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000065,descricao:"Papelaria Karina (caderno fechamento do gado)",categoria:"Despesas Escritório",valor:13.9,vencimento:"2026-06-18",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-18",valorPago:13.9,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000066,descricao:"Serviço prestado na Fazenda (2 dias)",categoria:"Serviços de Terceiros",valor:300.0,vencimento:"2026-06-18",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-18",valorPago:300.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000067,descricao:"Pneu Sul (pneu da van)",categoria:"Manutenção de Veículos",valor:600.0,vencimento:"2026-06-19",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-19",valorPago:600.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000068,descricao:"Serviço elétrico curral e combustível",categoria:"Manutenção de Maq. e Equip.",valor:350.0,vencimento:"2026-06-23",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-23",valorPago:350.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000069,descricao:"Manutenção Impressora Epson",categoria:"Despesas Escritório",valor:75.0,vencimento:"2026-06-23",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-23",valorPago:75.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000070,descricao:"LG Estruturas (vidro)",categoria:"Despesas Diversas",valor:15.0,vencimento:"2026-06-24",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-24",valorPago:15.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000071,descricao:"Organização Marques (parafusos)",categoria:"Despesas Diversas",valor:3.0,vencimento:"2026-06-24",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-24",valorPago:3.0,contaPagamento:"Caixa Físico",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000072,descricao:"Pagamento IRPF",categoria:"IRRF Rend Trab Assal+Pró Labore",valor:6332.78,vencimento:"2026-06-19",recorrencia:"Única",obs:"Competência junho/2026",status:"Paga",dataPagamento:"2026-06-19",valorPago:6332.78,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000073,descricao:"Pagamento Pis e Confins",categoria:"PIS/COFINS",valor:1293.02,vencimento:"2026-06-19",recorrencia:"Única",obs:"Competência junho/2026",status:"Paga",dataPagamento:"2026-06-19",valorPago:1293.02,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"},
+  {id:1751000000074,descricao:"Pagamento de DARF",categoria:"Darf",valor:1634.48,vencimento:"2026-06-30",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-30",valorPago:1634.48,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"}
+];
 let contasPagar = JSON.parse(localStorage.getItem('fazenda_contas') || '[]');
 let _contaEditIdx = null;
 let _invEditIdx   = null;
@@ -2456,6 +2561,34 @@ function migrarContasPagasParaDespesas() {
   save();
   localStorage.setItem(FLAG, '1');
   console.log('Migração v3: despesas2026 reconstruído corretamente.');
+}
+
+// Migração v4: injeta contas e despesas de junho/2026 (planilha v3)
+function migrarJunho2026() {
+  const FLAG = 'fazenda_migr_junho2026_v4';
+  if (localStorage.getItem(FLAG)) return;
+  // Injetar contas de junho (sem duplicar por id)
+  const idsExistentes = new Set(contasPagar.map(c => c.id));
+  CONTAS_2026_JUNHO_PRELOAD.forEach(function(c) {
+    if (!idsExistentes.has(c.id)) { contasPagar.push(c); idsExistentes.add(c.id); }
+  });
+  localStorage.setItem('fazenda_contas', JSON.stringify(contasPagar));
+  // Reconstruir despesas2026 com base + junho
+  despesas2026 = JSON.parse(JSON.stringify(_DESP2026_BASE));
+  contasPagar.forEach(function(c) {
+    if (c.status === 'Paga' && c.dataPagamento && c.valorPago && c.categoria) {
+      _lancaDespesaConta(c.categoria, c.valorPago, c.dataPagamento, +1);
+    }
+  });
+  // Rebuild despesasDetalhes
+  despesasDetalhes = contasPagar
+    .filter(function(c){ return c.status === 'Paga' && c.dataPagamento && c.valorPago && c.categoria; })
+    .map(function(c){ return {data:c.dataPagamento, categoria:c.categoria, valor:c.valorPago, conta:c.contaPagamento||'', obs:c.obsPagamento||''}; });
+  save();
+  // Marcar v3 também para evitar re-execução
+  localStorage.setItem('fazenda_migr_contas_v3', '1');
+  localStorage.setItem(FLAG, '1');
+  console.log('Migração v4: junho/2026 injetado — ' + CONTAS_2026_JUNHO_PRELOAD.length + ' contas.');
 }
 
 function _lancaDespesaConta(cat, valorPago, dataPag, sinal) {
@@ -3389,7 +3522,7 @@ async function onLogin(user) {
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
     ]);
     setSyncStatus('✓ Sincronizado');
-    try { migrarContasPagasParaDespesas(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); } catch(e) {}
+    try { migrarContasPagasParaDespesas(); migrarJunho2026(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); } catch(e) {}
   } catch(e) {
     setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexao');
   }
