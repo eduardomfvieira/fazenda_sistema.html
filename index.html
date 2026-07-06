@@ -862,7 +862,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
     </div>
     <table id="tbl-gado-mov">
       <thead><tr>
-        <th>Data</th><th>Tipo</th><th>Categoria</th><th class="num">Qtd</th><th class="num">Valor Unit. (R$)</th><th class="num">Total (R$)</th><th>Observação</th><th>Ações</th>
+        <th>Data</th><th>Tipo</th><th>Categoria</th><th class="num">Qtd</th><th class="num">Valor Unit. (R$)</th><th class="num">Total (R$)</th><th>Conta</th><th>Observação</th><th>Ações</th>
       </tr></thead>
       <tbody id="tbody-gado-mov">
         <tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted)">Nenhuma movimentação registrada.</td></tr>
@@ -1067,6 +1067,23 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
   <!-- Saldo por Conta -->
   <div style="margin-bottom:8px;font-size:14px;font-weight:600;color:var(--text)">🏦 Movimentação por Conta</div>
   <div id="ds-por-conta" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:28px"></div>
+
+  <!-- Transferências entre Contas -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-size:14px;font-weight:600;color:var(--text)">🔄 Transferências entre Contas</div>
+    <button class="btn btn-green btn-sm" onclick="abrirNovaTransferencia()">+ Nova Transferência</button>
+  </div>
+  <div class="table-wrapper" style="margin-bottom:28px">
+    <table id="tbl-transferencias" style="width:100%">
+      <thead><tr>
+        <th>#</th><th>Data</th><th>Origem</th><th>Destino</th>
+        <th class="num">Valor</th><th>Observação</th><th style="width:80px">Ações</th>
+      </tr></thead>
+      <tbody id="tbody-transferencias">
+        <tr><td colspan="7" style="text-align:center;padding:20px;color:#aaa">Nenhuma transferência registrada</td></tr>
+      </tbody>
+    </table>
+  </div>
 
   <!-- Demonstrativo de Saldo -->
   <div id="caixa-demo-section">
@@ -1455,7 +1472,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       </select>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modal-receita')">Cancelar</button>
+      <button class="btn btn-outline" onclick="_recEditIdx=null; document.querySelector('#modal-receita h2').textContent='💰 Nova Receita'; closeModal('modal-receita')">Cancelar</button>
       <button class="btn btn-green" onclick="saveReceita()">Salvar</button>
     </div>
   </div>
@@ -1472,7 +1489,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       </div>
       <div class="form-row">
         <label>Tipo</label>
-        <select id="gado-tipo">
+        <select id="gado-tipo" onchange="document.getElementById('gado-conta-row').style.display=this.value==='Venda'?'':'none'">
           <option value="Compra">Compra</option>
           <option value="Venda">Venda</option>
           <option value="Nascimento">Nascimento</option>
@@ -1510,12 +1527,21 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
         <input type="text" id="gado-contraparte" placeholder="Comprador / Vendedor">
       </div>
     </div>
+    <div id="gado-conta-row" class="form-row" style="display:none">
+      <label>Conta de Recebimento</label>
+      <select id="gado-conta">
+        <option value="BB">Banco do Brasil</option>
+        <option value="Itau">Itaú</option>
+        <option value="Caixa">Caixa Físico</option>
+        <option value="">— Não informado —</option>
+      </select>
+    </div>
     <div class="form-row">
       <label>Observação</label>
       <textarea id="gado-obs" placeholder="Opcional..."></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modal-gado-mov')">Cancelar</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-gado-mov'); _gadoMovEditIdx=null; document.querySelector('#modal-gado-mov h2').textContent='🐄 Movimentação de Gado'">Cancelar</button>
       <button class="btn btn-green" onclick="saveGadoMov()">Salvar</button>
     </div>
   </div>
@@ -1666,6 +1692,49 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="_invEditIdx=null; document.querySelector('#modal-inventario h2').textContent='🗂️ Cadastrar Item no Inventário'; closeModal('modal-inventario')">Cancelar</button>
       <button class="btn btn-green" onclick="saveInventario()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Transferência -->
+<div class="modal-overlay" id="modal-transferencia">
+  <div class="modal" style="max-width:440px">
+    <h2>🔄 Nova Transferência</h2>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Data</label>
+        <input type="date" id="tr-data">
+      </div>
+      <div class="form-row">
+        <label>Valor (R$)</label>
+        <input type="text" inputmode="decimal" id="tr-valor" placeholder="0,00">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Conta de Origem</label>
+        <select id="tr-origem">
+          <option value="BB">Banco do Brasil</option>
+          <option value="Itau">Itaú</option>
+          <option value="Caixa">Caixa Físico</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Conta de Destino</label>
+        <select id="tr-destino">
+          <option value="Itau">Itaú</option>
+          <option value="BB">Banco do Brasil</option>
+          <option value="Caixa">Caixa Físico</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Observação</label>
+      <input type="text" id="tr-obs" placeholder="Opcional">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-transferencia')">Cancelar</button>
+      <button class="btn btn-green" onclick="salvarTransferencia()">Salvar</button>
     </div>
   </div>
 </div>
@@ -2158,6 +2227,7 @@ function save() {
   localStorage.setItem('fazenda_euca_vendas', JSON.stringify(eucaVendas));
   localStorage.setItem('fazenda_inventario', JSON.stringify(inventario));
   localStorage.setItem('fazenda_contas', JSON.stringify(contasPagar));
+  localStorage.setItem('fazenda_transferencias', JSON.stringify(transferencias));
   const now = new Date().toLocaleString('pt-BR');
   localStorage.setItem('fazenda_last_update', now);
   document.getElementById('last-update').textContent = now;
@@ -2436,10 +2506,102 @@ const CONTAS_2026_JUNHO_PRELOAD = [
   {id:1751000000074,descricao:"Pagamento de DARF",categoria:"Darf",valor:1634.48,vencimento:"2026-06-30",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-06-30",valorPago:1634.48,contaPagamento:"BB",criadaEm:"2026-06-30T00:00:00.000Z"}
 ];
 let contasPagar = JSON.parse(localStorage.getItem('fazenda_contas') || '[]');
+
+const TRANSFERENCIAS_PRELOAD = [
+  {id:1751100000001, data:'2026-06-30', origem:'BB', destino:'Itau', valor:200000, obs:'Transferência BB → Itaú', criadaEm:'2026-06-30T00:00:00.000Z'}
+];
+let transferencias = (function(){
+  try { const s = localStorage.getItem('fazenda_transferencias'); return s ? JSON.parse(s) : []; } catch(e){ return []; }
+})();
 let _contaEditIdx = null;
 let _invEditIdx   = null;
 
 function saveContas() { localStorage.setItem('fazenda_contas', JSON.stringify(contasPagar)); save(); atualizarBadgeContas(); }
+function saveTransferencias() { localStorage.setItem('fazenda_transferencias', JSON.stringify(transferencias)); save(); }
+
+// Migração: preload da transferência BB→Itaú R$200.000 da planilha
+function migrarTransferencias() {
+  const FLAG = 'fazenda_migr_transf_v1';
+  if (localStorage.getItem(FLAG)) return;
+  const idsExist = new Set(transferencias.map(function(t){ return t.id; }));
+  TRANSFERENCIAS_PRELOAD.forEach(function(t){ if (!idsExist.has(t.id)) transferencias.push(t); });
+  saveTransferencias();
+  localStorage.setItem(FLAG, '1');
+  console.log('Migração: transferências preloaded.');
+}
+
+const CONTAS_NOMES_TR = {BB:'Banco do Brasil', Itau:'Itaú', Caixa:'Caixa Físico'};
+let _trEditIdx = null;
+
+function abrirNovaTransferencia(idx) {
+  _trEditIdx = (idx !== undefined && idx !== null) ? idx : null;
+  if (_trEditIdx !== null) {
+    const t = transferencias[_trEditIdx];
+    document.getElementById('tr-data').value   = t.data || '';
+    document.getElementById('tr-origem').value = t.origem || 'BB';
+    document.getElementById('tr-destino').value= t.destino || 'Itau';
+    document.getElementById('tr-valor').value  = t.valor ? String(t.valor).replace('.',',') : '';
+    document.getElementById('tr-obs').value    = t.obs || '';
+    document.querySelector('#modal-transferencia h2').textContent = '🔄 Editar Transferência';
+  } else {
+    document.getElementById('tr-data').value   = new Date().toISOString().split('T')[0];
+    document.getElementById('tr-origem').value = 'BB';
+    document.getElementById('tr-destino').value= 'Itau';
+    document.getElementById('tr-valor').value  = '';
+    document.getElementById('tr-obs').value    = '';
+    document.querySelector('#modal-transferencia h2').textContent = '🔄 Nova Transferência';
+  }
+  openModal('modal-transferencia');
+}
+
+function salvarTransferencia() {
+  const data   = document.getElementById('tr-data').value;
+  const origem = document.getElementById('tr-origem').value;
+  const destino= document.getElementById('tr-destino').value;
+  const valor  = parseBR(document.getElementById('tr-valor').value);
+  const obs    = document.getElementById('tr-obs').value.trim();
+  if (!data || !valor || !origem || !destino || origem === destino) {
+    alert('Preencha data, valor e contas distintas.'); return;
+  }
+  const nova = { id: _trEditIdx !== null ? transferencias[_trEditIdx].id : Date.now(), data, origem, destino, valor, obs, criadaEm: new Date().toISOString() };
+  if (_trEditIdx !== null) { transferencias[_trEditIdx] = nova; } else { transferencias.push(nova); }
+  _trEditIdx = null;
+  saveTransferencias();
+  closeModal('modal-transferencia');
+  renderTransferencias(); renderCaixa();
+}
+
+function delTransferencia(idx) {
+  if (!confirm('Excluir esta transferência?')) return;
+  transferencias.splice(idx, 1);
+  saveTransferencias();
+  renderTransferencias(); renderCaixa();
+}
+
+function renderTransferencias() {
+  const tbody = document.getElementById('tbody-transferencias');
+  if (!tbody) return;
+  if (!transferencias.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#aaa">Nenhuma transferência registrada</td></tr>';
+    return;
+  }
+  const sorted = [...transferencias].sort(function(a,b){ return a.data.localeCompare(b.data); });
+  tbody.innerHTML = sorted.map(function(t, i) {
+    const realIdx = transferencias.indexOf(t);
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${new Date(t.data+'T12:00:00').toLocaleDateString('pt-BR')}</td>
+      <td><span style="background:#e3f2fd;color:#1565C0;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${CONTAS_NOMES_TR[t.origem]||t.origem}</span></td>
+      <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${CONTAS_NOMES_TR[t.destino]||t.destino}</span></td>
+      <td class="num"><strong>${fmt(t.valor)}</strong></td>
+      <td>${t.obs||'—'}</td>
+      <td style="white-space:nowrap">
+        <button onclick="abrirNovaTransferencia(${realIdx})" style="background:#fef9e7;color:#b7950b;border:1px solid #f9e79f;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:12px;margin-right:4px">✏️</button>
+        <button onclick="delTransferencia(${realIdx})" style="background:#fdf2f2;color:#c0392b;border:1px solid #fadbd8;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:12px">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
 
 function getStatusConta(c) {
   if (c.status === 'Paga') return 'Paga';
@@ -3056,27 +3218,47 @@ function renderReceitas() {
         <td class="num"><strong>${fmtN(r.valor)}</strong></td>
         <td>${contaRec}</td>
         <td><span class="badge badge-green">Recebido</span></td>
-        <td>${isFixo ? '<span style="color:#aaa;font-size:11px">Importado</span>' : `<button class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delReceita(${idx})" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer">✕</button>`}</td>
+        <td>${isFixo ? '<span style="color:#aaa;font-size:11px">Importado</span>' : `<button class="btn btn-sm" style="background:#d5e8d4;color:#276221;border:none;cursor:pointer;margin-right:4px" onclick="editReceita(${idx})">✏️</button><button class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delReceita(${idx})">✕</button>`}</td>
       </tr>`;
     }).join('');
   }
 }
 
+let _recEditIdx = null;
+
+function editReceita(idx) {
+  const r = receitas[idx];
+  _recEditIdx = idx;
+  document.getElementById('rec-data').value   = r.data || '';
+  document.getElementById('rec-cat').value    = r.categoria || 'Outras Receitas';
+  document.getElementById('rec-desc').value   = r.descricao || '';
+  document.getElementById('rec-valor').value  = r.valor || '';
+  document.getElementById('rec-status').value = r.status || 'Recebido';
+  document.getElementById('rec-conta').value  = r.conta || '';
+  document.querySelector('#modal-receita h2').textContent = '✏️ Editar Receita';
+  openModal('modal-receita');
+}
+
 function saveReceita() {
-  const data = document.getElementById('rec-data').value;
-  const cat = document.getElementById('rec-cat').value;
-  const desc = document.getElementById('rec-desc').value;
-  const valor = parseFloat(document.getElementById('rec-valor').value);
+  const data   = document.getElementById('rec-data').value;
+  const cat    = document.getElementById('rec-cat').value;
+  const desc   = document.getElementById('rec-desc').value;
+  const valor  = parseFloat(document.getElementById('rec-valor').value);
   const status = document.getElementById('rec-status').value;
-  const conta = document.getElementById('rec-conta').value;
+  const conta  = document.getElementById('rec-conta').value;
   if (!data || !valor || isNaN(valor)) { alert('Preencha data e valor.'); return; }
-  receitas.push({data, categoria: cat, descricao: desc, valor, status, conta});
+  if (_recEditIdx !== null) {
+    receitas[_recEditIdx] = { ...receitas[_recEditIdx], data, categoria: cat, descricao: desc, valor, status, conta };
+    _recEditIdx = null;
+  } else {
+    receitas.push({data, categoria: cat, descricao: desc, valor, status, conta});
+  }
   save();
   closeModal('modal-receita');
+  document.querySelector('#modal-receita h2').textContent = '💰 Nova Receita';
   document.getElementById('rec-data').value = new Date().toISOString().split('T')[0];
   document.getElementById('rec-valor').value = '';
   document.getElementById('rec-desc').value = '';
-  // Switch to 2026 view after saving (all new entries are 2026)
   const filtroAno = document.getElementById('filtro-ano-receita');
   if (filtroAno) filtroAno.value = new Date(data).getFullYear();
   renderReceitas();
@@ -3145,15 +3327,20 @@ function renderGado() {
     tbody.innerHTML = gadoMov.slice().reverse().map((m,i) => {
       const idx = gadoMov.length - 1 - i;
       const isEntry = ['Compra','Nascimento'].includes(m.tipo);
+      const contaStr = m.conta ? `<span style="font-size:11px;font-weight:600;color:${CONTAS_CORES[m.conta]||'#555'}">${CONTAS_NOMES[m.conta]||m.conta}</span>` : '<span style="font-size:11px;color:#bbb">—</span>';
       return `<tr>
-        <td>${new Date(m.data).toLocaleDateString('pt-BR')}</td>
+        <td>${new Date(m.data+'T12:00:00').toLocaleDateString('pt-BR')}</td>
         <td><span class="badge ${isEntry?'badge-green':'badge-red'}">${m.tipo}</span></td>
         <td>${m.categoria.charAt(0).toUpperCase()+m.categoria.slice(1)}</td>
         <td class="num">${m.qtd}</td>
         <td class="num">${m.valorUnit ? fmtN(m.valorUnit) : '—'}</td>
         <td class="num">${m.valorUnit ? fmtN(m.valorUnit*m.qtd) : '—'}</td>
+        <td>${contaStr}</td>
         <td>${m.obs||'—'}</td>
-        <td><button class="btn btn-sm role-btn-del" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer" onclick="delGadoMov(${idx})" style="background:#fadbd8;color:#c0392b;border:none;cursor:pointer">✕</button></td>
+        <td style="white-space:nowrap">
+          <button onclick="editGadoMov(${idx})" style="background:#fef9e7;color:#b7950b;border:1px solid #f9e79f;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:12px;margin-right:4px">✏️</button>
+          <button onclick="delGadoMov(${idx})" style="background:#fadbd8;color:#c0392b;border:1px solid #f5b7b1;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:12px">✕</button>
+        </td>
       </tr>`;
     }).join('');
   }
@@ -3169,39 +3356,81 @@ function editGado(cat) {
   }
 }
 
+let _gadoMovEditIdx = null;
+
+function editGadoMov(idx) {
+  const m = gadoMov[idx];
+  _gadoMovEditIdx = idx;
+  document.getElementById('gado-data').value       = m.data || '';
+  document.getElementById('gado-tipo').value       = m.tipo || 'Venda';
+  document.getElementById('gado-categoria').value  = m.categoria || 'bezerroDesmame';
+  document.getElementById('gado-qtd').value        = m.qtd || '';
+  document.getElementById('gado-valor-unit').value = m.valorUnit || '';
+  document.getElementById('gado-contraparte').value= m.contraparte || '';
+  document.getElementById('gado-conta').value      = m.conta || 'BB';
+  document.getElementById('gado-obs').value        = m.obs || '';
+  document.getElementById('gado-conta-row').style.display = m.tipo === 'Venda' ? '' : 'none';
+  document.querySelector('#modal-gado-mov h2').textContent = '✏️ Editar Movimentação';
+  openModal('modal-gado-mov');
+}
+
 function saveGadoMov() {
-  const data = document.getElementById('gado-data').value;
-  const tipo = document.getElementById('gado-tipo').value;
-  const cat = document.getElementById('gado-categoria').value;
-  const qtd = parseInt(document.getElementById('gado-qtd').value);
-  const valorUnit = parseFloat(document.getElementById('gado-valor-unit').value) || 0;
-  const obs = document.getElementById('gado-obs').value;
+  const data       = document.getElementById('gado-data').value;
+  const tipo       = document.getElementById('gado-tipo').value;
+  const cat        = document.getElementById('gado-categoria').value;
+  const qtd        = parseInt(document.getElementById('gado-qtd').value);
+  const valorUnit  = parseFloat(document.getElementById('gado-valor-unit').value) || 0;
+  const contraparte= document.getElementById('gado-contraparte').value;
+  const conta      = document.getElementById('gado-conta').value;
+  const obs        = document.getElementById('gado-obs').value;
   if (!data || !qtd) { alert('Preencha data e quantidade.'); return; }
 
-  // Update estoque
+  if (_gadoMovEditIdx !== null) {
+    // EDIÇÃO: desfaz impacto anterior no estoque
+    const ant = gadoMov[_gadoMovEditIdx];
+    if (['Compra','Nascimento'].includes(ant.tipo)) gadoEstoque[ant.categoria] = Math.max(0, gadoEstoque[ant.categoria] - ant.qtd);
+    else if (['Venda','Morte'].includes(ant.tipo))  gadoEstoque[ant.categoria] += ant.qtd;
+    // Remove receita automática anterior (se houver)
+    if (ant.tipo === 'Venda' && ant.valorUnit > 0) {
+      const idxRec = receitas.findIndex(r => r._gadoMovId === ant.id);
+      if (idxRec !== -1) receitas.splice(idxRec, 1);
+    }
+    gadoMov[_gadoMovEditIdx] = {id: ant.id, data, tipo, categoria: cat, qtd, valorUnit, contraparte, conta, obs};
+    _gadoMovEditIdx = null;
+  } else {
+    gadoMov.push({id: Date.now(), data, tipo, categoria: cat, qtd, valorUnit, contraparte, conta, obs});
+  }
+
+  // Aplica novo impacto no estoque
   if (['Compra','Nascimento'].includes(tipo)) gadoEstoque[cat] += qtd;
-  else if (['Venda','Morte'].includes(tipo)) gadoEstoque[cat] = Math.max(0, gadoEstoque[cat] - qtd);
+  else if (['Venda','Morte'].includes(tipo))  gadoEstoque[cat] = Math.max(0, gadoEstoque[cat] - qtd);
 
-  gadoMov.push({data, tipo, categoria: cat, qtd, valorUnit, obs, contraparte: document.getElementById('gado-contraparte').value});
-
-  // Auto-create receita from gado sale
+  // Receita automática de venda (com conta e id de rastreio)
   if (tipo === 'Venda' && valorUnit > 0) {
-    receitas.push({data, categoria:'Venda de Gado', descricao:`Venda de ${qtd} ${cat}`, valor: valorUnit*qtd, status:'Recebido'});
+    const movId = gadoMov[gadoMov.length-1]?.id || Date.now();
+    receitas.push({data, categoria:'Venda de Gado', descricao:`Venda de ${qtd} ${cat}`, valor: valorUnit*qtd, status:'Recebido', conta, _gadoMovId: movId});
   }
 
   save();
   closeModal('modal-gado-mov');
+  document.querySelector('#modal-gado-mov h2').textContent = '🐄 Movimentação de Gado';
   document.getElementById('gado-qtd').value = '';
   document.getElementById('gado-valor-unit').value = '';
   document.getElementById('gado-obs').value = '';
+  document.getElementById('gado-conta-row').style.display = 'none';
   renderGado();
 }
 
 function delGadoMov(idx) {
   if (!confirm('Excluir esta movimentação?')) return;
-  gadoMov.splice(idx,1);
-  save();
-  renderGado();
+  const m = gadoMov[idx];
+  // Estorna estoque
+  if (['Compra','Nascimento'].includes(m.tipo)) gadoEstoque[m.categoria] = Math.max(0, gadoEstoque[m.categoria] - m.qtd);
+  else if (['Venda','Morte'].includes(m.tipo))  gadoEstoque[m.categoria] += m.qtd;
+  // Remove receita automática vinculada
+  if (m.id) { const ri = receitas.findIndex(r => r._gadoMovId === m.id); if (ri !== -1) receitas.splice(ri, 1); }
+  gadoMov.splice(idx, 1);
+  save(); renderGado();
 }
 
 // ============================================================
@@ -3580,7 +3809,7 @@ async function onLogin(user) {
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
     ]);
     setSyncStatus('✓ Sincronizado');
-    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); } catch(e) {}
+    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); migrarTransferencias(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); renderTransferencias(); } catch(e) {}
   } catch(e) {
     setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexao');
   }
@@ -4385,6 +4614,15 @@ function renderSaldoPorConta(ano, mes, view) {
                     saiPorConta[k] += parseFloat(d.valor) || 0;
                   });
 
+  // ─── Transferências: impacto por conta ───────────────────────
+  const transfSai = {BB:0, Itau:0, Caixa:0, '':0};
+  const transfEnt = {BB:0, Itau:0, Caixa:0, '':0};
+  transferencias.filter(function(t){ return _emPeriodo(t.data, dataIni, dataFim); })
+    .forEach(function(t) {
+      if (transfSai[t.origem] !== undefined) transfSai[t.origem] += parseFloat(t.valor)||0;
+      if (transfEnt[t.destino] !== undefined) transfEnt[t.destino] += parseFloat(t.valor)||0;
+    });
+
   // ─── Render cards ─────────────────────────────────────────────
   const totEnt = Object.values(entPorConta).reduce((a, v) => a + v, 0);
   const totSai = Object.values(saiPorConta).reduce((a, v) => a + v, 0);
@@ -4394,11 +4632,18 @@ function renderSaldoPorConta(ano, mes, view) {
   if (entPorConta[''] > 0 || saiPorConta[''] > 0) mostrar.push('');
 
   el.innerHTML = mostrar.map(k => {
-    const ent = entPorConta[k], sai = saiPorConta[k], res = ent - sai;
+    const ent = entPorConta[k], sai = saiPorConta[k];
+    const trSai = transfSai[k]||0, trEnt = transfEnt[k]||0;
+    const res = ent - sai - trSai + trEnt;
     const cor = CONTAS_CORES[k];
     const nome = CONTAS_NOMES[k];
     const pctEnt = totEnt > 0 ? (ent / totEnt * 100).toFixed(0) : 0;
     const pctSai = totSai > 0 ? (sai / totSai * 100).toFixed(0) : 0;
+    const transfHtml = (trSai > 0 || trEnt > 0) ? `
+      <div style="border-top:1px dashed #e0e0e0;margin:8px 0;padding-top:8px">
+        ${trSai > 0 ? `<div style="display:flex;justify-content:space-between;font-size:11px;color:#e65100;margin-bottom:2px"><span>→ Transf. enviada</span><span>−${fmt(trSai)}</span></div>` : ''}
+        ${trEnt > 0 ? `<div style="display:flex;justify-content:space-between;font-size:11px;color:#1565C0;margin-bottom:2px"><span>← Transf. recebida</span><span>+${fmt(trEnt)}</span></div>` : ''}
+      </div>` : '';
     return `<div style="background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:16px 20px;flex:1;min-width:200px;border-top:4px solid ${cor}">
       <div style="font-weight:700;font-size:14px;color:${cor};margin-bottom:12px">${nome}</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
@@ -4415,6 +4660,7 @@ function renderSaldoPorConta(ano, mes, view) {
       <div style="background:#ffebee;border-radius:4px;height:4px;margin-bottom:12px">
         <div style="background:#c62828;height:4px;border-radius:4px;width:${pctSai}%"></div>
       </div>
+      ${transfHtml}
       <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;border-top:1px solid #f0f0f0;padding-top:10px">
         <span style="color:#333">Resultado</span>
         <span style="color:${res >= 0 ? '#2e7d32' : '#c62828'}">${fmt(res)}</span>
@@ -4469,6 +4715,7 @@ function renderCaixa() {
   carregarSaldosForm();
   renderDemonstrativo();
   renderSaldoPorConta(ano, mesSel, view);
+  renderTransferencias();
 }
 
 function _tableHeader(cols, firstColLabel) {
