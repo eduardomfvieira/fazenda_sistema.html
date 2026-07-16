@@ -4004,7 +4004,7 @@ function getDRERecCats(ano, meses, catFiltro) {
   } else {
     // Lê dinamicamente do array receitas para capturar todos os meses (Jul+ inclusive)
     receitas.filter(function(r) {
-      return new Date(r.data + 'T12:00:00').getFullYear() === 2026;
+      return r.status === 'Recebido' && new Date(r.data + 'T12:00:00').getFullYear() === 2026;
     }).forEach(function(r) {
       var mes = new Date(r.data + 'T12:00:00').getMonth();
       if (!meses.includes(mes)) return;
@@ -4225,7 +4225,7 @@ function renderDREMensalCompleto(ano) {
     if (ano === 2025) return totaisReceitas2025.mensal[m] || 0;
     return receitas.filter(function(r) {
       var d = new Date(r.data + 'T12:00:00');
-      return d.getFullYear() === 2026 && d.getMonth() === m;
+      return r.status === 'Recebido' && d.getFullYear() === 2026 && d.getMonth() === m;
     }).reduce(function(a, r) { return a + (parseFloat(r.valor) || 0); }, 0);
   };
 
