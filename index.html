@@ -2507,6 +2507,24 @@ const CONTAS_2026_JUNHO_PRELOAD = [
 ];
 let contasPagar = JSON.parse(localStorage.getItem('fazenda_contas') || '[]');
 
+const CONTAS_2026_JULHO_PRELOAD = [
+  {id:1753000000001,descricao:"Gta (guia de transito animal 41 vacas)",categoria:"Taxas Diversas - IEF",valor:118.69,vencimento:"2026-07-06",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-06",valorPago:118.69,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000002,descricao:"Manutenção fiação da camera da estrada",categoria:"Manutenção e Conservação",valor:240.00,vencimento:"2026-07-07",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-07",valorPago:240.00,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000003,descricao:"Unidos Auto Peças(oleo diesel de duas semanas)",categoria:"Combustível",valor:834.10,vencimento:"2026-07-07",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-07",valorPago:834.10,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000004,descricao:"Serviço prestado na Fazenda",categoria:"Serviços de Terceiros",valor:120.00,vencimento:"2026-07-08",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-08",valorPago:120.00,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000005,descricao:"C e O emprendimentos (fusivel)",categoria:"Despesas Diversas",valor:8.00,vencimento:"2026-07-08",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-08",valorPago:8.00,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000006,descricao:"Verificação parte eletrica do Gip",categoria:"Manutenção de Veículos",valor:40.00,vencimento:"2026-07-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-09",valorPago:40.00,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000007,descricao:"Ledware(sistema de emissão de NF)",categoria:"Despesas Escritório",valor:91.97,vencimento:"2026-07-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-09",valorPago:91.97,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000008,descricao:"Bartofil Distribuidora(dectomax)",categoria:"Remédios - Outros",valor:496.54,vencimento:"2026-07-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-09",valorPago:496.54,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000009,descricao:"Etelecom(internet do curral)",categoria:"Despesas Diversas",valor:79.00,vencimento:"2026-07-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-09",valorPago:79.00,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000010,descricao:"Compra de câmera para a sede",categoria:"Manutenção e Conservação",valor:212.10,vencimento:"2026-07-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-09",valorPago:212.10,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000011,descricao:"Loja Eletrica(peças de manutenção do dvr curral)",categoria:"Manutenção e Conservação",valor:113.00,vencimento:"2026-07-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-09",valorPago:113.00,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000012,descricao:"Antonio dos Passos(peças de madeira e ferramenta)",categoria:"Manutenção e Conservação",valor:1128.00,vencimento:"2026-07-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-09",valorPago:1128.00,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000013,descricao:"Helio Henrique(cabos, fiação, ducha)",categoria:"Manutenção e Conservação",valor:1350.00,vencimento:"2026-07-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-09",valorPago:1350.00,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000014,descricao:"Papelaria Karina(envelope e reguas)",categoria:"Despesas Escritório",valor:24.95,vencimento:"2026-07-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-09",valorPago:24.95,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
+  {id:1753000000015,descricao:"Hortifruti do Toninho(mudas de verduras)",categoria:"Despesas Diversas",valor:9.80,vencimento:"2026-07-09",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-09",valorPago:9.80,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"}
+];
+
 const TRANSFERENCIAS_PRELOAD = [
   {id:1751100000001, data:'2026-06-30', origem:'BB', destino:'Itau', valor:200000, obs:'Transferência BB → Itaú', criadaEm:'2026-06-30T00:00:00.000Z'}
 ];
@@ -2814,6 +2832,20 @@ function migrarCorrigeICMSJunho() {
   if (corrigiu) { reconstruirDespesas2026(); save(); saveContas(); }
   localStorage.setItem(FLAG, '1');
   console.log('Migração v6: ICMS→INSS corrigido em junho/2026.');
+}
+
+function migrarJulhoV1() {
+  const FLAG = 'fazenda_migr_julho_v1';
+  if (localStorage.getItem(FLAG)) return;
+  var idsExist = new Set(contasPagar.map(function(c){ return c.id; }));
+  CONTAS_2026_JULHO_PRELOAD.forEach(function(c) {
+    if (!idsExist.has(c.id)) contasPagar.push(c);
+  });
+  reconstruirDespesas2026();
+  save();
+  saveContas();
+  localStorage.setItem(FLAG, '1');
+  console.log('Migração julho/2026 v1: ' + CONTAS_2026_JULHO_PRELOAD.length + ' registros adicionados.');
 }
 
 function _lancaDespesaConta(cat, valorPago, dataPag, sinal) {
@@ -3809,7 +3841,7 @@ async function onLogin(user) {
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
     ]);
     setSyncStatus('✓ Sincronizado');
-    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); migrarTransferencias(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); renderTransferencias(); } catch(e) {}
+    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); migrarJulhoV1(); migrarTransferencias(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); renderTransferencias(); } catch(e) {}
   } catch(e) {
     setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexao');
   }
