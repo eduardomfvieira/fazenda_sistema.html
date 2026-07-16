@@ -4002,13 +4002,16 @@ function getDRERecCats(ano, meses, catFiltro) {
     cats['Venda de Gado']          = total * propSem;
     cats['Outras Receitas']        = total * propOut;
   } else {
-    // Use hardcoded 2026 data from spreadsheet
-    const t = totaisReceitas2026;
-    cats['Eucalipto / Madeira']    = meses.reduce((a,i) => a+(t.madeira[i]||0), 0);
-    cats['Arrendamento / Aluguel'] = meses.reduce((a,i) => a+(t.aluguel[i]||0), 0);
-    cats['Venda de Gado']          = meses.reduce((a,i) => a+(t.semoventes[i]||0), 0);
-    cats['Venda de Equipamentos']  = meses.reduce((a,i) => a+(t.equipamentos[i]||0), 0);
-    cats['Outras Receitas']        = meses.reduce((a,i) => a+(t.outras[i]||0), 0);
+    // Lê dinamicamente do array receitas para capturar todos os meses (Jul+ inclusive)
+    receitas.filter(function(r) {
+      return new Date(r.data + 'T12:00:00').getFullYear() === 2026;
+    }).forEach(function(r) {
+      var mes = new Date(r.data + 'T12:00:00').getMonth();
+      if (!meses.includes(mes)) return;
+      var cat = r.categoria || 'Outras Receitas';
+      if (cats.hasOwnProperty(cat)) cats[cat] += parseFloat(r.valor) || 0;
+      else cats['Outras Receitas'] += parseFloat(r.valor) || 0;
+    });
   }
   if (catFiltro) { const f = {}; f[catFiltro] = cats[catFiltro] || 0; return f; }
   return cats;
@@ -4220,7 +4223,10 @@ function renderDREMensalCompleto(ano) {
 
   const getRecMes = (m) => {
     if (ano === 2025) return totaisReceitas2025.mensal[m] || 0;
-    return totaisReceitas2026.mensal[m] || 0;
+    return receitas.filter(function(r) {
+      var d = new Date(r.data + 'T12:00:00');
+      return d.getFullYear() === 2026 && d.getMonth() === m;
+    }).reduce(function(a, r) { return a + (parseFloat(r.valor) || 0); }, 0);
   };
 
   const getItemMes = (nome, m) => {
