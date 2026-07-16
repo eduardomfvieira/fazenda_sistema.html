@@ -661,6 +661,24 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
       </select>
     </div>
     <div class="filter-group">
+      <label>Mês:</label>
+      <select id="filtro-mes-receita" onchange="renderReceitas()">
+        <option value="">Todos</option>
+        <option value="1">Janeiro</option>
+        <option value="2">Fevereiro</option>
+        <option value="3">Março</option>
+        <option value="4">Abril</option>
+        <option value="5">Maio</option>
+        <option value="6">Junho</option>
+        <option value="7">Julho</option>
+        <option value="8">Agosto</option>
+        <option value="9">Setembro</option>
+        <option value="10">Outubro</option>
+        <option value="11">Novembro</option>
+        <option value="12">Dezembro</option>
+      </select>
+    </div>
+    <div class="filter-group">
       <label>Categoria:</label>
       <select id="filtro-cat-receita" onchange="renderReceitas()">
         <option value="">Todas</option>
@@ -3181,13 +3199,17 @@ function saveDespesa() {
 // ============================================================
 function renderReceitas() {
   const ano = parseInt(document.getElementById('filtro-ano-receita')?.value || 2025);
+  const mesFiltro = parseInt(document.getElementById('filtro-mes-receita')?.value || '') || 0;
   const catFiltro = document.getElementById('filtro-cat-receita')?.value || '';
-  document.getElementById('receita-chart-ano').textContent = ano;
-  document.getElementById('receita-pizza-ano').textContent = ano;
-  document.getElementById('receitas-table-title').textContent = `Lançamentos de Receitas — ${ano}`;
+  const mesesNomes = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const periodoTxt = mesFiltro ? `${mesesNomes[mesFiltro]}/${ano}` : String(ano);
+  document.getElementById('receita-chart-ano').textContent = periodoTxt;
+  document.getElementById('receita-pizza-ano').textContent = periodoTxt;
+  document.getElementById('receitas-table-title').textContent = `Lançamentos de Receitas — ${periodoTxt}`;
 
   // Para 2025 usamos os dados fixos da planilha
-  const fonte = ano === 2025 ? receitas2025 : receitas.filter(r => new Date(r.data).getFullYear() === ano);
+  let fonte = ano === 2025 ? receitas2025 : receitas.filter(r => new Date(r.data).getFullYear() === ano);
+  if (mesFiltro) fonte = fonte.filter(r => new Date(r.data + 'T12:00:00').getMonth() + 1 === mesFiltro);
   const filtradas = catFiltro ? fonte.filter(r => r.categoria === catFiltro) : fonte;
 
   const cats = ['Eucalipto / Madeira', 'Arrendamento / Aluguel', 'Venda de Gado', 'Venda de Equipamentos', 'Outras Receitas'];
