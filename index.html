@@ -2525,6 +2525,18 @@ const CONTAS_2026_JUNHO_PRELOAD = [
 ];
 let contasPagar = JSON.parse(localStorage.getItem('fazenda_contas') || '[]');
 
+const CONTAS_2026_JULHO_PRELOAD_V2 = [
+  {id:1753100000001,descricao:"Sky(tv por assinatura da sede)",categoria:"Despesas Diversas",valor:599.99,vencimento:"2026-07-13",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-13",valorPago:599.99,contaPagamento:"Caixa",criadaEm:"2026-07-20T00:00:00.000Z"},
+  {id:1753100000002,descricao:"Energia(escritorio e galpoes)",categoria:"Energia Elétrica",valor:437.46,vencimento:"2026-07-13",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-13",valorPago:437.46,contaPagamento:"Caixa",criadaEm:"2026-07-20T00:00:00.000Z"},
+  {id:1753100000003,descricao:"Energia(sede)",categoria:"Energia Elétrica",valor:768.19,vencimento:"2026-07-13",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-13",valorPago:768.19,contaPagamento:"Caixa",criadaEm:"2026-07-20T00:00:00.000Z"},
+  {id:1753100000004,descricao:"Cerealista São Lourenço(ração)",categoria:"Ração",valor:620.06,vencimento:"2026-07-13",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-13",valorPago:620.06,contaPagamento:"Caixa",criadaEm:"2026-07-20T00:00:00.000Z"},
+  {id:1753100000005,descricao:"Agro Pet(calcario e colosso)",categoria:"Despesas Diversas",valor:61.90,vencimento:"2026-07-13",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-13",valorPago:61.90,contaPagamento:"Caixa",criadaEm:"2026-07-20T00:00:00.000Z"},
+  {id:1753100000006,descricao:"Paulo Sergio(cestas basicas)",categoria:"Refeitório",valor:681.17,vencimento:"2026-07-13",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-13",valorPago:681.17,contaPagamento:"Caixa",criadaEm:"2026-07-20T00:00:00.000Z"},
+  {id:1753100000007,descricao:"Unidos Auto Peças(oleo diesel)",categoria:"Combustível",valor:456.85,vencimento:"2026-07-15",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-15",valorPago:456.85,contaPagamento:"Caixa",criadaEm:"2026-07-20T00:00:00.000Z"},
+  {id:1753100000008,descricao:"Dhs mangueiras(mangueira para trator)",categoria:"Manutenção de Maq. e Equip.",valor:42.00,vencimento:"2026-07-16",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-16",valorPago:42.00,contaPagamento:"Caixa",criadaEm:"2026-07-20T00:00:00.000Z"},
+  {id:1753100000009,descricao:"Fogão Mineiro(despesas de viagem)",categoria:"Diária de Viagens",valor:100.00,vencimento:"2026-07-18",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-18",valorPago:100.00,contaPagamento:"Caixa",criadaEm:"2026-07-20T00:00:00.000Z"}
+];
+
 const CONTAS_2026_JULHO_PRELOAD = [
   {id:1753000000001,descricao:"Gta (guia de transito animal 41 vacas)",categoria:"Taxas Diversas - IEF",valor:118.69,vencimento:"2026-07-06",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-06",valorPago:118.69,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
   {id:1753000000002,descricao:"Manutenção fiação da camera da estrada",categoria:"Manutenção e Conservação",valor:240.00,vencimento:"2026-07-07",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-07",valorPago:240.00,contaPagamento:"Caixa",criadaEm:"2026-07-09T00:00:00.000Z"},
@@ -2850,6 +2862,21 @@ function migrarCorrigeICMSJunho() {
   if (corrigiu) { reconstruirDespesas2026(); save(); saveContas(); }
   localStorage.setItem(FLAG, '1');
   console.log('Migração v6: ICMS→INSS corrigido em junho/2026.');
+}
+
+function migrarJulhoV2() {
+  const FLAG = 'fazenda_migr_julho_v2b';
+  if (localStorage.getItem(FLAG)) return;
+  // Remove entradas anteriores do v2 para recarregar com valores corrigidos
+  var v2ids = new Set(CONTAS_2026_JULHO_PRELOAD_V2.map(function(c){ return c.id; }));
+  contasPagar = contasPagar.filter(function(c){ return !v2ids.has(c.id); });
+  CONTAS_2026_JULHO_PRELOAD_V2.forEach(function(c) { contasPagar.push(c); });
+  reconstruirDespesas2026();
+  save();
+  saveContas();
+  localStorage.setItem(FLAG, '1');
+  localStorage.setItem('fazenda_migr_julho_v2', '1');
+  console.log('Migração julho/2026 v2b: ' + CONTAS_2026_JULHO_PRELOAD_V2.length + ' registros corrigidos.');
 }
 
 function migrarJulhoV1() {
@@ -3863,7 +3890,7 @@ async function onLogin(user) {
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
     ]);
     setSyncStatus('✓ Sincronizado');
-    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); migrarJulhoV1(); migrarTransferencias(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); renderTransferencias(); } catch(e) {}
+    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); migrarJulhoV1(); migrarJulhoV2(); migrarTransferencias(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); renderTransferencias(); } catch(e) {}
   } catch(e) {
     setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexao');
   }
