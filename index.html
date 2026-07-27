@@ -2542,6 +2542,25 @@ const CONTAS_2026_JUNHO_PRELOAD = [
 ];
 let contasPagar = JSON.parse(localStorage.getItem('fazenda_contas') || '[]');
 
+const CONTAS_2026_JULHO_PRELOAD_V3 = [
+  {id:1753200000001,descricao:"Telefone",categoria:"Telefone",valor:79.98,vencimento:"2026-07-20",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-20",valorPago:79.98,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000002,descricao:"Prevtrato",categoria:"Serviços de Terceiros",valor:150.00,vencimento:"2026-07-20",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-20",valorPago:150.00,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000003,descricao:"Etelecom(Internet)",categoria:"Despesas Diversas",valor:250.00,vencimento:"2026-07-20",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-20",valorPago:250.00,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000004,descricao:"Jacar Comercio(manutenção pneu hilux)",categoria:"Manutenção de Veículos",valor:920.00,vencimento:"2026-07-20",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-20",valorPago:920.00,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000005,descricao:"Inss(rdb darf)",categoria:"INSS",valor:5882.53,vencimento:"2026-07-20",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-20",valorPago:5882.53,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000006,descricao:"Lar Divino Espirito Santo",categoria:"Despesas Diversas",valor:150.00,vencimento:"2026-07-20",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-20",valorPago:150.00,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000007,descricao:"Substituição e limpeza cameras sede",categoria:"Manutenção e Conservação",valor:230.00,vencimento:"2026-07-20",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-20",valorPago:230.00,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000008,descricao:"Papelaria Fazza(tinta para a impressora epson)",categoria:"Despesas Escritório",valor:74.90,vencimento:"2026-07-22",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-22",valorPago:74.90,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000009,descricao:"Minas Estacionamento(estacionamento hilux)",categoria:"Despesas Diversas",valor:15.00,vencimento:"2026-07-22",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-22",valorPago:15.00,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000010,descricao:"Artpuxe(puxador para o armario da sede)",categoria:"Despesas Diversas",valor:60.00,vencimento:"2026-07-22",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-22",valorPago:60.00,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000011,descricao:"Papelaria Karina(talões de nota plastificação)",categoria:"Despesas Escritório",valor:65.00,vencimento:"2026-07-23",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-23",valorPago:65.00,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000012,descricao:"Verificação da lampada da Hilux",categoria:"Manutenção de Veículos",valor:20.00,vencimento:"2026-07-22",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-23",valorPago:20.00,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000013,descricao:"Pagamento de PIS e COFINS",categoria:"PIS/COFINS",valor:7301.67,vencimento:"2026-07-24",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-24",valorPago:7301.67,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000014,descricao:"Unidos Auto Peças(oleo diesel)",categoria:"Combustível",valor:767.25,vencimento:"2026-07-24",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-24",valorPago:767.25,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000015,descricao:"Unidos Auto Peças(peças para veículos)",categoria:"Manutenção de Veículos",valor:99.70,vencimento:"2026-07-24",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-24",valorPago:99.70,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"},
+  {id:1753200000016,descricao:"Ronil Moura(mudas frutiferas)",categoria:"Despesas Diversas",valor:1460.00,vencimento:"2026-07-24",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-24",valorPago:1460.00,contaPagamento:"Caixa",criadaEm:"2026-07-27T00:00:00.000Z"}
+];
+
 const CONTAS_2026_JULHO_PRELOAD_V2 = [
   {id:1753100000001,descricao:"Sky(tv por assinatura da sede)",categoria:"Despesas Diversas",valor:599.99,vencimento:"2026-07-13",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-13",valorPago:599.99,contaPagamento:"Caixa",criadaEm:"2026-07-20T00:00:00.000Z"},
   {id:1753100000002,descricao:"Energia(escritorio e galpoes)",categoria:"Energia Elétrica",valor:437.46,vencimento:"2026-07-13",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-13",valorPago:437.46,contaPagamento:"Caixa",criadaEm:"2026-07-20T00:00:00.000Z"},
@@ -2894,6 +2913,20 @@ function migrarJulhoV2() {
   localStorage.setItem(FLAG, '1');
   localStorage.setItem('fazenda_migr_julho_v2', '1');
   console.log('Migração julho/2026 v2b: ' + CONTAS_2026_JULHO_PRELOAD_V2.length + ' registros corrigidos.');
+}
+
+function migrarJulhoV3() {
+  const FLAG = 'fazenda_migr_julho_v3';
+  if (localStorage.getItem(FLAG)) return;
+  var idsExist = new Set(contasPagar.map(function(c){ return c.id; }));
+  CONTAS_2026_JULHO_PRELOAD_V3.forEach(function(c) {
+    if (!idsExist.has(c.id)) contasPagar.push(c);
+  });
+  reconstruirDespesas2026();
+  save();
+  saveContas();
+  localStorage.setItem(FLAG, '1');
+  console.log('Migração julho/2026 v3: ' + CONTAS_2026_JULHO_PRELOAD_V3.length + ' registros adicionados.');
 }
 
 function migrarReceitasJulhoV1() {
@@ -3919,7 +3952,7 @@ async function onLogin(user) {
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
     ]);
     setSyncStatus('✓ Sincronizado');
-    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); migrarJulhoV1(); migrarJulhoV2(); migrarReceitasJulhoV1(); migrarTransferencias(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); renderTransferencias(); } catch(e) {}
+    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); migrarJulhoV1(); migrarJulhoV2(); migrarJulhoV3(); migrarReceitasJulhoV1(); migrarTransferencias(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); renderTransferencias(); } catch(e) {}
   } catch(e) {
     setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexao');
   }
