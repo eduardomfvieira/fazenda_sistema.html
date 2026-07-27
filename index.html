@@ -2159,6 +2159,23 @@ const RECEITAS_2026_PRELOAD = [
 ];
 
 
+const RECEITAS_2026_JULHO_PRELOAD = [
+  {id:'rec2026jul001',data:'2026-07-16',categoria:'Eucalipto / Madeira',descricao:'Venda de Madeira — NF 4544 — 29,60m³ — Alberto de Jesus Santos',valor:1184.00,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul002',data:'2026-07-16',categoria:'Eucalipto / Madeira',descricao:'Venda de madeira — NF 4545 — 27,11m³ — Paulo Sergio Gomes',valor:542.20,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul003',data:'2026-07-16',categoria:'Eucalipto / Madeira',descricao:'Venda de Madeira — NF 4546 — 31,64m³ — Alberto de Jesus Santos',valor:1265.60,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul004',data:'2026-07-16',categoria:'Eucalipto / Madeira',descricao:'Venda de Madeira — NF 4547 — 30,68m³ — Alberto de Jesus Santos',valor:1227.20,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul005',data:'2026-07-20',categoria:'Eucalipto / Madeira',descricao:'Venda de madeira — NF 4548 — 27,79m³ — Paulo Sergio Gomes',valor:555.80,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul006',data:'2026-07-23',categoria:'Eucalipto / Madeira',descricao:'Venda de Madeira — NF 4549 — 30,6m³ — Alberto de Jesus Santos',valor:1226.80,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul007',data:'2026-07-23',categoria:'Eucalipto / Madeira',descricao:'Venda de Madeira — NF 4550 — 28,66m³ — Alberto de Jesus Santos',valor:1146.40,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul008',data:'2026-07-23',categoria:'Eucalipto / Madeira',descricao:'Venda de Madeira — NF 4551 — 29,98m³ — Alberto de Jesus Santos',valor:1199.20,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul009',data:'2026-07-15',categoria:'Arrendamento / Aluguel',descricao:'Aluguel do galpão — julho/2026',valor:3000.00,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul010',data:'2026-07-23',categoria:'Eucalipto / Madeira',descricao:'Venda de madeira — NF 4552 — 28,23m³ — Alberto de Jesus Santos',valor:1129.20,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul011',data:'2026-07-20',categoria:'Eucalipto / Madeira',descricao:'Venda de madeira — NF 4553 — 29,34m³ — Paulo Sergio Gomes',valor:586.80,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul012',data:'2026-07-23',categoria:'Eucalipto / Madeira',descricao:'Venda de Madeira — NF 4554 — 30,26m³ — Alberto de Jesus Santos',valor:1210.40,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul013',data:'2026-07-20',categoria:'Eucalipto / Madeira',descricao:'Venda de madeira — NF 4555 — 27,62m³ — Paulo Sergio Gomes',valor:552.40,status:'Recebido',conta:'Caixa'},
+  {id:'rec2026jul014',data:'2026-07-20',categoria:'Eucalipto / Madeira',descricao:'Venda de madeira — NF 4557 — 19,36m³ — Paulo Sergio Gomes',valor:387.20,status:'Recebido',conta:'Caixa'}
+];
+
 // State
 let receitas = JSON.parse(localStorage.getItem('fazenda_receitas') || '[]');
 // Pre-carregar receitas 2026 na primeira execução
@@ -2877,6 +2894,18 @@ function migrarJulhoV2() {
   localStorage.setItem(FLAG, '1');
   localStorage.setItem('fazenda_migr_julho_v2', '1');
   console.log('Migração julho/2026 v2b: ' + CONTAS_2026_JULHO_PRELOAD_V2.length + ' registros corrigidos.');
+}
+
+function migrarReceitasJulhoV1() {
+  const FLAG = 'fazenda_migr_rec_julho_v1';
+  if (localStorage.getItem(FLAG)) return;
+  var idsExist = new Set(receitas.map(function(r){ return r.id; }));
+  RECEITAS_2026_JULHO_PRELOAD.forEach(function(r) {
+    if (!idsExist.has(r.id)) receitas.push(r);
+  });
+  save();
+  localStorage.setItem(FLAG, '1');
+  console.log('Migração receitas julho/2026 v1: ' + RECEITAS_2026_JULHO_PRELOAD.length + ' registros adicionados.');
 }
 
 function migrarJulhoV1() {
@@ -3890,7 +3919,7 @@ async function onLogin(user) {
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
     ]);
     setSyncStatus('✓ Sincronizado');
-    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); migrarJulhoV1(); migrarJulhoV2(); migrarTransferencias(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); renderTransferencias(); } catch(e) {}
+    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); migrarJulhoV1(); migrarJulhoV2(); migrarReceitasJulhoV1(); migrarTransferencias(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); renderTransferencias(); } catch(e) {}
   } catch(e) {
     setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexao');
   }
