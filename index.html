@@ -1052,6 +1052,10 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
         <label style="font-size:12px;color:#2e7d32;font-weight:600">💵 Caixa Físico (R$)</label>
         <input type="text" inputmode="decimal" id="caixa-saldo-fisico" placeholder="0,00" style="width:160px" oninput="salvarSaldosCaixa()" onblur="salvarSaldosCaixa()">
       </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <label style="font-size:12px;color:#6a0dad;font-weight:600">🏦 Predipod (R$)</label>
+        <input type="text" inputmode="decimal" id="caixa-saldo-predipod" placeholder="0,00" style="width:160px" oninput="salvarSaldosCaixa()" onblur="salvarSaldosCaixa()">
+      </div>
       <div style="display:flex;flex-direction:column;gap:4px;justify-content:flex-end">
         <label style="font-size:12px;color:#555">Saldo total inicial</label>
         <div id="caixa-saldo-total" style="font-size:17px;font-weight:700;color:var(--green-dark);padding:6px 0">R$ 0,00</div>
@@ -1113,6 +1117,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
         <div style="background:#1E4620;color:white;padding:10px 16px;font-weight:600;font-size:13px">DISPONÍVEL</div>
         <table style="width:100%;border-collapse:collapse;font-size:13px">
           <tr><td style="padding:7px 16px;border-bottom:1px solid #f0f0f0">💵 Caixa Físico</td><td id="ds-caixa" style="text-align:right;padding:7px 16px;border-bottom:1px solid #f0f0f0">—</td></tr>
+          <tr><td style="padding:7px 16px;border-bottom:1px solid #f0f0f0">🏦 Predipod</td><td id="ds-predipod" style="text-align:right;padding:7px 16px;border-bottom:1px solid #f0f0f0">—</td></tr>
           <tr><td style="padding:7px 16px;border-bottom:1px solid #f0f0f0">🏦 Bancos (BB + Itaú)</td><td id="ds-bancos" style="text-align:right;padding:7px 16px;border-bottom:1px solid #f0f0f0">—</td></tr>
           <tr><td style="padding:7px 16px;border-bottom:1px solid #f0f0f0">Aplicações Financeiras</td><td id="ds-aplicacoes" style="text-align:right;padding:7px 16px;border-bottom:1px solid #f0f0f0">—</td></tr>
           <tr><td style="padding:7px 16px;border-bottom:1px solid #f0f0f0">Fundo de Reserva</td><td id="ds-reserva" style="text-align:right;padding:7px 16px;border-bottom:1px solid #f0f0f0">—</td></tr>
@@ -1379,6 +1384,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
           <option value="BB">Banco do Brasil</option>
           <option value="Itau">Itaú</option>
           <option value="Caixa">Caixa Físico</option>
+          <option value="Predipod">Predipod</option>
         </select>
       </div>
       <div class="form-row">
@@ -1420,6 +1426,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
           <option value="BB">Banco do Brasil</option>
           <option value="Itau">Itaú</option>
           <option value="Caixa">Caixa Físico</option>
+          <option value="Predipod">Predipod</option>
         </select>
       </div>
     </div>
@@ -1486,6 +1493,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
         <option value="BB">Banco do Brasil</option>
         <option value="Itau">Itaú</option>
         <option value="Caixa">Caixa Físico</option>
+        <option value="Predipod">Predipod</option>
         <option value="">— Não informado —</option>
       </select>
     </div>
@@ -1551,6 +1559,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
         <option value="BB">Banco do Brasil</option>
         <option value="Itau">Itaú</option>
         <option value="Caixa">Caixa Físico</option>
+        <option value="Predipod">Predipod</option>
         <option value="">— Não informado —</option>
       </select>
     </div>
@@ -1735,6 +1744,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
           <option value="BB">Banco do Brasil</option>
           <option value="Itau">Itaú</option>
           <option value="Caixa">Caixa Físico</option>
+          <option value="Predipod">Predipod</option>
         </select>
       </div>
       <div class="form-row">
@@ -1743,6 +1753,7 @@ body.role-assistente .role-btn-del  { display: inline-flex !important; }
           <option value="Itau">Itaú</option>
           <option value="BB">Banco do Brasil</option>
           <option value="Caixa">Caixa Físico</option>
+          <option value="Predipod">Predipod</option>
         </select>
       </div>
     </div>
@@ -2582,6 +2593,40 @@ const CONTAS_2026_JULHO_PRELOAD_V4 = [
   {id:1753300000008,descricao:"Casa do Fazendeiro(ração)",categoria:"Ração",valor:474.00,vencimento:"2026-07-31",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-31",valorPago:474.00,contaPagamento:"Caixa",criadaEm:"2026-08-05T00:00:00.000Z"}
 ];
 
+const CONTAS_2026_JULHO_PRELOAD_V5 = [
+  {id:1753400000001,descricao:"Mercado Livre(brinco para o gado)",categoria:"Despesas Diversas",valor:265.98,vencimento:"2026-07-08",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-08",valorPago:265.98,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1753400000002,descricao:"Fgts Julho",categoria:"FGTS",valor:1139.12,vencimento:"2026-07-20",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-07-20",valorPago:1139.12,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"}
+];
+
+const CONTAS_2026_AGOSTO_PRELOAD_V2 = [
+  {id:1754100000001,descricao:"Salario Antonio Gabriel",categoria:"Salários",valor:1500.00,vencimento:"2026-08-03",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-03",valorPago:1500.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000002,descricao:"Salario Geraldo Candido",categoria:"Salários",valor:2536.00,vencimento:"2026-08-03",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-03",valorPago:2536.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000003,descricao:"Salario Giselle Aparecida Rodrigues",categoria:"Salários",valor:2163.00,vencimento:"2026-08-03",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-03",valorPago:2163.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000004,descricao:"Salario João de Jesus Delfino",categoria:"Salários",valor:4466.00,vencimento:"2026-08-03",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-03",valorPago:4466.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000005,descricao:"Salario Osvaldo Sebastião",categoria:"Salários",valor:2056.00,vencimento:"2026-08-03",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-03",valorPago:2056.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000006,descricao:"Rpa Alan Pereira Barros(engenheiro agronomo)",categoria:"Salários",valor:1442.69,vencimento:"2026-08-07",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-07",valorPago:1442.69,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000007,descricao:"Férias Giselle Aparecida Rodrigues",categoria:"Férias",valor:1449.00,vencimento:"2026-08-07",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-07",valorPago:1449.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000008,descricao:"Primos Contabilidade",categoria:"Serviços de Terceiros",valor:4556.00,vencimento:"2026-08-07",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-07",valorPago:4556.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000009,descricao:"Cemig",categoria:"Energia Elétrica",valor:773.79,vencimento:"2026-08-10",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-10",valorPago:773.79,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000010,descricao:"Cemig",categoria:"Energia Elétrica",valor:512.69,vencimento:"2026-08-10",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-10",valorPago:512.69,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000011,descricao:"Sky(tv por assinatura da sede)",categoria:"Despesas Diversas",valor:599.99,vencimento:"2026-08-10",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-10",valorPago:599.99,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000012,descricao:"Agropecuaria e material de construção(mub)",categoria:"Ração",valor:535.00,vencimento:"2026-08-17",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-17",valorPago:535.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000013,descricao:"Jacar Comercio dePneus",categoria:"Manutenção de Veículos",valor:520.00,vencimento:"2026-08-17",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-17",valorPago:520.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000014,descricao:"Bartofil",categoria:"Remédios - Outros",valor:607.84,vencimento:"2026-08-17",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-17",valorPago:607.84,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000015,descricao:"Inss(rdb darf)",categoria:"INSS",valor:13435.54,vencimento:"2026-08-17",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-17",valorPago:13435.54,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1754100000016,descricao:"Fgts Agosto",categoria:"FGTS",valor:1116.37,vencimento:"2026-08-17",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-17",valorPago:1116.37,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"}
+];
+
+const CONTAS_2026_SETEMBRO_PRELOAD = [
+  {id:1755000000001,descricao:"Salario Antonio Gabriel",categoria:"Salários",valor:1499.00,vencimento:"2026-09-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-09-01",valorPago:1499.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1755000000002,descricao:"Salario Geraldo Candido",categoria:"Salários",valor:2583.00,vencimento:"2026-09-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-09-01",valorPago:2583.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1755000000003,descricao:"Salario Giselle Aparecida Rodrigues",categoria:"Salários",valor:1070.00,vencimento:"2026-09-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-09-01",valorPago:1070.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1755000000004,descricao:"Salario João de Jesus Delfino",categoria:"Salários",valor:4511.00,vencimento:"2026-09-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-09-01",valorPago:4511.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1755000000005,descricao:"Salario Osvaldo Sebastião",categoria:"Salários",valor:2057.00,vencimento:"2026-09-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-09-01",valorPago:2057.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1755000000006,descricao:"Rpa Alan Pereira Barros(engenheiro agronomo)",categoria:"Salários",valor:1442.69,vencimento:"2026-09-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-09-01",valorPago:1442.69,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"},
+  {id:1755000000007,descricao:"Primos Contabilidade",categoria:"Serviços de Terceiros",valor:4556.00,vencimento:"2026-09-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-09-01",valorPago:4556.00,contaPagamento:"Predipod",criadaEm:"2026-09-14T00:00:00.000Z"}
+];
+
 const CONTAS_2026_AGOSTO_PRELOAD = [
   {id:1754000000001,descricao:"Supermecado Ramos(organizador, xicaras)",categoria:"Despesas Escritório",valor:280.30,vencimento:"2026-08-01",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-01",valorPago:280.30,contaPagamento:"Caixa Físico",criadaEm:"2026-09-10T00:00:00.000Z"},
   {id:1754000000002,descricao:"Tokio Marine(seguro hulix)",categoria:"Seguros-Veículos e Máquinas",valor:997.67,vencimento:"2026-08-03",recorrencia:"Única",obs:"",status:"Paga",dataPagamento:"2026-08-03",valorPago:997.67,contaPagamento:"Caixa Físico",criadaEm:"2026-09-10T00:00:00.000Z"},
@@ -2695,7 +2740,7 @@ function migrarTransferencias() {
   console.log('Migração: transferências preloaded.');
 }
 
-const CONTAS_NOMES_TR = {BB:'Banco do Brasil', Itau:'Itaú', Caixa:'Caixa Físico'};
+const CONTAS_NOMES_TR = {BB:'Banco do Brasil', Itau:'Itaú', Caixa:'Caixa Físico', Predipod:'Predipod'};
 let _trEditIdx = null;
 
 function abrirNovaTransferencia(idx) {
@@ -3034,6 +3079,48 @@ function migrarReceitasJulhoV2() {
   save();
   localStorage.setItem(FLAG, '1');
   console.log('Migração receitas julho/2026 v2: ' + RECEITAS_2026_JULHO_PRELOAD_V2.length + ' registros adicionados.');
+}
+
+function migrarJulhoV5() {
+  const FLAG = 'fazenda_migr_julho_v5';
+  if (localStorage.getItem(FLAG)) return;
+  var idsExist = new Set(contasPagar.map(function(c){ return c.id; }));
+  CONTAS_2026_JULHO_PRELOAD_V5.forEach(function(c) {
+    if (!idsExist.has(c.id)) contasPagar.push(c);
+  });
+  reconstruirDespesas2026();
+  save();
+  saveContas();
+  localStorage.setItem(FLAG, '1');
+  console.log('Migração julho/2026 v5 (Predipod): ' + CONTAS_2026_JULHO_PRELOAD_V5.length + ' registros adicionados.');
+}
+
+function migrarAgostoV2() {
+  const FLAG = 'fazenda_migr_agosto_v2';
+  if (localStorage.getItem(FLAG)) return;
+  var idsExist = new Set(contasPagar.map(function(c){ return c.id; }));
+  CONTAS_2026_AGOSTO_PRELOAD_V2.forEach(function(c) {
+    if (!idsExist.has(c.id)) contasPagar.push(c);
+  });
+  reconstruirDespesas2026();
+  save();
+  saveContas();
+  localStorage.setItem(FLAG, '1');
+  console.log('Migração agosto/2026 v2 (Predipod): ' + CONTAS_2026_AGOSTO_PRELOAD_V2.length + ' registros adicionados.');
+}
+
+function migrarSetembroV1() {
+  const FLAG = 'fazenda_migr_setembro_v1';
+  if (localStorage.getItem(FLAG)) return;
+  var idsExist = new Set(contasPagar.map(function(c){ return c.id; }));
+  CONTAS_2026_SETEMBRO_PRELOAD.forEach(function(c) {
+    if (!idsExist.has(c.id)) contasPagar.push(c);
+  });
+  reconstruirDespesas2026();
+  save();
+  saveContas();
+  localStorage.setItem(FLAG, '1');
+  console.log('Migração setembro/2026 v1 (Predipod): ' + CONTAS_2026_SETEMBRO_PRELOAD.length + ' registros adicionados.');
 }
 
 function migrarAgostoV1() {
@@ -4085,7 +4172,7 @@ async function onLogin(user) {
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
     ]);
     setSyncStatus('✓ Sincronizado');
-    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); migrarJulhoV1(); migrarJulhoV2(); migrarJulhoV3(); migrarJulhoV4(); migrarReceitasJulhoV1(); migrarReceitasJulhoV2(); migrarAgostoV1(); migrarReceitasAgostoV1(); migrarTransferencias(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); renderTransferencias(); } catch(e) {}
+    try { migrarJunhoV5(); migrarCorrigeICMSJunho(); migrarJulhoV1(); migrarJulhoV2(); migrarJulhoV3(); migrarJulhoV4(); migrarReceitasJulhoV1(); migrarReceitasJulhoV2(); migrarAgostoV1(); migrarReceitasAgostoV1(); migrarJulhoV5(); migrarAgostoV2(); migrarSetembroV1(); migrarTransferencias(); reconstruirDespesas2026(); save(); initDashboard(); renderDespesasTable(); atualizarBadgeContas(); renderDRE(); renderTransferencias(); } catch(e) {}
   } catch(e) {
     setSyncStatus(e.message === 'timeout' ? '⚠ Servidor lento' : '⚠ Sem conexao');
   }
@@ -4656,13 +4743,14 @@ function salvarSaldosCaixa() {
     banco1:      parseBR(document.getElementById('caixa-saldo-banco1')?.value),
     banco2:      parseBR(document.getElementById('caixa-saldo-banco2')?.value),
     fisico:      parseBR(document.getElementById('caixa-saldo-fisico')?.value),
+    predipod:    parseBR(document.getElementById('caixa-saldo-predipod')?.value),
     aplicacoes:  parseBR(document.getElementById('caixa-saldo-aplicacoes')?.value),
     reserva:     parseBR(document.getElementById('caixa-saldo-reserva')?.value),
     a_receber:   prev.a_receber  || [],
     a_pagar:     prev.a_pagar    || []
   };
   const s = saldosCaixa[key];
-  const totDisp = s.banco1 + s.banco2 + s.fisico + s.aplicacoes + s.reserva;
+  const totDisp = s.banco1 + s.banco2 + s.fisico + (s.predipod||0) + s.aplicacoes + s.reserva;
   document.getElementById('caixa-saldo-total').textContent = fmt(totDisp);
   localStorage.setItem('fazenda_saldos_caixa', JSON.stringify(saldosCaixa));
   save();
@@ -4673,14 +4761,16 @@ function salvarSaldosCaixa() {
 function renderDemonstrativo() {
   const key = getCaixaKey();
   const s   = saldosCaixa[key] || {};
-  const caixa  = s.fisico      || 0;
-  const bancos = (s.banco1||0) + (s.banco2||0);
-  const aplic  = s.aplicacoes  || 0;
-  const reserv = s.reserva     || 0;
-  const totDisp = caixa + bancos + aplic + reserv;
+  const caixa    = s.fisico      || 0;
+  const predipod = s.predipod    || 0;
+  const bancos   = (s.banco1||0) + (s.banco2||0);
+  const aplic    = s.aplicacoes  || 0;
+  const reserv   = s.reserva     || 0;
+  const totDisp  = caixa + predipod + bancos + aplic + reserv;
   const setEl = (id, v) => { const el=document.getElementById(id); if(el) el.textContent = v; };
-  setEl('ds-caixa',      caixa  ? fmt(caixa)  : '—');
-  setEl('ds-bancos',     bancos ? fmt(bancos) : '—');
+  setEl('ds-caixa',      caixa    ? fmt(caixa)    : '—');
+  setEl('ds-predipod',   predipod ? fmt(predipod) : '—');
+  setEl('ds-bancos',     bancos   ? fmt(bancos)   : '—');
   setEl('ds-aplicacoes', aplic  ? fmt(aplic)  : '—');
   setEl('ds-reserva',    reserv ? fmt(reserv) : '—');
   setEl('ds-total-disp', totDisp ? fmt(totDisp) : '—');
@@ -4855,9 +4945,9 @@ function semanasDoMes(ano, mes) {
   });
 }
 
-const CONTAS_NOMES = {BB: 'Banco do Brasil', Itau: 'Itaú', Caixa: 'Caixa Físico', '': 'Não informado'};
-const CONTAS_CORES = {BB: '#1565C0', Itau: '#e65100', Caixa: '#2e7d32', '': '#9e9e9e'};
-const CONTAS_KEYS  = ['BB', 'Itau', 'Caixa', ''];
+const CONTAS_NOMES = {BB: 'Banco do Brasil', Itau: 'Itaú', Caixa: 'Caixa Físico', Predipod: 'Predipod', '': 'Não informado'};
+const CONTAS_CORES = {BB: '#1565C0', Itau: '#e65100', Caixa: '#2e7d32', Predipod: '#6a0dad', '': '#9e9e9e'};
+const CONTAS_KEYS  = ['BB', 'Itau', 'Caixa', 'Predipod', ''];
 
 function _emPeriodo(dataStr, dataIni, dataFim) {
   if (!dataStr) return false;
@@ -4879,7 +4969,7 @@ function renderSaldoPorConta(ano, mes, view) {
 
   // ─── Entradas por conta ──────────────────────────────────────
   // Receitas 2025 (base estática) → conta = '' (não informado)
-  const entPorConta = {BB: 0, Itau: 0, Caixa: 0, '': 0};
+  const entPorConta = {BB: 0, Itau: 0, Caixa: 0, Predipod: 0, '': 0};
   const fonteRec25 = ano === 2025 ? receitas2025 : [];
   fonteRec25.filter(r => _emPeriodo(r.data, dataIni, dataFim))
             .forEach(r => { entPorConta[''] += parseFloat(r.valor) || 0; });
@@ -4891,7 +4981,7 @@ function renderSaldoPorConta(ano, mes, view) {
           });
 
   // ─── Saídas por conta ────────────────────────────────────────
-  const saiPorConta = {BB: 0, Itau: 0, Caixa: 0, '': 0};
+  const saiPorConta = {BB: 0, Itau: 0, Caixa: 0, Predipod: 0, '': 0};
   // Contas a pagar pagas
   contasPagar.filter(c => c.status === 'Paga' && _emPeriodo(c.dataPagamento, dataIni, dataFim))
              .forEach(c => {
@@ -4906,8 +4996,8 @@ function renderSaldoPorConta(ano, mes, view) {
                   });
 
   // ─── Transferências: impacto por conta ───────────────────────
-  const transfSai = {BB:0, Itau:0, Caixa:0, '':0};
-  const transfEnt = {BB:0, Itau:0, Caixa:0, '':0};
+  const transfSai = {BB:0, Itau:0, Caixa:0, Predipod:0, '':0};
+  const transfEnt = {BB:0, Itau:0, Caixa:0, Predipod:0, '':0};
   transferencias.filter(function(t){ return _emPeriodo(t.data, dataIni, dataFim); })
     .forEach(function(t) {
       if (transfSai[t.origem] !== undefined) transfSai[t.origem] += parseFloat(t.valor)||0;
@@ -4919,7 +5009,7 @@ function renderSaldoPorConta(ano, mes, view) {
   const totSai = Object.values(saiPorConta).reduce((a, v) => a + v, 0);
 
   // Mostrar sempre BB, Itaú, Caixa + "Não informado" só se tiver valor
-  const mostrar = ['BB', 'Itau', 'Caixa'];
+  const mostrar = ['BB', 'Itau', 'Caixa', 'Predipod'];
   if (entPorConta[''] > 0 || saiPorConta[''] > 0) mostrar.push('');
 
   el.innerHTML = mostrar.map(k => {
